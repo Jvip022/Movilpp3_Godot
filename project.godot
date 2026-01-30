@@ -11,14 +11,13 @@ config_version=5
 [application]
 
 config/name="movil"
-run/main_scene="uid://cnc3hau4tugrb"
+run/main_scene="uid://b8oj1qn86nws0"
 config/features=PackedStringArray("4.5", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Bd="*res://BD.gd"
-Controlador="*res://controlador.gd"
+Bd="*res://scripts/BD.gd"
 
 [display]
 
