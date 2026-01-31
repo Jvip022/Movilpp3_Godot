@@ -404,7 +404,7 @@ func cambiar_a_escena_principal():
 	await tween.finished
 	
 	# Cargar escena principal
-	var escena_principal_path = "res://escenas/escena_principal.tscn"
+	var escena_principal_path = "res://escenas/GestorQuejas.tscn"
 	
 	print("Intentando cargar: ", escena_principal_path)
 	

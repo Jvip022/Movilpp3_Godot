@@ -153,6 +153,7 @@ offset_left = 240.0
 offset_top = 24.0
 offset_right = -263.64807
 grow_vertical = 2
+script = ExtResource("1_u04nk")
 
 [node name="Vista Previa" type="Label" parent="PanelDerecho"]
 layout_mode = 0
