@@ -1,35 +1,36 @@
 extends Node
 
-# Datos del usuario actual
+#class_name Global
+
+# Variable global para el usuario
 var usuario_actual = null
 
-# Configuración de la aplicación
-var config = {
-	"tema_oscuro": false,
-	"idioma": "es",
-	"notificaciones": true
-}
+# Instancia única (singleton)
+static var instance: Global = null
 
-# Datos de la sesión
-var token_sesion = ""
-var tiempo_inicio_sesion = 0
+func _init():
+	if instance == null:
+		instance = self
+	else:
+		queue_free()
 
 func _ready():
-	# Inicializar variables globales
+	print("Sistema Global inicializado")
+	
+	# Cargar configuración
 	cargar_configuracion()
 
 func cargar_configuracion():
-	var file = FileAccess.open("user://config.json", FileAccess.READ)
-	if file:
-		var contenido = file.get_as_text()
-		config = JSON.parse_string(contenido)
-		file.close()
+	var config = ConfigFile.new()
+	if config.load("user://config.cfg") == OK:
+		print("Configuración cargada")
+	else:
+		print("Creando configuración por defecto")
+		# Configuración por defecto
+		config.set_value("app", "version", "1.0")
+		config.save("user://config.cfg")
 
-func guardar_configuracion():
-	var file = FileAccess.open("user://config.json", FileAccess.WRITE)
-	file.store_string(JSON.stringify(config))
-	file.close()
-
+# Métodos de utilidad
 func esta_autenticado() -> bool:
 	return usuario_actual != null
 
@@ -40,10 +41,7 @@ func obtener_rol() -> String:
 
 func cerrar_sesion():
 	usuario_actual = null
-	token_sesion = ""
+	print("Sesión cerrada")
 	
-	# Guardar configuración
-	guardar_configuracion()
-	
-	# Volver a pantalla de login
-	get_tree().change_scene_to_file("res://PantallaLogin.tscn")
+	# Cambiar a pantalla de login
+	get_tree().change_scene_to_file("res://escenas/autentificar.tscn")

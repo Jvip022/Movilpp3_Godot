@@ -1,15 +1,16 @@
 extends Control
 
-@onready var input_usuario = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/InputUsuario
-@onready var input_password = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/InputPassword
-@onready var check_recordar = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/CheckRecordar
-@onready var boton_login = $CenterContainer/PanelLogin/VBoxContainer/BotonLogin
-@onready var boton_registrar = $CenterContainer/PanelLogin/VBoxContainer/HBoxContainer/BotonRegistrar
-@onready var boton_recuperar = $CenterContainer/PanelLogin/VBoxContainer/HBoxContainer/BotonRecuperar
-@onready var mensaje_error = $CenterContainer/PanelLogin/VBoxContainer/MensajeError
-@onready var panel_cargando = $CenterContainer/PanelLogin/PanelCargando
-@onready var dialogo_recuperar = $DialogoRecuperar
-@onready var dialogo_registro = $DialogoRegistro
+# Referencias a nodos (con @onready)
+@onready var input_usuario: LineEdit = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/InputUsuario
+@onready var input_password: LineEdit = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/InputPassword
+@onready var check_recordar: CheckBox = find_child("CheckRecordar")  # Búsqueda flexible
+@onready var boton_login: Button = find_child("BotonLogin")
+@onready var boton_registrar: Button = find_child("BotonRegistrar")
+@onready var boton_recuperar: Button = find_child("BotonRecuperar")
+@onready var mensaje_error: Label = find_child("MensajeError")
+@onready var panel_cargando: Panel = find_child("PanelCargando")
+@onready var dialogo_recuperar: AcceptDialog = $DialogoRecuperar
+@onready var dialogo_registro: AcceptDialog = $DialogoRegistro
 
 # Base de datos de usuarios (en producción usarías SQLite o API)
 var usuarios_db = {
@@ -21,18 +22,43 @@ var usuarios_db = {
 var config_file = "user://config.cfg"
 
 func _ready():
-	# Conectar señales
-	boton_login.pressed.connect(_on_login_pressed)
-	boton_registrar.pressed.connect(_on_registrar_pressed)
-	boton_recuperar.pressed.connect(_on_recuperar_pressed)
+	# Verificar que los nodos existen
+	print("Verificando nodos...")
+	print("- InputUsuario: ", input_usuario != null)
+	print("- InputPassword: ", input_password != null)
+	print("- CheckRecordar: ", check_recordar != null)
+	print("- BotonLogin: ", boton_login != null)
+	print("- BotonRegistrar: ", boton_registrar != null)
+	print("- BotonRecuperar: ", boton_recuperar != null)
+	
+	# Conectar señales SOLO si los nodos existen
+	if boton_login:
+		boton_login.pressed.connect(_on_login_pressed)
+		print("BotonLogin conectado")
+	
+	if boton_registrar:
+		boton_registrar.pressed.connect(_on_registrar_pressed)
+		print("BotonRegistrar conectado")
+	
+	if boton_recuperar:
+		boton_recuperar.pressed.connect(_on_recuperar_pressed)
+		print("BotonRecuperar conectado")
 	
 	# Enter para login
-	input_password.text_submitted.connect(_on_password_submitted)
+	if input_password:
+		input_password.text_submitted.connect(_on_password_submitted)
 	
-	# Configurar diálogos
-	dialogo_recuperar.get_ok_button().visible = false
-	dialogo_recuperar.get_cancel_button().text = "Cancelar"
-	dialogo_recuperar.register_text_enter(dialogo_recuperar.get_node("VBoxContainer/InputEmailRecuperar"))
+	# Configurar diálogos si existen
+	if dialogo_recuperar:
+		dialogo_recuperar.get_ok_button().visible = false
+		var cancel_button = dialogo_recuperar.get_cancel_button()
+		if cancel_button:
+			cancel_button.text = "Cancelar"
+		
+		# Buscar el input de email dentro del diálogo
+		var input_email = dialogo_recuperar.find_child("InputEmailRecuperar")
+		if input_email:
+			dialogo_recuperar.register_text_enter(input_email)
 	
 	# Cargar usuario recordado
 	cargar_usuario_recordado()
@@ -41,25 +67,21 @@ func _ready():
 	aplicar_efectos_visuales()
 
 func aplicar_efectos_visuales():
-	# Crear gradiente para el fondo
-	var gradient = Gradient.new()
-	gradient.colors = [Color("#2c3e50"), Color("#3498db")]
-	gradient.offsets = [0.0, 1.0]
-	
-	$ColorRect.material = ShaderMaterial.new()
-	var shader_code = """
-    shader_type canvas_item;
-    uniform vec4 color1 : source_color;
-    uniform vec4 color2 : source_color;
-    
-    void fragment() {
-        COLOR = mix(color1, color2, UV.y);
-    }
-    """
-	$ColorRect.material.shader = Shader.new()
-	$ColorRect.material.shader.code = shader_code
-	$ColorRect.material.set_shader_parameter("color1", Color("#2c3e50"))
-	$ColorRect.material.set_shader_parameter("color2", Color("#3498db"))
+	# Fondo simple si no hay shader
+	var color_rect = $ColorRect
+	if color_rect:
+		# Gradiente simple con ColorRect
+		color_rect.color = Color("#2c3e50")
+		
+		# Opcional: agregar segundo ColorRect para gradiente
+		var color_rect2 = ColorRect.new()
+		color_rect2.color = Color("#3498db")
+		color_rect2.anchor_left = 0
+		color_rect2.anchor_top = 0.5
+		color_rect2.anchor_right = 1
+		color_rect2.anchor_bottom = 1
+		color_rect2.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		color_rect.add_child(color_rect2)
 
 func cargar_usuario_recordado():
 	var config = ConfigFile.new()
@@ -68,14 +90,19 @@ func cargar_usuario_recordado():
 			var usuario = config.get_value("login", "usuario", "")
 			var password = config.get_value("login", "password", "")
 			
-			input_usuario.text = usuario
-			input_password.text = password
-			check_recordar.button_pressed = true
+			if input_usuario:
+				input_usuario.text = usuario
+			
+			if input_password:
+				input_password.text = password
+			
+			if check_recordar:
+				check_recordar.button_pressed = true
 
 func guardar_usuario_recordado(usuario: String, password: String):
 	var config = ConfigFile.new()
 	
-	if check_recordar.button_pressed:
+	if check_recordar and check_recordar.button_pressed:
 		config.set_value("login", "usuario", usuario)
 		config.set_value("login", "password", password)
 		config.set_value("login", "recordar", true)
@@ -91,6 +118,10 @@ func _on_password_submitted(_new_text: String):
 	autenticar_usuario()
 
 func autenticar_usuario():
+	if not input_usuario or not input_password:
+		mostrar_error("Error: Campos de entrada no encontrados")
+		return
+	
 	var usuario = input_usuario.text.strip_edges()
 	var password = input_password.text
 	
@@ -102,7 +133,7 @@ func autenticar_usuario():
 	# Mostrar estado de carga
 	mostrar_carga(true)
 	
-	# Simular tiempo de verificación (en producción sería asíncrono)
+	# Simular tiempo de verificación
 	await get_tree().create_timer(1.0).timeout
 	
 	# Verificar credenciales
@@ -131,7 +162,11 @@ func buscar_usuario_por_email(email: String) -> String:
 	return ""
 
 func ingresar_al_sistema(usuario: String):
-	# Guardar sesión actual
+	# Guardar sesión actual en variable global
+	if not Global:
+		mostrar_error("Error: Sistema Global no inicializado")
+		return
+	
 	Global.usuario_actual = {
 		"username": usuario,
 		"nombre": usuarios_db[usuario]["nombre"],
@@ -151,7 +186,7 @@ func cambiar_a_escena_principal():
 	await tween.finished
 	
 	# Cargar escena principal (dashboard)
-	var escena_principal = preload("res://escenas/escena_principal.tscn").instantiate()
+	var escena_principal =preload("res://escenas/escena_principal.tscn") .instantiate()
 	get_tree().root.add_child(escena_principal)
 	get_tree().current_scene = escena_principal
 	
@@ -159,42 +194,71 @@ func cambiar_a_escena_principal():
 	queue_free()
 
 func mostrar_error(mensaje: String):
-	mensaje_error.text = mensaje
-	mensaje_error.visible = true
-	
-	# Animación de error
-	var tween = create_tween()
-	tween.tween_property(mensaje_error, "modulate:a", 1.0, 0.2)
-	await get_tree().create_timer(3.0).timeout
-	tween = create_tween()
-	tween.tween_property(mensaje_error, "modulate:a", 0.0, 0.5)
+	if mensaje_error:
+		mensaje_error.text = mensaje
+		mensaje_error.visible = true
+		
+		# Animación de error
+		var tween = create_tween()
+		tween.tween_property(mensaje_error, "modulate:a", 1.0, 0.2)
+		await get_tree().create_timer(3.0).timeout
+		tween = create_tween()
+		tween.tween_property(mensaje_error, "modulate:a", 0.0, 0.5)
+	else:
+		print("Error (sin UI): ", mensaje)
 
 func mostrar_carga(mostrar: bool):
-	panel_cargando.visible = mostrar
-	boton_login.disabled = mostrar
-	boton_registrar.disabled = mostrar
-	boton_recuperar.disabled = mostrar
+	if panel_cargando:
+		panel_cargando.visible = mostrar
+	
+	if boton_login:
+		boton_login.disabled = mostrar
+	
+	if boton_registrar:
+		boton_registrar.disabled = mostrar
+	
+	if boton_recuperar:
+		boton_recuperar.disabled = mostrar
 
 func _on_registrar_pressed():
-	dialogo_registro.popup_centered(Vector2(400, 400))
-	
-	# Limpiar campos
-	dialogo_registro.get_node("ScrollContainer/VBoxContainer/InputNombreRegistro").text = ""
-	dialogo_registro.get_node("ScrollContainer/VBoxContainer/InputEmailRegistro").text = ""
-	dialogo_registro.get_node("ScrollContainer/VBoxContainer/InputUsuarioRegistro").text = ""
-	dialogo_registro.get_node("ScrollContainer/VBoxContainer/InputPasswordRegistro").text = ""
-	dialogo_registro.get_node("ScrollContainer/VBoxContainer/InputConfirmarPassword").text = ""
+	if dialogo_registro:
+		dialogo_registro.popup_centered(Vector2(400, 400))
+		
+		# Limpiar campos
+		var campos = [
+			"InputNombreRegistro",
+			"InputEmailRegistro", 
+			"InputUsuarioRegistro",
+			"InputPasswordRegistro",
+            "InputConfirmarPassword"
+		]
+		
+		for campo_nombre in campos:
+			var campo = dialogo_registro.find_child(campo_nombre)
+			if campo:
+				campo.text = ""
+	else:
+		mostrar_error("Diálogo de registro no disponible")
 
 func _on_recuperar_pressed():
-	dialogo_recuperar.popup_centered()
-	
-	# Conectar botón de enviar
-	var boton_enviar = dialogo_recuperar.get_node("VBoxContainer/BotonEnviarRecuperar")
-	if not boton_enviar.is_connected("pressed", Callable(self, "_on_enviar_recuperar_pressed")):
-		boton_enviar.pressed.connect(_on_enviar_recuperar_pressed)
+	if dialogo_recuperar:
+		dialogo_recuperar.popup_centered()
+		
+		# Conectar botón de enviar
+		var boton_enviar = dialogo_recuperar.find_child("BotonEnviarRecuperar")
+		if boton_enviar:
+			if not boton_enviar.is_connected("pressed", Callable(self, "_on_enviar_recuperar_pressed")):
+				boton_enviar.pressed.connect(_on_enviar_recuperar_pressed)
+	else:
+		mostrar_error("Diálogo de recuperación no disponible")
 
 func _on_enviar_recuperar_pressed():
-	var email = dialogo_recuperar.get_node("VBoxContainer/InputEmailRecuperar").text
+	var input_email = dialogo_recuperar.find_child("InputEmailRecuperar")
+	if not input_email:
+		mostrar_error("Campo de email no encontrado")
+		return
+	
+	var email = input_email.text.strip_edges()
 	
 	if es_email_valido(email):
 		# Aquí enviarías el email (simulado)
@@ -205,11 +269,14 @@ func _on_enviar_recuperar_pressed():
 		mostrar_error("Email inválido")
 
 func es_email_valido(email: String) -> bool:
+	if email.is_empty():
+		return false
+	
 	var regex = RegEx.new()
 	regex.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
 	return regex.search(email) != null
 
-# Función para registrar nuevo usuario (simplificada)
+# Función para registrar nuevo usuario
 func registrar_usuario(nombre: String, email: String, usuario: String, password: String) -> bool:
 	if usuarios_db.has(usuario):
 		mostrar_error("El nombre de usuario ya existe")
@@ -233,11 +300,14 @@ func registrar_usuario(nombre: String, email: String, usuario: String, password:
 	}
 	
 	mostrar_error("¡Cuenta creada exitosamente! Ya puede iniciar sesión")
-	dialogo_registro.hide()
+	
+	if dialogo_registro:
+		dialogo_registro.hide()
 	
 	# Auto-login después de registro
-	input_usuario.text = usuario
-	input_password.text = password
-	autenticar_usuario()
+	if input_usuario and input_password:
+		input_usuario.text = usuario
+		input_password.text = password
+		autenticar_usuario()
 	
 	return true
