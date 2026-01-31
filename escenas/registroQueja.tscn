@@ -1,0 +1,186 @@
+[gd_scene format=3 uid="uid://b8oj1qn86nws0"]
+
+[node name="RegistroQueja" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(1600, 800)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+
+[node name="Tipo Reclamante" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/Tipo Reclamante"]
+layout_mode = 2
+text = "Tipo de Reclamante:"
+
+[node name="TipoReclamante" type="OptionButton" parent="ScrollContainer/VBoxContainer/Tipo Reclamante"]
+layout_mode = 2
+
+[node name="CamposDinamicos" type="VBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CamposCliente" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/CamposDinamicos"]
+layout_mode = 2
+
+[node name="Nombres" type="LineEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos/CamposCliente"]
+layout_mode = 2
+placeholder_text = "Nombres completos"
+
+[node name="Identificacion" type="LineEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos/CamposCliente"]
+layout_mode = 2
+
+[node name="Telefono" type="LineEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos/CamposCliente"]
+layout_mode = 2
+
+[node name="Email" type="LineEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos/CamposCliente"]
+layout_mode = 2
+text = "Nombres"
+
+[node name="CamposProveedor" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CamposDinamicos"]
+layout_mode = 2
+
+[node name="Empresa" type="LineEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos/CamposProveedor"]
+layout_mode = 2
+placeholder_text = "Nombre de la empresa"
+
+[node name="CamposEmpleado" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/CamposDinamicos"]
+layout_mode = 2
+
+[node name="Departamento" type="LineEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos/CamposEmpleado"]
+layout_mode = 2
+placeholder_text = "Departamento"
+
+[node name="Asunto" type="LineEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos"]
+layout_mode = 2
+placeholder_text = "Asunto de la queja"
+
+[node name="Descripcion" type="TextEdit" parent="ScrollContainer/VBoxContainer/CamposDinamicos"]
+layout_mode = 2
+placeholder_text = "Descripción detallada..."
+
+[node name="Producto Servicio)" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/Producto Servicio)"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="ScrollContainer/VBoxContainer/Producto Servicio)"]
+layout_mode = 2
+
+[node name="Número de Factura" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/Número de Factura"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="ScrollContainer/VBoxContainer/Número de Factura"]
+layout_mode = 2
+
+[node name="Fecha Incidente" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/Fecha Incidente"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="ScrollContainer/VBoxContainer/Fecha Incidente"]
+layout_mode = 2
+
+[node name="Categoría" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/Categoría"]
+layout_mode = 2
+
+[node name="Categoria" type="OptionButton" parent="ScrollContainer/VBoxContainer/Categoría"]
+layout_mode = 2
+
+[node name="Monto Reclamado" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/Monto Reclamado"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="ScrollContainer/VBoxContainer/Monto Reclamado"]
+layout_mode = 2
+
+[node name="Tipo Compensación" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/Tipo Compensación"]
+layout_mode = 2
+
+[node name="TipoCompensacion" type="OptionButton" parent="ScrollContainer/VBoxContainer/Tipo Compensación"]
+layout_mode = 2
+
+[node name="PanelDerecho" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+
+[node name="Vista Previa" type="Label" parent="PanelDerecho"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Vista Previa"
+
+[node name="VistaPrevia" type="RichTextLabel" parent="PanelDerecho"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Archivos Adjuntos" type="Label" parent="PanelDerecho"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Archivos Adjuntos"
+
+[node name="ListaAdjuntos" type="ItemList" parent="PanelDerecho"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PanelInferior" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -160.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="BotonAdjuntar" type="Button" parent="PanelInferior"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="LabelAdjuntos" type="Label" parent="PanelInferior"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "0 archivos adjuntos"
+
+[node name="BotonEnviar" type="Button" parent="PanelInferior"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="DialogoConfirmacion" type="AcceptDialog" parent="."]
+oversampling_override = 1.0
+title = "Confirmar Envío"
+position = Vector2i(0, 36)
+size = Vector2i(200, 80)
+visible = true

@@ -1,0 +1,157 @@
+[gd_scene load_steps=4 format=3 uid="uid://b43osovkohbwg"]
+
+[ext_resource type="Texture2D" uid="uid://b610nq8aowfu3" path="res://assets/images/logos/havanatur-circular-logo.png" id="1_5c7kh"]
+[ext_resource type="Script" uid="uid://b6s0ac1sfpjgy" path="res://scripts/Authentication.gd" id="1_oj5rc"]
+
+[sub_resource type="Theme" id="Theme_5c7kh"]
+default_base_scale = 1.7
+
+[node name="PantallaLogin" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_oj5rc")
+
+[node name="Fondo con gradiente" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1616.0
+offset_bottom = 800.0
+theme = SubResource("Theme_5c7kh")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+offset_left = 650.0
+offset_top = 260.0
+offset_right = 650.0
+offset_bottom = 260.0
+metadata/_edit_use_anchors_ = true
+
+[node name="PanelLogin" type="Panel" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelLogin"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer"]
+layout_mode = 2
+
+[node name="Logo de la empresa" type="TextureRect" parent="CenterContainer/PanelLogin/VBoxContainer"]
+layout_mode = 2
+texture = ExtResource("1_5c7kh")
+
+[node name="ContenedorCampos" type="VBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer"]
+layout_mode = 2
+
+[node name="InputUsuario" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+layout_mode = 2
+placeholder_text = "Usuario o Email"
+
+[node name="InputPassword" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+layout_mode = 2
+
+[node name="CheckBox" type="CheckBox" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+layout_mode = 2
+
+[node name="BotonLogin" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+layout_mode = 2
+text = "Iniciar Sesión"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+layout_mode = 2
+
+[node name="BotonRegistrar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer"]
+layout_mode = 2
+text = "Crear cuenta"
+flat = true
+
+[node name="Espaciador" type="Control" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer"]
+layout_mode = 2
+
+[node name="BotonRecuperar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer"]
+layout_mode = 2
+text = "¿Olvidó su contraseña"
+flat = true
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+layout_mode = 2
+
+[node name="Nombre_ MensajeError, Text_" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+visible = false
+layout_mode = 2
+
+[node name="PanelCargando" type="Panel" parent="CenterContainer"]
+visible = false
+layout_mode = 2
+
+[node name="Semi-transparente" type="ColorRect" parent="CenterContainer/PanelCargando"]
+layout_mode = 0
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+
+[node name="InputNombreRegistro" type="Label" parent="CenterContainer/PanelCargando"]
+layout_mode = 0
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 182.0
+offset_bottom = 11.0
+text = "Verificando credenciales..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Indeterminado o animado" type="ProgressBar" parent="CenterContainer/PanelCargando"]
+layout_mode = 0
+offset_left = -20.0
+offset_top = -20.0
+offset_right = -16.0
+offset_bottom = 7.0
+
+[node name="DialogoRecuperar" type="AcceptDialog" parent="."]
+dialog_text = "Crear Nueva Cuenta"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRecuperar"]
+offset_right = 108.0
+offset_bottom = 171.0
+
+[node name="Label" type="Label" parent="DialogoRecuperar/VBoxContainer"]
+layout_mode = 2
+
+[node name="InputEmailRecuperar" type="LineEdit" parent="DialogoRecuperar/VBoxContainer"]
+layout_mode = 2
+
+[node name="BotonEnviarRecuperar" type="Button" parent="DialogoRecuperar/VBoxContainer"]
+layout_mode = 2
+text = "Enviar enlace"
+
+[node name="DialogoRegistro2" type="AcceptDialog" parent="."]
+dialog_text = "Crear Nueva Cuenta"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="DialogoRegistro2"]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRegistro2/ScrollContainer"]
+layout_mode = 2
+
+[node name="InputNombreRegistro" type="LineEdit" parent="DialogoRegistro2/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Nombre completo"
+
+[node name="InputEmailRegistro" type="LineEdit" parent="DialogoRegistro2/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Correo electrónico"
+
+[node name="InputUsuarioRegistro" type="LineEdit" parent="DialogoRegistro2/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Nombre de usuario"
+
+[node name="InputConfirmarPassword" type="LineEdit" parent="DialogoRegistro2/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Contraseña"
+secret = true
+
+[node name="BotonCrearCuenta" type="Button" parent="DialogoRegistro2/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Crear cuenta"

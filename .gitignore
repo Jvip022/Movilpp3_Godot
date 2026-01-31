@@ -7,6 +7,5 @@
 *.uid
 *.idsig
 *.svg
-*.tscn
 *.import
 *.cfg

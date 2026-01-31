@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=3 uid="uid://dngr84qycdqn0"]
+
+[ext_resource type="Script" uid="uid://delolg8ld1t6h" path="res://scripts/UI_DashboardQuejas.gd" id="1_lspki"]
+[ext_resource type="Script" uid="uid://bxs46xlxbyi6r" path="res://scripts/GraficoTendencias.gd" id="2_kib8t"]
+
+[node name="DashboardQuejas" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_lspki")
+metadata/_edit_vertical_guides_ = [480.0]
+
+[node name="PanelSuperior" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 1592.0
+offset_bottom = 128.0
+
+[node name="Metricas" type="VBoxContainer" parent="PanelSuperior"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TotalHoy" type="Label" parent="PanelSuperior/Metricas"]
+layout_mode = 2
+
+[node name="Pendientes" type="Label" parent="PanelSuperior/Metricas"]
+layout_mode = 2
+
+[node name="TiempoPromedio" type="Label" parent="PanelSuperior/Metricas"]
+layout_mode = 2
+
+[node name="CostoHoy" type="Label" parent="PanelSuperior/Metricas"]
+layout_mode = 2
+
+[node name="PanelCentral" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 240.0
+offset_right = 1592.0
+offset_bottom = 488.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GraficoTendencias" type="Control" parent="PanelCentral"]
+anchors_preset = 0
+offset_left = 196.0
+offset_top = 188.0
+offset_right = 236.0
+offset_bottom = 228.0
+script = ExtResource("2_kib8t")
+
+[node name="PanelInferior" type="Panel" parent="."]
+layout_mode = 0
+offset_top = 640.0
+offset_right = 1592.0
+offset_bottom = 792.0
+
+[node name="TablaRecientes" type="VBoxContainer" parent="PanelInferior"]
+layout_mode = 1
+offset_top = 272.0
+offset_right = 480.0
+offset_bottom = 312.0

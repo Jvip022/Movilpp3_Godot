@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://dpnsyhy28ykj8"]
+
+[node name="EscenaPrincipal" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="PanelSuperior" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LabelBienvenida" type="Label" parent="PanelSuperior"]
+layout_mode = 0
+offset_right = 166.0
+offset_bottom = 23.0
+text = "Bienvenido, [Usuario]"
+
+[node name="BotonCerrarSesion" type="Button" parent="PanelSuperior"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Cerrar sesión"
+
+[node name="TabContainer" type="TabContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+current_tab = 0
+
+[node name="TabInicio" type="Control" parent="TabContainer"]
+layout_mode = 2
+tooltip_text = "Inicio"
+metadata/_tab_index = 0
+
+[node name="TabQuejas" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+tooltip_text = "is Quejas"
+metadata/_tab_index = 1
+
+[node name="TabConfig" type="Control" parent="TabContainer"]
+visible = false
+layout_mode = 2
+tooltip_text = "Configuración"
+metadata/_tab_index = 2
+
+[node name="PanelInferior" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="PanelInferior"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "© 2024 Sistema de Gestión de Quejas"
