@@ -4,29 +4,31 @@ extends Control
 @onready var metricas = $PanelSuperior/Metricas
 @onready var grafico_tendencias = $PanelCentral/GraficoTendencias
 @onready var tabla_recientes = $PanelInferior/TablaRecientes
+@onready var panel_superior = $PanelSuperior
+@onready var panel_inferior = $PanelInferior
 var bd = Bd.db
 
 func _ready():
-	# Estilos básicos
-	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.179, 0.581, 0.534, 0.8)
-	style_box.border_width_bottom = 2
-	style_box.border_color = Color(0.2, 0.2, 0.2)
+	# Verificar que los paneles existan antes de aplicar estilos
+	if panel_superior:
+		var style_box = StyleBoxFlat.new()
+		style_box.bg_color = Color(0.179, 0.581, 0.534, 0.8)
+		style_box.border_width_bottom = 2
+		style_box.border_color = Color(0.2, 0.2, 0.2)
+		panel_superior.add_theme_stylebox_override("panel", style_box)
+	else:
+		push_warning("PanelSuperior no encontrado en la escena")
+
+	if panel_inferior:
+		var style_box_inferior = StyleBoxFlat.new()
+		style_box_inferior.bg_color = Color(0.179, 0.581, 0.534, 0.8)
+		style_box_inferior.border_width_bottom = 2
+		style_box_inferior.border_color = Color(0.2, 0.2, 0.2)
+		panel_inferior.add_theme_stylebox_override("panel", style_box_inferior)
+	else:
+		push_warning("PanelInferior no encontrado en la escena")
 	
-	$PanelSuperior.add_theme_stylebox_override("panel", style_box)
-	var style_box_1 = StyleBoxFlat.new()
-	style_box_1.bg_color = Color(0.179, 0.581, 0.534, 0.8)
-	style_box_1.border_width_bottom = 2
-	style_box_1.border_color = Color(0.2, 0.2, 0.2)
-	
-	$PanelInferior.add_theme_stylebox_override("panel", style_box_1)
-	var style_box_2 = StyleBoxFlat.new()
-	style_box_2.bg_color = Color(0.179, 0.581, 0.534, 0.8)
-	style_box_2.border_width_bottom = 2
-	style_box_2.border_color = Color(0.2, 0.2, 0.2)
-	
-	$PanelInferior.add_theme_stylebox_override("panel", style_box_2)
-	#  Cargar datos
+	# Cargar datos
 	cargar_metricas_en_tiempo_real()
 	cargar_grafico_tendencias()
 	cargar_quejas_recientes()
@@ -68,20 +70,34 @@ func cargar_metricas_en_tiempo_real():
 		if costo_total == null:
 			costo_total = 0.0
 		
-		# Actualizar UI
-		metricas.get_node("TotalHoy").text = "Total hoy: " + str(total_hoy)
-		metricas.get_node("Pendientes").text = "Pendientes: " + str(pendientes)
-		metricas.get_node("TiempoPromedio").text = "Tiempo respuesta: " + str(snapped(tiempo_promedio, 0.1)) + "h"
-		metricas.get_node("CostoHoy").text = "Costo hoy: $" + str(snapped(costo_total, 0.01))
+		# Actualizar UI - Verificar que los nodos existan
+		if metricas:
+			if metricas.has_node("TotalHoy"):
+				metricas.get_node("TotalHoy").text = "Total hoy: " + str(total_hoy)
+			if metricas.has_node("Pendientes"):
+				metricas.get_node("Pendientes").text = "Pendientes: " + str(pendientes)
+			if metricas.has_node("TiempoPromedio"):
+				metricas.get_node("TiempoPromedio").text = "Tiempo respuesta: " + str(snapped(tiempo_promedio, 0.1)) + "h"
+			if metricas.has_node("CostoHoy"):
+				metricas.get_node("CostoHoy").text = "Costo hoy: $" + str(snapped(costo_total, 0.01))
 	else:
 		# Si no hay resultados, mostrar valores por defecto
 		print("No se encontraron datos o hubo un error")
-		metricas.get_node("TotalHoy").text = "Total hoy: 0"
-		metricas.get_node("Pendientes").text = "Pendientes: 0"
-		metricas.get_node("TiempoPromedio").text = "Tiempo respuesta: 0.0h"
-		metricas.get_node("CostoHoy").text = "Costo hoy: $0.00"
+		if metricas:
+			if metricas.has_node("TotalHoy"):
+				metricas.get_node("TotalHoy").text = "Total hoy: 0"
+			if metricas.has_node("Pendientes"):
+				metricas.get_node("Pendientes").text = "Pendientes: 0"
+			if metricas.has_node("TiempoPromedio"):
+				metricas.get_node("TiempoPromedio").text = "Tiempo respuesta: 0.0h"
+			if metricas.has_node("CostoHoy"):
+				metricas.get_node("CostoHoy").text = "Costo hoy: $0.00"
 
 func cargar_grafico_tendencias():
+	if not grafico_tendencias:
+		push_warning("GraficoTendencias no encontrado")
+		return
+	
 	var datos_mensuales = Bd.query("""
 		SELECT
 			strftime('%Y-%m', fecha_recepcion) as mes,
@@ -102,6 +118,10 @@ func cargar_grafico_tendencias():
 		grafico_tendencias.dibujar_grafico([])
 
 func cargar_quejas_recientes():
+	if not tabla_recientes:
+		push_warning("TablaRecientes no encontrado")
+		return
+	
 	# Limpiar tabla primero
 	for child in tabla_recientes.get_children():
 		child.queue_free()

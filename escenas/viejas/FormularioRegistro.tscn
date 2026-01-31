@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://f8exs0un3acd"]
+
+[node name="TabRegistroQueja" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CampoNombre" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="CampoIdentificacion" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Descripcion" type="TextEdit" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Categoria" type="OptionButton" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="MontoReclamado" type="SpinBox" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="BtnEnviar" type="Button" parent="VBoxContainer"]
+layout_mode = 2

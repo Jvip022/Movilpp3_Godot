@@ -1,0 +1,106 @@
+[gd_scene format=3 uid="uid://tbxbkh23bwqa"]
+
+[node name="FormularioRegistro" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="FormContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="FormGrid" type="GridContainer" parent="FormContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
+
+[node name="LblTipoCaso" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Tipo de Caso:"
+
+[node name="OptTipoCaso" type="OptionButton" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LblNombres" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Nombres:"
+
+[node name="TxtNombres" type="LineEdit" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ingrese nombres completos"
+
+[node name="LblIdentificacion" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Identificación:"
+
+[node name="TxtIdentificacion" type="LineEdit" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Cédula/RUC/Pasaporte"
+
+[node name="LblTelefono" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Teléfono:"
+
+[node name="TxtTelefono" type="LineEdit" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "+593..."
+
+[node name="LblEmail" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Email:"
+
+[node name="TxtEmail" type="LineEdit" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "cliente@email.com"
+
+[node name="LblAsunto" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Asunto:"
+
+[node name="TxtAsunto" type="LineEdit" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Resumen breve del problema"
+
+[node name="LblDescripcion" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Descripción:"
+
+[node name="TxtDescripcion" type="TextEdit" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+placeholder_text = "Describa el problema en detalle..."
+wrap_mode = 2
+
+[node name="LblMonto" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Monto Reclamado ($):"
+
+[node name="SpinMonto" type="SpinBox" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100000.0
+step = 0.01
+prefix = "$"
+
+[node name="LblPrioridad" type="Label" parent="FormContainer/FormGrid"]
+layout_mode = 2
+text = "Prioridad:"
+
+[node name="OptPrioridad" type="OptionButton" parent="FormContainer/FormGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnRegistrar" type="Button" parent="."]
+layout_mode = 2
+text = "Registrar Queja"

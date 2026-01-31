@@ -1,47 +1,69 @@
 extends Node
+class_name global
 
-#class_name Global
+# Datos del usuario actual
+var usuario_actual: Dictionary = {}
 
-# Variable global para el usuario
-var usuario_actual = null
+# Configuración del sistema
+var config_sistema: Dictionary = {
+	"modo_oscuro": false,
+	"idioma": "es",
+	"notificaciones": true
+}
 
-# Instancia única (singleton)
-static var instance: Global = null
-
-func _init():
-	if instance == null:
-		instance = self
-	else:
-		queue_free()
+# Base de datos
+var db: BD
 
 func _ready():
-	print("Sistema Global inicializado")
+	# Inicializar base de datos
+	db = BD.new()
+	db._ready()
 	
-	# Cargar configuración
-	cargar_configuracion()
+	# Cargar sesión guardada
+	cargar_sesion()
 
-func cargar_configuracion():
+func cargar_sesion():
 	var config = ConfigFile.new()
-	if config.load("user://config.cfg") == OK:
-		print("Configuración cargada")
-	else:
-		print("Creando configuración por defecto")
-		# Configuración por defecto
-		config.set_value("app", "version", "1.0")
-		config.save("user://config.cfg")
+	if config.load("user://sesion.cfg") == OK:
+		usuario_actual = config.get_value("sesion", "usuario", {})
 
-# Métodos de utilidad
-func esta_autenticado() -> bool:
-	return usuario_actual != null
-
-func obtener_rol() -> String:
-	if usuario_actual and usuario_actual.has("rol"):
-		return usuario_actual["rol"]
-	return "invitado"
+func guardar_sesion():
+	var config = ConfigFile.new()
+	config.set_value("sesion", "usuario", usuario_actual)
+	config.save("user://sesion.cfg")
 
 func cerrar_sesion():
-	usuario_actual = null
-	print("Sesión cerrada")
+	usuario_actual = {}
 	
-	# Cambiar a pantalla de login
-	get_tree().change_scene_to_file("res://escenas/autentificar.tscn")
+	# Eliminar archivo de sesión
+	var dir = DirAccess.open("user://")
+	if dir.file_exists("sesion.cfg"):
+		dir.remove("sesion.cfg")
+	
+	# Cerrar base de datos
+	if db:
+		db.close()
+	
+	# Cargar escena de login
+	get_tree().change_scene_to_file("res://escenas/login.tscn")
+
+# Función para verificar permisos
+func tiene_permiso(permiso: String) -> bool:
+	if usuario_actual.is_empty():
+		return false
+	
+	if usuario_actual.rol == "admin":
+		return true
+	
+	# Aquí puedes agregar lógica más compleja de permisos
+	match permiso:
+		"ver_dashboard":
+			return usuario_actual.rol in ["admin", "supervisor", "gerente"]
+		"crear_queja":
+			return usuario_actual.rol in ["admin", "operador", "supervisor"]
+		"aprobar_compensacion":
+			return usuario_actual.rol in ["admin", "supervisor", "gerente"]
+		"ver_reportes":
+			return usuario_actual.rol in ["admin", "analista", "gerente"]
+		_:
+			return false
