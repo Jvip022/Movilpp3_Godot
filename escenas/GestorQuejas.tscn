@@ -1,12 +1,12 @@
-[gd_scene load_steps=3 format=3 uid="uid://c750rue7rocjd"]
+[gd_scene format=3 uid="uid://c750rue7rocjd"]
 
 [ext_resource type="Script" uid="uid://d2mlrfo2jlxj4" path="res://scripts/Gestor_quejas.gd" id="1_6pdcs"]
 [ext_resource type="Script" uid="uid://y2okqol32px6" path="res://scripts/InterfaceManager.gd" id="2_xxrdc"]
 
-[node name="GestorQuejas" type="Node"]
+[node name="GestorQuejas" type="Node" unique_id=1421529623]
 script = ExtResource("1_6pdcs")
 
-[node name="InterfaceManager" type="Control" parent="."]
+[node name="InterfaceManager" type="Control" parent="." unique_id=2118600254]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,14 +17,14 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("2_xxrdc")
 
-[node name="MainPanel" type="Panel" parent="InterfaceManager"]
+[node name="MainPanel" type="Panel" parent="InterfaceManager" unique_id=1696886456]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MainTabContainer" type="TabContainer" parent="InterfaceManager/MainPanel"]
+[node name="MainTabContainer" type="TabContainer" parent="InterfaceManager/MainPanel" unique_id=2132540904]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -32,213 +32,213 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 current_tab = 0
 
-[node name="Registro" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer"]
+[node name="Registro" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=1020364369]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 metadata/_tab_index = 0
 
-[node name="FormContainer" type="ScrollContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Registro"]
+[node name="FormContainer" type="ScrollContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Registro" unique_id=35239748]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="FormGrid" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer"]
+[node name="FormGrid" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer" unique_id=2027161950]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="LblTipoCaso" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblTipoCaso" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=447505498]
 layout_mode = 2
 text = "Tipo de Caso:"
 
-[node name="OptTipoCaso" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="OptTipoCaso" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=563605112]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LblNombres" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblNombres" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1918146593]
 layout_mode = 2
 text = "Nombres:"
 
-[node name="TxtNombres" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="TxtNombres" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=970117237]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Ingrese nombres completos"
 
-[node name="LblIdentificacion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblIdentificacion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=65046847]
 layout_mode = 2
 text = "Identificación:"
 
-[node name="TxtIdentificacion" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="TxtIdentificacion" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1364892444]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Cédula/RUC/Pasaporte"
 
-[node name="LblTelefono" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblTelefono" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1517041009]
 layout_mode = 2
 text = "Teléfono:"
 
-[node name="TxtTelefono" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="TxtTelefono" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1237141918]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "+593..."
 
-[node name="LblEmail" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblEmail" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=511418616]
 layout_mode = 2
 text = "Email:"
 
-[node name="TxtEmail" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="TxtEmail" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1573007909]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "cliente@email.com"
 
-[node name="LblAsunto" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblAsunto" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1376271934]
 layout_mode = 2
 text = "Asunto:"
 
-[node name="TxtAsunto" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="TxtAsunto" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=514064337]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Resumen breve del problema"
 
-[node name="LblDescripcion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblDescripcion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1443657318]
 layout_mode = 2
 text = "Descripción:"
 
-[node name="TxtDescripcion" type="TextEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="TxtDescripcion" type="TextEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1930730080]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 placeholder_text = "Describa el problema en detalle..."
 wrap_mode = 2
 
-[node name="LblMonto" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblMonto" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=165344163]
 layout_mode = 2
 text = "Monto Reclamado ($):"
 
-[node name="SpinMonto" type="SpinBox" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="SpinMonto" type="SpinBox" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1684608770]
 layout_mode = 2
 size_flags_horizontal = 3
 max_value = 100000.0
 step = 0.01
 prefix = "$"
 
-[node name="LblPrioridad" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="LblPrioridad" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1090684455]
 layout_mode = 2
 text = "Prioridad:"
 
-[node name="OptPrioridad" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+[node name="OptPrioridad" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1852602129]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BtnRegistrar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Registro"]
+[node name="BtnRegistrar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Registro" unique_id=2142767379]
 layout_mode = 2
 text = "Registrar Queja"
 
-[node name="Seguimiento" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer"]
+[node name="Seguimiento" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=562646461]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 metadata/_tab_index = 1
 
-[node name="FiltrosPanel" type="HBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento"]
+[node name="FiltrosPanel" type="HBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento" unique_id=1558974159]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TxtBuscar" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel"]
+[node name="TxtBuscar" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel" unique_id=573315962]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Buscar por caso, cliente..."
 
-[node name="OptEstado" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel"]
+[node name="OptEstado" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel" unique_id=645054279]
 layout_mode = 2
 
-[node name="BtnFiltrar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel"]
+[node name="BtnFiltrar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel" unique_id=951599324]
 layout_mode = 2
 text = "Filtrar"
 
-[node name="ListaQuejas" type="Tree" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento"]
+[node name="ListaQuejas" type="Tree" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento" unique_id=1839353809]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 columns = 6
 column_titles_visible = true
 
-[node name="DetallesPanel" type="Panel" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento"]
+[node name="DetallesPanel" type="Panel" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento" unique_id=2013927273]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 2
 
-[node name="Analiticas" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer"]
+[node name="Analiticas" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=586761344]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 metadata/_tab_index = 2
 
-[node name="StatsGrid" type="GridContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas"]
+[node name="StatsGrid" type="GridContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas" unique_id=353793984]
 layout_mode = 2
 size_flags_horizontal = 3
 columns = 3
 
-[node name="StatTotal" type="PanelContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid"]
+[node name="StatTotal" type="PanelContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid" unique_id=8053922]
 layout_mode = 2
 
-[node name="LblTotal" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid/StatTotal"]
+[node name="LblTotal" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid/StatTotal" unique_id=643628544]
 layout_mode = 2
 text = "Total Quejas: 0"
 
-[node name="StatPendientes" type="PanelContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid"]
+[node name="StatPendientes" type="PanelContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid" unique_id=132928253]
 layout_mode = 2
 
-[node name="LblPendientes" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid/StatPendientes"]
+[node name="LblPendientes" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid/StatPendientes" unique_id=2079102838]
 layout_mode = 2
 text = "Pendientes: 0"
 
-[node name="GraficosContainer" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas"]
+[node name="GraficosContainer" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas" unique_id=254141603]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="GraficoCategorias" type="Control" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/GraficosContainer"]
+[node name="GraficoCategorias" type="Control" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/GraficosContainer" unique_id=1835821958]
 custom_minimum_size = Vector2(400, 200)
 layout_mode = 2
 
-[node name="Configuracion" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer"]
+[node name="Configuracion" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=1476070005]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 metadata/_tab_index = 3
 
-[node name="ConfigGrid" type="GridContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion"]
+[node name="ConfigGrid" type="GridContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion" unique_id=198209584]
 layout_mode = 2
 size_flags_horizontal = 3
 columns = 2
 
-[node name="LblNotificaciones" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid"]
+[node name="LblNotificaciones" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=949598326]
 layout_mode = 2
 text = "Notificaciones:"
 
-[node name="ChkNotificaciones" type="CheckBox" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid"]
+[node name="ChkNotificaciones" type="CheckBox" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=2110639081]
 layout_mode = 2
 text = "Activar"
 
-[node name="LblIntervalo" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid"]
+[node name="LblIntervalo" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=1229329754]
 layout_mode = 2
 text = "Intervalo (min):"
 
-[node name="SpinIntervalo" type="SpinBox" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid"]
+[node name="SpinIntervalo" type="SpinBox" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=310934114]
 layout_mode = 2
 min_value = 1.0
 max_value = 60.0
 value = 30.0
 
-[node name="BtnGuardar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion"]
+[node name="BtnGuardar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion" unique_id=850416899]
 layout_mode = 2
 text = "Guardar Configuración"
 
-[node name="AutoUpdateTimer" type="Timer" parent="."]
+[node name="AutoUpdateTimer" type="Timer" parent="." unique_id=406710]
 wait_time = 30.0
 autostart = true

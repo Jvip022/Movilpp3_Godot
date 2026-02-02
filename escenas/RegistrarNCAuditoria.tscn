@@ -1,0 +1,145 @@
+[gd_scene format=3 uid="uid://fedswpiu2sft"]
+
+[node name="RegistrarNCAuditoriaScene" type="Control" unique_id=2029285258]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Background" type="ColorRect" parent="." unique_id=1786396354]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.95, 0.95, 0.96, 1)
+
+[node name="HeaderPanel" type="Panel" parent="." unique_id=338773056]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.15
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 150.0
+
+[node name="HeaderLabel" type="Label" parent="HeaderPanel" unique_id=538234356]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 24
+text = "REGISTRAR NO CONFORMIDAD DE AUDITORÍA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FormContainer" type="VBoxContainer" parent="." unique_id=1581072210]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.8
+anchor_bottom = 0.8
+offset_left = 50.0
+offset_top = 160.0
+offset_right = -50.0
+offset_bottom = -50.0
+
+[node name="CodigoNCLabel" type="Label" parent="FormContainer" unique_id=2046223295]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Código NC: NC-AUD-INT-0001-2024-01-15"
+
+[node name="HBoxContainer1" type="HBoxContainer" parent="FormContainer" unique_id=1706294618]
+layout_mode = 2
+
+[node name="Label1" type="Label" parent="FormContainer/HBoxContainer1" unique_id=1848613705]
+layout_mode = 2
+text = "Tipo de NC:"
+vertical_alignment = 1
+
+[node name="TipoNCDropdown" type="OptionButton" parent="FormContainer/HBoxContainer1" unique_id=1526729277]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="FormContainer/HBoxContainer1" unique_id=2107766886]
+layout_mode = 2
+text = "Auditoría:"
+vertical_alignment = 1
+
+[node name="AuditoriaDropdown" type="OptionButton" parent="FormContainer/HBoxContainer1" unique_id=2112614505]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="FormContainer" unique_id=333367078]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="FormContainer/HBoxContainer2" unique_id=1246897422]
+layout_mode = 2
+text = "Severidad:"
+vertical_alignment = 1
+
+[node name="SeveridadDropdown" type="OptionButton" parent="FormContainer/HBoxContainer2" unique_id=1919054917]
+layout_mode = 2
+
+[node name="Label4" type="Label" parent="FormContainer/HBoxContainer2" unique_id=348490500]
+layout_mode = 2
+text = "Descripción:"
+
+[node name="DescripcionTextEdit" type="TextEdit" parent="FormContainer" unique_id=1447169900]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RegistrarButton" type="Button" parent="FormContainer" unique_id=922322076]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "REGISTRAR NO CONFORMIDAD"
+
+[node name="StatusLabel" type="Label" parent="." unique_id=838373625]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.95
+offset_left = 50.0
+offset_top = 650.0
+offset_right = -50.0
+offset_bottom = 690.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NotificacionPanel" type="Panel" parent="." unique_id=174125884]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.3
+anchor_right = 0.6
+anchor_bottom = 0.3
+offset_left = 200.0
+offset_top = 300.0
+offset_right = -200.0
+offset_bottom = -300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MensajeLabel" type="Label" parent="NotificacionPanel" unique_id=1977872700]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 18
+text = "Notificaciones enviadas"
+horizontal_alignment = 1
+vertical_alignment = 1

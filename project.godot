@@ -8,11 +8,15 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="movil"
 run/main_scene="uid://b43osovkohbwg"
-config/features=PackedStringArray("4.5", "Mobile")
+config/features=PackedStringArray("4.6", "Mobile")
 config/icon="uid://b610nq8aowfu3"
 
 [autoload]
@@ -27,7 +31,7 @@ window/size/viewport_height=800
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/DatePicker/plugin.cfg")
+enabled=PackedStringArray("res://addons/DatePicker/plugin.cfg", "res://addons/DateTimePicker/plugin.cfg")
 
 [input_devices]
 

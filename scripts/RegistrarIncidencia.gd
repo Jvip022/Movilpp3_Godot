@@ -441,17 +441,15 @@ func limpiar_formulario():
 	$ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar.disabled = true
 
 func cerrar_formulario():
-	# Verificar si hay datos sin guardar
+	# Verificar si hay datos sin guardar (opcional, puedes ajustar según necesites)
 	if formulario_valido:
 		# Mostrar confirmación antes de cerrar
-		mostrar_error("Hay datos sin guardar. ¿Está seguro de que desea cerrar?")
-		# En producción, implementar diálogo de confirmación
+		mostrar_error("Hay datos sin guardar. ¿Está seguro de que desea cancelar?")
+		# En una implementación real, deberías mostrar un diálogo de confirmación
 		return
 	
-	# Cerrar la ventana/escena
-	queue_free()
-
-# ==================== FUNCIONES UTILITARIAS ====================
+	# Cambiar a la escena del menú principal
+	get_tree().change_scene_to_file("res://menu_inicio.tscn")
 
 func obtener_fecha_actual() -> String:
 	var fecha = Time.get_date_dict_from_system()

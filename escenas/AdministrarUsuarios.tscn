@@ -270,6 +270,7 @@ layout_mode = 2
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
+custom_minimum_size = Vector2(300, 50)
 
 [node name="HBoxContainer" type="HBoxContainer" parent="DialogoConfirmacion/VBoxContainer"]
 layout_mode = 2

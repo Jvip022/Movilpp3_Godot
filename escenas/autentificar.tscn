@@ -1,13 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://b43osovkohbwg"]
+[gd_scene format=3 uid="uid://b43osovkohbwg"]
 
 [ext_resource type="Texture2D" uid="uid://b610nq8aowfu3" path="res://assets/images/logos/havanatur-circular-logo.png" id="1_5c7kh"]
 [ext_resource type="Script" uid="uid://b6s0ac1sfpjgy" path="res://scripts/Authentication.gd" id="1_oj5rc"]
-[ext_resource type="Script" uid="uid://b8bg2xnh60jld" path="res://escenas/CambiarPasswordDialog.gd" id="3_hg2v3"]
+[ext_resource type="Script" uid="uid://b8bg2xnh60jld" path="res://scripts/CambiarPasswordDialog.gd" id="3_hg2v3"]
 
 [sub_resource type="Theme" id="Theme_5c7kh"]
 default_base_scale = 1.7
 
-[node name="PantallaLogin" type="Control"]
+[node name="PantallaLogin" type="Control" unique_id=114498592]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,14 +16,14 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_oj5rc")
 
-[node name="Fondo con gradiente" type="ColorRect" parent="."]
+[node name="Fondo con gradiente" type="ColorRect" parent="." unique_id=1928075908]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 theme = SubResource("Theme_5c7kh")
 color = Color(0.37435275, 0.31041247, 0.3949255, 1)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=609136585]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -31,73 +31,73 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelLogin" type="Panel" parent="CenterContainer"]
+[node name="PanelLogin" type="Panel" parent="CenterContainer" unique_id=1086978751]
 custom_minimum_size = Vector2(400, 500)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelLogin"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelLogin" unique_id=1417318903]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 alignment = 1
 
-[node name="Titulo" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer"]
+[node name="Titulo" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer" unique_id=1094979173]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "Inicio de Sesión"
 horizontal_alignment = 1
 
-[node name="Logo de la empresa" type="TextureRect" parent="CenterContainer/PanelLogin/VBoxContainer"]
+[node name="Logo de la empresa" type="TextureRect" parent="CenterContainer/PanelLogin/VBoxContainer" unique_id=443337963]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 texture = ExtResource("1_5c7kh")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="ContenedorCampos" type="VBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer"]
+[node name="ContenedorCampos" type="VBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer" unique_id=1706389191]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="InputUsuario" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+[node name="InputUsuario" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1118954961]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Usuario o Email"
 
-[node name="InputPassword" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+[node name="InputPassword" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1725234926]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Contraseña"
 secret = true
 
-[node name="CheckBox" type="CheckBox" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+[node name="CheckBox" type="CheckBox" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1873146424]
 layout_mode = 2
 text = "Recordar sesión"
 
-[node name="BotonLogin" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+[node name="BotonLogin" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1073220705]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Iniciar Sesión"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=2125008366]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BotonRegistrar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer"]
+[node name="BotonRegistrar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer" unique_id=1675416058]
 layout_mode = 2
 text = "Crear cuenta"
 flat = true
 
-[node name="Espaciador" type="Control" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer"]
+[node name="Espaciador" type="Control" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer" unique_id=1352395509]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="BotonRecuperar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer"]
+[node name="BotonRecuperar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer" unique_id=626646895]
 layout_mode = 2
 text = "¿Olvidó su contraseña?"
 flat = true
 
-[node name="MensajeError" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos"]
+[node name="MensajeError" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1103594243]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
@@ -105,7 +105,7 @@ text = "Error en las credenciales"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PanelCargando" type="Panel" parent="CenterContainer/PanelLogin"]
+[node name="PanelCargando" type="Panel" parent="CenterContainer/PanelLogin" unique_id=648040808]
 visible = false
 layout_mode = 0
 anchor_right = 1.0
@@ -115,13 +115,13 @@ offset_top = -20.0
 offset_right = 20.0
 offset_bottom = 20.0
 
-[node name="Semi-transparente" type="ColorRect" parent="CenterContainer/PanelLogin/PanelCargando"]
+[node name="Semi-transparente" type="ColorRect" parent="CenterContainer/PanelLogin/PanelCargando" unique_id=428182646]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0, 0, 0, 0.5)
 
-[node name="MensajeCarga" type="Label" parent="CenterContainer/PanelLogin/PanelCargando"]
+[node name="MensajeCarga" type="Label" parent="CenterContainer/PanelLogin/PanelCargando" unique_id=392504661]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -134,7 +134,7 @@ text = "Verificando credenciales..."
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ProgressBar" type="ProgressBar" parent="CenterContainer/PanelLogin/PanelCargando"]
+[node name="ProgressBar" type="ProgressBar" parent="CenterContainer/PanelLogin/PanelCargando" unique_id=272483285]
 layout_mode = 1
 anchors_preset = -1
 anchor_top = 0.5
@@ -145,14 +145,14 @@ offset_top = 5.0
 offset_right = -40.0
 offset_bottom = 25.0
 
-[node name="DialogoRecuperar" type="AcceptDialog" parent="."]
+[node name="DialogoRecuperar" type="AcceptDialog" parent="." unique_id=1830236712]
 title = "Recuperar Contraseña"
 theme = SubResource("Theme_5c7kh")
 dialog_text = "Ingrese su email para recibir un enlace de recuperación"
 dialog_hide_on_ok = false
 script = ExtResource("3_hg2v3")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRecuperar"]
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRecuperar" unique_id=1927153325]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -161,26 +161,26 @@ offset_top = 50.0
 offset_right = -20.0
 offset_bottom = -20.0
 
-[node name="LabelEmail" type="Label" parent="DialogoRecuperar/VBoxContainer"]
+[node name="LabelEmail" type="Label" parent="DialogoRecuperar/VBoxContainer" unique_id=2078539214]
 layout_mode = 2
 text = "Email:"
 
-[node name="InputEmailRecuperar" type="LineEdit" parent="DialogoRecuperar/VBoxContainer"]
+[node name="InputEmailRecuperar" type="LineEdit" parent="DialogoRecuperar/VBoxContainer" unique_id=144335073]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "ejemplo@email.com"
 
-[node name="BotonEnviarRecuperar" type="Button" parent="DialogoRecuperar/VBoxContainer"]
+[node name="BotonEnviarRecuperar" type="Button" parent="DialogoRecuperar/VBoxContainer" unique_id=1358613310]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Enviar enlace de recuperación"
 
-[node name="DialogoRegistro" type="AcceptDialog" parent="."]
+[node name="DialogoRegistro" type="AcceptDialog" parent="." unique_id=929398303]
 title = "Crear Nueva Cuenta"
 theme = SubResource("Theme_5c7kh")
 dialog_hide_on_ok = false
 
-[node name="ScrollContainer" type="ScrollContainer" parent="DialogoRegistro"]
+[node name="ScrollContainer" type="ScrollContainer" parent="DialogoRegistro" unique_id=651487622]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -189,39 +189,39 @@ offset_top = 50.0
 offset_right = -20.0
 offset_bottom = -60.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRegistro/ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRegistro/ScrollContainer" unique_id=915886157]
 custom_minimum_size = Vector2(400, 350)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="InputNombreRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer"]
+[node name="InputNombreRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=484016700]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Nombre completo"
 
-[node name="InputEmailRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer"]
+[node name="InputEmailRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=520149843]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Correo electrónico"
 
-[node name="InputUsuarioRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer"]
+[node name="InputUsuarioRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=62020196]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Nombre de usuario"
 
-[node name="InputPasswordRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer"]
+[node name="InputPasswordRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=495503089]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Contraseña"
 secret = true
 
-[node name="InputConfirmarPassword" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer"]
+[node name="InputConfirmarPassword" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=132703313]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Confirmar contraseña"
 secret = true
 
-[node name="BotonCrearCuenta" type="Button" parent="DialogoRegistro"]
+[node name="BotonCrearCuenta" type="Button" parent="DialogoRegistro" unique_id=292408565]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0

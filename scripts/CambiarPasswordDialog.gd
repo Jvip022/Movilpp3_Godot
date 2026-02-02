@@ -1,3 +1,4 @@
+# CambiarPasswordDialog.gd - Script completo
 extends AcceptDialog
 
 # Referencias a nodos
