@@ -181,8 +181,8 @@ func ingresar_al_sistema(user_data: Dictionary):
 	
 	# Crear un singleton Global temporal si no existe
 	if get_node_or_null("/root/Global"):
-		var global = get_node("/root/Global")
-		global.usuario_actual = {
+		var global_singleton = get_node("/root/Global")  
+		global_singleton.usuario_actual = {
 			"id": user_data.get("id", 0),
 			"username": user_data.get("username", ""),
 			"nombre": user_data.get("nombre_completo", ""),

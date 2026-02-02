@@ -5,7 +5,7 @@ class_name UserManagement
 signal usuario_creado(datos_usuario: Dictionary)
 signal usuario_modificado(id_usuario: String, datos_usuario: Dictionary)
 signal usuario_desactivado(id_usuario: String)
-signal error_operacion(mensaje: String)
+
 
 # Enumeración de roles según los tipos de usuario requeridos
 enum ROLES_USUARIO {

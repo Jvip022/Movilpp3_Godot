@@ -54,7 +54,7 @@ func _generar_codigo_nc():
 	codigo_nc_label.text = "Código NC: " + codigo
 	return codigo
 
-func _on_tipo_nc_changed(index):
+func _on_tipo_nc_changed(_index):
 	_generar_codigo_nc()
 
 func _on_auditoria_changed(index):
@@ -107,7 +107,7 @@ func registrar_no_conformidad(codigo, tipo, descripcion, auditoria, severidad):
 	# Por ahora simulamos éxito
 	return true
 
-func notificar_partes_interesadas(codigo, tipo, severidad):
+func notificar_partes_interesadas(codigo, _tipo, _severidad):
 	# Simular notificación
 	print("Notificando partes interesadas...")
 	
@@ -118,7 +118,7 @@ func notificar_partes_interesadas(codigo, tipo, severidad):
 	# Ocultar después de 3 segundos
 	var timer = get_tree().create_timer(3.0)
 	timer.connect("timeout", Callable(notificacion_panel, "set_visible").bind(false))
-
+	
 func mostrar_exito(mensaje):
 	status_label.text = mensaje
 	status_label.modulate = Color.GREEN

@@ -474,7 +474,7 @@ func query(sql: String, params = []) -> bool:
 	Retorna true si fue exitosa, false si hubo error.
 	"""
 	if db == null:
-		push_error("Base de datos no inicializada")
+		push_error("Base de datos no inicializada en query()")
 		return false
 	
 	print("🔍 Ejecutando SQL: ", sql.substr(0, 100) + ("..." if sql.length() > 100 else ""))
@@ -702,7 +702,12 @@ func select_query(sql: String, params = []) -> Array:
 	Ejecuta una consulta SELECT y retorna los resultados como array.
 	Si hay error, retorna array vacío.
 	"""
-	if not query(sql, params):
+	if db == null:
+		push_error("Base de datos no inicializada")
+		return []
+	
+	var success = query(sql, params)
+	if not success:
 		print("❌ Error en consulta SELECT: " + sql)
 		return []
 	
@@ -777,7 +782,7 @@ func test_conexion():
 		print("📋 Tablas en BD: " + str(tablas.size()))
 		for tabla in tablas:
 			print("   - " + tabla["name"])
-
+			
 func inspeccionar_bd():
 	print("=== INSPECCIÓN DE BD ===")
 	
@@ -845,6 +850,7 @@ func inspeccionar_bd():
 				print("  Keys del primer elemento: ", resultado_select[0].keys())
 	
 	print("\n=== FIN DE INSPECCIÓN ===")
+	
 func probar_consultas():
 	print("\n=== PRUEBA DE CONSULTAS DIFERENTES ===")
 	
@@ -853,16 +859,15 @@ func probar_consultas():
 		"SELECT * FROM quejas_reclamaciones LIMIT 1",
 		"SELECT COUNT(*) as total FROM quejas_reclamaciones",
 		"SELECT name FROM sqlite_master WHERE type='table'",
-		"PRAGMA table_info(quejas_reclamaciones)"
+        "PRAGMA table_info(quejas_reclamaciones)"
 	]
 	
 	for consulta in consultas:
-		print("\nConsulta: ", consulta)
 		try_query(consulta)
-
-# Función segura para probar consultas
-func try_query(query: String):
-	var result = Bd.select_query(query)
+		
+func try_query(sql: String):
+	print("\nConsulta: ", sql)
+	var result = Bd.select_query(sql)
 	print("  Resultado tipo: ", typeof(result))
 	
 	if typeof(result) == TYPE_ARRAY:

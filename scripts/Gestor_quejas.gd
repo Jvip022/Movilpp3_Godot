@@ -48,7 +48,8 @@ func _ready():
 func inicializar_interfaz():
 	# Conectar señales del InterfaceManager
 	ui_manager.queja_registrada.connect(_on_queja_registrada_ui)
-	ui_manager.configuracion_guardada.connect(_on_configuracion_guardada_ui)
+	ui_manager.configuracion_guardada.connect(_on_configuracion_guardada_ui)  # Asegúrate que esta línea existe
+	ui_manager.cancelar_pressed.connect(_on_cancelar_pressed_ui)
 	
 	# Configurar pestañas
 	var tab_container = ui_manager.get_node("MainPanel/MainTabContainer")
@@ -56,8 +57,8 @@ func inicializar_interfaz():
 		tab_container.tab_changed.connect(_on_tab_changed)
 	
 	# Cargar configuración en la UI
-	cargar_configuracion_en_ui()
-
+	cargar_configuracion_en_ui() 
+	
 func _on_queja_registrada_ui(datos: Dictionary):
 	# Agregar datos adicionales de configuración
 	datos["prioridad"] = datos.get("prioridad", config_manager.get_prioridad_por_defecto())
@@ -974,7 +975,15 @@ func test_insercion_simple():
 	var id = Bd.insert("quejas_reclamaciones", test_data)
 	print("Test inserción - ID: ", id)
 
-
+func _on_cancelar_pressed_ui():
+	print("Recibida señal de cancelar desde InterfaceManager")
+	
+	# Opcional: Limpiar formulario antes de salir
+	if ui_manager.has_method("limpiar_formulario"):
+		ui_manager.limpiar_formulario()
+	
+	# Cambiar a la escena del menú principal
+	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
 
 func _on_cambiar_password_pressed():
 	# Abrir diálogo de cambio de contraseña

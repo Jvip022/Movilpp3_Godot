@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://dap8s2l3v5j6m"]
+[gd_scene format=3 uid="uid://generar_reportes_scene"]
 
-[ext_resource type="Script" uid="uid://l66toq0dm38c" path="res://scripts/generar_reportes.gd" id="1_37xja"]
+[ext_resource type="Script" path="res://scripts/generar_reportes.gd" id="1"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
 content_margin_left = 30.0
@@ -50,28 +50,25 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="GenerarReportes" type="Control" unique_id=1519443857]
+[node name="GenerarReportes" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_37xja")
+script = ExtResource("1")
 
-[node name="Fondo" type="ColorRect" parent="." unique_id=1233757547]
+[node name="Fondo" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 color = Color(0.95, 0.96, 0.98, 1)
 
-[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=233017323]
+[node name="ContenedorPrincipal" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
+anchors_preset = 5
 anchor_top = 0.1
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -82,14 +79,13 @@ offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=324305890]
+[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
-[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=1828440336]
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel"]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
+anchors_preset = 5
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -97,23 +93,22 @@ offset_left = 20.0
 offset_top = 10.0
 offset_right = -20.0
 offset_bottom = -10.0
-grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
 text = "GENERAR REPORTES"
 horizontal_alignment = 1
 
-[node name="CategoriasContainer" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=306968130]
-custom_minimum_size = Vector2(0, 300)
+[node name="CategoriasContainer" type="VBoxContainer" parent="ContenedorPrincipal"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 300)
 
-[node name="LabelCategorias" type="Label" parent="ContenedorPrincipal/CategoriasContainer" unique_id=17203108]
+[node name="LabelCategorias" type="Label" parent="ContenedorPrincipal/CategoriasContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 18
 text = "Seleccione categoría de reporte:"
 
-[node name="BtnNoConformidades" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=315937816]
+[node name="BtnNoConformidades" type="Button" parent="ContenedorPrincipal/CategoriasContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -122,7 +117,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "📈 Estadísticas de No Conformidades"
 
-[node name="BtnSatisfaccion" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=1744642141]
+[node name="BtnSatisfaccion" type="Button" parent="ContenedorPrincipal/CategoriasContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -131,7 +126,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "😊 Satisfacción del Cliente"
 
-[node name="BtnObjetivosCalidad" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=1175523604]
+[node name="BtnObjetivosCalidad" type="Button" parent="ContenedorPrincipal/CategoriasContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -140,7 +135,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "🎯 Objetivos de Calidad"
 
-[node name="BtnEstadoNC" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=273655745]
+[node name="BtnEstadoNC" type="Button" parent="ContenedorPrincipal/CategoriasContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -149,50 +144,51 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "⚠️ Estado de No Conformidades"
 
-[node name="FiltrosContainer" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=330178099]
-custom_minimum_size = Vector2(0, 200)
+[node name="FiltrosContainer" type="VBoxContainer" parent="ContenedorPrincipal"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 200)
 
-[node name="LabelFiltros" type="Label" parent="ContenedorPrincipal/FiltrosContainer" unique_id=1815232797]
+[node name="LabelFiltros" type="Label" parent="ContenedorPrincipal/FiltrosContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 18
 text = "Filtros de reporte:"
 
-[node name="GridFiltros" type="GridContainer" parent="ContenedorPrincipal/FiltrosContainer" unique_id=1776880653]
+[node name="GridFiltros" type="GridContainer" parent="ContenedorPrincipal/FiltrosContainer"]
 layout_mode = 2
 columns = 2
 
-[node name="LabelFechaInicio" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1692047944]
+[node name="LabelFechaInicio" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 14
 text = "Fecha inicio:"
 
-[node name="InputFechaInicio" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=787008321]
+[node name="InputFechaInicio" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros"]
 layout_mode = 2
 placeholder_text = "DD/MM/AAAA"
 
-[node name="LabelFechaFin" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=2047791995]
+[node name="LabelFechaFin" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 14
 text = "Fecha fin:"
 
-[node name="InputFechaFin" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1667383592]
+[node name="InputFechaFin" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros"]
 layout_mode = 2
 placeholder_text = "DD/MM/AAAA"
 
-[node name="LabelSucursal" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=2098952866]
+[node name="LabelSucursal" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 14
 text = "Sucursal:"
 
-[node name="SelectSucursal" type="OptionButton" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1289451884]
+[node name="SelectSucursal" type="OptionButton" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros"]
 layout_mode = 2
+items = [ "Todas", "Sucursal Norte", "Sucursal Sur", "Sucursal Este", "Sucursal Oeste" ]
 
-[node name="BtnGenerar" type="Button" parent="ContenedorPrincipal" unique_id=964136337]
+[node name="BtnGenerar" type="Button" parent="ContenedorPrincipal"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -201,7 +197,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "GENERAR VISTA PREVIA"
 
-[node name="BtnExportar" type="Button" parent="ContenedorPrincipal" unique_id=1079420867]
+[node name="BtnExportar" type="Button" parent="ContenedorPrincipal"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.6, 0.2, 1)
 theme_override_font_sizes/font_size = 16
@@ -210,20 +206,8 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "📥 EXPORTAR REPORTE"
 
-[node name="ContenedorPrincipal_BotonesContainer#BtnGenerarReportes" type="Button" parent="." unique_id=1734298209]
-layout_mode = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📊 GENERAR REPORTES"
-
-[node name="ContenedorPrincipal_BotonesContainer#BtnRegistrarEncuesta" type="Button" parent="." unique_id=1086924999]
-layout_mode = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📝 REGISTRAR ENCUESTA"
+[node name="BtnVolverMenu" type="Button" parent="ContenedorPrincipal"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "🏠 VOLVER AL MENÚ PRINCIPAL"

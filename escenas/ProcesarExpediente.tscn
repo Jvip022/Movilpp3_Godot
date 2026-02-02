@@ -1,0 +1,232 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://dvjd40vhuc25f" path="res://scripts/ProcesarExpediente.gd" id="1_k9x2"]
+
+
+[node name="ProcesarExpediente" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.95, 0.96, 0.98, 1)
+
+[node name="ContenedorPrincipal" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 30.0
+offset_right = -50.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal"]
+layout_mode = 2
+
+
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "PROCESAR EXPEDIENTE DE NO CONFORMIDAD"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContenidoScroll" type="ScrollContainer" parent="ContenedorPrincipal"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Contenido" type="VBoxContainer" parent="ContenedorPrincipal/ContenidoScroll"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelInfoExpediente" type="Panel" parent="ContenedorPrincipal/ContenidoScroll/Contenido"]
+layout_mode = 2
+
+
+[node name="InfoExpediente" type="VBoxContainer" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="IDExpediente" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "ID Expediente: [Cargando...]"
+
+[node name="TipoNC" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Tipo No Conformidad: [Cargando...]"
+
+[node name="EstadoNC" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Estado No Conformidad: [Cargando...]"
+
+[node name="FechaRegistro" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Fecha Registro: [Cargando...]"
+
+[node name="Descripcion" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Descripción: [Cargando...]"
+
+[node name="DocumentosActualesLabel" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Documentos Actuales:"
+
+[node name="ListaDocumentos" type="ItemList" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+
+
+[node name="PanelAcciones" type="Panel" parent="ContenedorPrincipal/ContenidoScroll/Contenido"]
+layout_mode = 2
+
+
+[node name="Acciones" type="VBoxContainer" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LabelAcciones" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones/Acciones"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Acciones Disponibles:"
+
+[node name="BotonCargarDoc" type="Button" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones/Acciones"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+
+text = "Cargar Nuevo Documento al Expediente"
+disabled = true
+
+[node name="BotonCerrarExp" type="Button" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones/Acciones"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+
+text = "Cerrar Expediente"
+disabled = true
+
+[node name="MensajeEstado" type="Label" parent="ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones/Acciones"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.8, 0.1, 0.1, 1)
+text = "Estado: Verificando precondiciones..."
+
+[node name="PanelControles" type="HBoxContainer" parent="ContenedorPrincipal"]
+layout_mode = 2
+
+[node name="Espaciador" type="Control" parent="ContenedorPrincipal/PanelControles"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BotonMenuPrincipal" type="Button" parent="ContenedorPrincipal/PanelControles"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+
+text = "← Volver al Menú Principal"
+
+[node name="Footer" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 750.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+
+[node name="FooterText" type="Label" parent="Footer"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = -10.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "Procesar Expediente - Sistema de Gestión de Calidad v1.0 © 2024"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DialogoCargarDoc" type="FileDialog" parent="."]
+visible = false
+title = "Seleccionar Documento para Cargar"
+file_mode = 1
+access = 0
+
+
+[node name="DialogoConfirmacion" type="AcceptDialog" parent="."]
+visible = false
+title = "Confirmar Acción"
+dialog_text = "¿Está seguro de realizar esta acción?"
+
+[node name="MensajeExito" type="AcceptDialog" parent="."]
+visible = false
+title = "Operación Exitosa"
+dialog_text = "La operación se completó correctamente."
+
+[node name="MensajeError" type="AcceptDialog" parent="."]
+visible = false
+title = "Error"
+dialog_text = "Ocurrió un error al procesar la solicitud."

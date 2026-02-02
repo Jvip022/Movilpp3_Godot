@@ -139,24 +139,33 @@ func conectar_senales():
 	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/BtnCalendario.pressed.connect(abrir_calendario)
 	$ContentContainer/FormContainer/SeccionAcciones/BtnCancelar.pressed.connect(cerrar_formulario)
 	$ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar.pressed.connect(validar_y_registrar)
+	$Header/HeaderHBox/BtnCerrar.pressed.connect(cerrar_formulario)
 	
 	# Diálogo de búsqueda de cliente
 	$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/BtnBuscarClienteDialog.pressed.connect(buscar_cliente_bd)
 	$DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnSeleccionarCliente.pressed.connect(seleccionar_cliente)
 	$DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnCancelarCliente.pressed.connect(cerrar_busqueda_cliente)
+	$DialogoBuscarCliente.close_requested.connect(cerrar_busqueda_cliente)
 	
 	# Diálogo de calendario
 	$DialogoCalendario/BotonesFecha/BtnAceptarFecha.pressed.connect(seleccionar_fecha)
 	$DialogoCalendario/BotonesFecha/BtnCancelarFecha.pressed.connect(cerrar_calendario)
+	$DialogoCalendario.close_requested.connect(cerrar_calendario)
 	
-	# Validación en tiempo real
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text_changed.connect(validar_formulario)
-	$ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text_changed.connect(validar_formulario)
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion.item_selected.connect(on_investigacion_changed)
-	
-	# Confirmación
+	# Botones de confirmación
 	$ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarSi.pressed.connect(registrar_incidencia_cerrada)
 	$ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarNo.pressed.connect(cerrar_confirmacion_estado)
+
+	# Campos de texto
+	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text_changed.connect(validar_formulario)
+	$ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text_changed.connect(validar_formulario)
+	
+	# Combobox
+	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo.item_selected.connect(validar_formulario)
+	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto.item_selected.connect(validar_formulario)
+	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal.item_selected.connect(validar_formulario)
+	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad.item_selected.connect(validar_formulario)
+	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion.item_selected.connect(on_investigacion_changed)
 
 func abrir_busqueda_cliente():
 	if not db:
@@ -166,6 +175,29 @@ func abrir_busqueda_cliente():
 	$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text = ""
 	$DialogoBuscarCliente/BuscarClienteVBox/TablaClientes.clear()
 	$DialogoBuscarCliente.popup_centered()
+	
+func on_investigacion_changed(index: int):
+	if index == 1:  # "Sí" (sí requiere investigación)
+		requiere_investigacion = true
+	elif index == 2:  # "No" (no requiere investigación)
+		requiere_investigacion = false
+	validar_formulario()
+
+func cerrar_busqueda_cliente():
+	$DialogoBuscarCliente.hide()
+
+func abrir_calendario():
+	$DialogoCalendario.popup_centered()
+
+func seleccionar_fecha():
+	var fecha = date_picker.date 
+	var fecha_str = "%02d/%02d/%04d" % [fecha["day"], fecha["month"], fecha["year"]]
+	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha.text = fecha_str
+	$DialogoCalendario.hide()
+	validar_formulario()
+
+func cerrar_calendario():
+	$DialogoCalendario.hide()
 
 func buscar_cliente_bd():
 	var termino = $DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text.strip_edges()
@@ -235,29 +267,7 @@ func seleccionar_cliente():
 	$DialogoBuscarCliente.hide()
 	validar_formulario()
 
-func cerrar_busqueda_cliente():
-	$DialogoBuscarCliente.hide()
 
-func abrir_calendario():
-	$DialogoCalendario.popup_centered()
-
-func seleccionar_fecha():
-	var date_picker = $DialogoCalendario/DatePicker
-	var fecha = date_picker.date
-	var fecha_str = "%02d/%02d/%04d" % [fecha["day"], fecha["month"], fecha["year"]]
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha.text = fecha_str
-	$DialogoCalendario.hide()
-	validar_formulario()
-
-func cerrar_calendario():
-	$DialogoCalendario.hide()
-
-func on_investigacion_changed(index: int):
-	if index == 1:  # "Sí" (sí requiere investigación)
-		requiere_investigacion = true
-	elif index == 2:  # "No" (no requiere investigación)
-		requiere_investigacion = false
-	validar_formulario()
 
 func validar_formulario():
 	# Verificar campos obligatorios
@@ -441,16 +451,29 @@ func limpiar_formulario():
 	$ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar.disabled = true
 
 func cerrar_formulario():
-	# Verificar si hay datos sin guardar (opcional, puedes ajustar según necesites)
-	if formulario_valido:
-		# Mostrar confirmación antes de cerrar
-		mostrar_error("Hay datos sin guardar. ¿Está seguro de que desea cancelar?")
-		# En una implementación real, deberías mostrar un diálogo de confirmación
+	# Verificar si hay datos ingresados
+	var hay_datos = false
+	
+	# Verificar campos principales
+	if $ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text != "":
+		hay_datos = true
+	
+	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text != "":
+		hay_datos = true
+	
+	if $ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text != "":
+		hay_datos = true
+	
+	if hay_datos:
+		# Mostrar mensaje de advertencia
+		mostrar_error("Tiene datos sin guardar. ¿Seguro que desea salir?")
+		# En una implementación real, mostrarías un diálogo de confirmación
 		return
 	
-	# Cambiar a la escena del menú principal
-	get_tree().change_scene_to_file("res://menu_inicio.tscn")
-
+	# Volver al menú principal
+	print("Volviendo al menú principal...")
+	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
+	
 func obtener_fecha_actual() -> String:
 	var fecha = Time.get_date_dict_from_system()
 	return "%02d/%02d/%04d" % [fecha["day"], fecha["month"], fecha["year"]]
@@ -467,6 +490,7 @@ func mostrar_exito(mensaje: String):
 	$MensajeExito.popup_centered()
 
 func mostrar_error(mensaje: String):
+	error_registro.emit(mensaje)  # Emitir la señal
 	$MensajeError.dialog_text = mensaje
 	$MensajeError.popup_centered()
 
@@ -522,3 +546,4 @@ func obtener_usuarios_sistema() -> Array:
 		return []
 	
 	return db.obtener_usuarios()
+	
