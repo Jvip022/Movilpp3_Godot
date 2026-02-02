@@ -4,12 +4,24 @@ var bd = Bd.db
 var ui_manager: InterfaceManager = null
 var config_manager: ConfigManager = null
 
+# FUNCIÓN AUXILIAR PARA MANEJAR CONSULTAS DE FORMA SEGURA
+func query_safe(query: String, args: Array = []) -> Array:
+	"""
+	Ejecuta una consulta SQL de forma segura, manejando errores.
+	Retorna siempre un Array, incluso si hay errores.
+	"""
+	var result = Bd.select_query(query, args)
+
+	if not result or typeof(result) != TYPE_ARRAY:
+		return []
+	
+	return result
+
 func _ready():
 	# Crear e inicializar ConfigManager
 	config_manager = ConfigManager.new()
 	config_manager.name = "ConfigManager"  # Asignar nombre
 	add_child(config_manager)
-	
 	
 	# Inicializar la interfaz
 	ui_manager = get_node("InterfaceManager")
@@ -24,6 +36,14 @@ func _ready():
 	
 	# Cargar datos iniciales
 	cargar_datos_iniciales()
+	var db_info = Bd.get_database_info()
+	print("📊 Tablas en la base de datos: ", db_info["tables"])
+	if "quejas_reclamaciones" in db_info["tables"]:
+		print("✅ Tabla quejas_reclamaciones existe")
+		var structure = Bd.get_table_structure("quejas_reclamaciones")
+		print("📋 Estructura de quejas_reclamaciones: ", structure)
+	else:
+		print("❌ Tabla quejas_reclamaciones NO existe")
 
 func inicializar_interfaz():
 	# Conectar señales del InterfaceManager
@@ -241,28 +261,39 @@ func registrar_queja_completa(datos: Dictionary) -> int:
 		"fecha_incidente": datos.get("fecha_incidente", ""),
 		
 		"categoria": datos.get("categoria", "atencion_cliente"),
-		"monto_reclamado": datos.get("monto_reclamado", 0),
+		"monto_reclamado": float(datos.get("monto_reclamado", 0)),
 		"tipo_compensacion": datos.get("tipo_compensacion", "ninguna"),
 		
 		"canal_entrada": datos.get("canal_entrada", "presencial"),
 		"recibido_por": datos.get("recibido_por", "sistema"),
 		"prioridad": calcular_prioridad(datos),
 		"estado": "recibida",
-		"fecha_limite_respuesta": datos.get("fecha_limite_respuesta", calcular_fecha_limite()),  # Usar la función original
+		"fecha_limite_respuesta": datos.get("fecha_limite_respuesta", calcular_fecha_limite()),
 		
-		"creado_por": datos.get("creado_por", "sistema"),
+		# Usar null en lugar de string "sistema" para clave foránea
+		"creado_por": null,
 		"tags": JSON.stringify(datos.get("tags", []))
 	}
+	
+	print("📝 Insertando queja con datos:")
+	print("   Número caso: ", numero_caso)
+	print("   Asunto: ", queja["asunto"])
+	print("   Cliente: ", queja["nombres"])
 	
 	# Insertar en base de datos
 	var id_queja_local = Bd.insert("quejas_reclamaciones", queja)
 	
 	if id_queja_local == -1:
 		push_error("Error al insertar la queja en la base de datos")
+		# Verificar si la tabla existe
+		if not Bd.table_exists("quejas_reclamaciones"):
+			push_error("La tabla 'quejas_reclamaciones' no existe")
 		return -1
 	
+	print("✅ Queja registrada con ID: ", id_queja_local)
+	
 	# Registrar en historial
-	registrar_historial_queja(id_queja_local, "queja_registrada", 
+	registrar_historial_queja(id_queja_local, "queja_registrada",
 		"Queja registrada por " + queja["recibido_por"])
 	
 	# Notificar al equipo asignado
@@ -270,13 +301,17 @@ func registrar_queja_completa(datos: Dictionary) -> int:
 	
 	return id_queja_local
 
+# FUNCIÓN ACTUALIZADA PARA USAR query_safe
 func generar_numero_caso() -> String:
 	var year = Time.get_datetime_string_from_system().substr(0, 4)
-	# Usar BD singleton para la consulta
-	var result = Bd.query("SELECT COUNT(*) as total FROM quejas_reclamaciones WHERE strftime('%Y', fecha_recepcion) = ?", [year])
+	
+	var result = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones")
+	
 	var numero = 1
-	if result and result.size() > 0:
-		numero = result[0]["total"] + 1
+	if result.size() > 0:
+		var count = result[0].get("total", 0)
+		numero = int(count) + 1
+	
 	return "Q-%s-%03d" % [year, numero]
 
 func escalar_queja(id_queja: int, motivo: String):
@@ -342,12 +377,12 @@ func aprobar_compensacion(queja_id: int, datos_compensacion: Dictionary) -> int:
 	
 	# Actualizar estado de la queja
 	bd.query_with_args(
-		"""UPDATE quejas_reclamaciones SET 
-		   estado = 'resuelta',
-		   decision = 'aceptada_total',
-		   compensacion_otorgada = ?,
-		   descripcion_compensacion = ?
-		   WHERE id = ?""",
+		"""UPDATE quejas_reclamaciones SET
+			estado = 'resuelta',
+			decision = 'aceptada_total',
+			compensacion_otorgada = ?,
+			descripcion_compensacion = ?
+		WHERE id = ?""",
 		[monto, compensacion["descripcion"], queja_id]
 	)
 	
@@ -406,7 +441,7 @@ func calcular_fecha_limite(dias: int = 7) -> String:
 	
 	return "%04d-%02d-%02d" % [fecha_dict["year"], fecha_dict["month"], fecha_dict["day"]]
 
-func registrar_historial_queja(id_queja: int, evento: String, descripcion: String):	
+func registrar_historial_queja(id_queja: int, evento: String, descripcion: String):
 	"""
 	Registra un evento en el historial de la queja.
 	"""
@@ -430,13 +465,13 @@ func notificar_nueva_queja(id_queja: int, prioridad: String):
 		return
 	
 	var mensaje = """
-	NUEVA QUEJA REGISTRADA
-	Caso: %s
-	Asunto: %s
-	Prioridad: %s
-	Cliente: %s %s
-	Monto Reclamado: $%.2f
-	Fecha Límite: %s
+		NUEVA QUEJA REGISTRADA
+		Caso: %s
+		Asunto: %s
+		Prioridad: %s
+		Cliente: %s %s
+		Monto Reclamado: $%.2f
+		Fecha Límite: %s
 	""" % [
 		queja["numero_caso"],
 		queja["asunto"],
@@ -462,7 +497,7 @@ func notificar_nueva_queja(id_queja: int, prioridad: String):
 	for destinatario in destinatarios:
 		enviar_notificacion_email(destinatario, "Nueva Queja - " + queja["numero_caso"], mensaje)
 	
-	registrar_historial_queja(id_queja, "notificacion_nueva_queja", 
+	registrar_historial_queja(id_queja, "notificacion_nueva_queja",
 		"Notificación enviada al equipo - Prioridad: " + prioridad)
 
 func validar_documentacion(id_queja: int):
@@ -488,7 +523,7 @@ func validar_documentacion(id_queja: int):
 	
 	if documentos_faltantes.size() > 0:
 		var mensaje = "Documentación faltante: " + ", ".join(documentos_faltantes)
-		registrar_historial_queja(id_queja, "validacion_documentacion", 
+		registrar_historial_queja(id_queja, "validacion_documentacion",
 			"Documentación incompleta - " + mensaje)
 		
 		# Actualizar estado
@@ -497,7 +532,7 @@ func validar_documentacion(id_queja: int):
 		# Solicitar documentación al cliente
 		solicitar_documentacion_cliente(id_queja, documentos_faltantes)
 	else:
-		registrar_historial_queja(id_queja, "validacion_documentacion", 
+		registrar_historial_queja(id_queja, "validacion_documentacion",
 			"Documentación completa y válida")
 		actualizar_campo(id_queja, "estado", "investigando")
 
@@ -520,11 +555,11 @@ func asignar_queja(id_queja: int, asignado_a: String, nivel: int):
 	actualizar_campo(id_queja, "equipo_responsable", equipo)
 	
 	# Registrar en historial
-	registrar_historial_queja(id_queja, "asignacion", 
+	registrar_historial_queja(id_queja, "asignacion",
 		"Queja asignada a " + asignado_a + " (Nivel " + str(nivel) + ", Equipo: " + equipo + ")")
 	
 	# Notificar al asignado
-	enviar_notificacion_email(asignado_a + "@empresa.com", 
+	enviar_notificacion_email(asignado_a + "@empresa.com",
 		"Nueva queja asignada - Caso " + obtener_numero_caso(id_queja),
 		"Se te ha asignado una nueva queja. Por favor revisa el caso en el sistema.")
 
@@ -557,8 +592,8 @@ func investigar_queja(id_queja: int, datos: Dictionary) -> Dictionary:
 	actualizar_campo(id_queja, "estado", "negociacion")
 	
 	# Registrar en historial
-	registrar_historial_queja(id_queja, "investigacion_completada", 
-		"Investigación completada. Responsable interno identificado: " + 
+	registrar_historial_queja(id_queja, "investigacion_completada",
+		"Investigación completada. Responsable interno identificado: " +
 		datos.get("responsable_interno", "No identificado"))
 	
 	return {
@@ -597,7 +632,7 @@ func registrar_contacto_cliente(id_queja: int, datos: Dictionary):
 		actualizar_campo(id_queja, "fecha_respuesta_cliente", contacto["fecha_contacto"])
 	
 	# Registrar en historial
-	registrar_historial_queja(id_queja, "contacto_cliente", 
+	registrar_historial_queja(id_queja, "contacto_cliente",
 		"Contacto con cliente via " + contacto["medio_contacto"] + " - " + contacto["tipo_contacto"])
 
 func realizar_encuesta_satisfaccion(id_queja: int, datos: Dictionary):
@@ -616,7 +651,7 @@ func realizar_encuesta_satisfaccion(id_queja: int, datos: Dictionary):
 	actualizar_campo(id_queja, "reincidente", es_reincidente)
 	
 	# Registrar en historial
-	registrar_historial_queja(id_queja, "encuesta_satisfaccion", 
+	registrar_historial_queja(id_queja, "encuesta_satisfaccion",
 		"Encuesta completada. Satisfacción: " + str(datos.get("satisfaccion_cliente", 0)) + "/5")
 
 func cerrar_queja(id_queja: int, responsable: String, datos: Dictionary):
@@ -645,7 +680,7 @@ func cerrar_queja(id_queja: int, responsable: String, datos: Dictionary):
 	calcular_tiempo_respuesta(id_queja)
 	
 	# Registrar en historial
-	registrar_historial_queja(id_queja, "queja_cerrada", 
+	registrar_historial_queja(id_queja, "queja_cerrada",
 		"Queja cerrada por " + responsable + ". Lecciones: " + datos.get("lecciones_aprendidas", "Ninguna"))
 
 func actualizar_analisis_tendencias(id_queja: int):
@@ -676,9 +711,12 @@ func obtener_queja_por_id(id_queja: int) -> Dictionary:
 	"""
 	Obtiene una queja por su ID.
 	"""
-	var result = Bd.query("SELECT * FROM quejas_reclamaciones WHERE id = ?", [id_queja])
-	if result and result.size() > 0:
+	var query = "SELECT * FROM quejas_reclamaciones WHERE id = ?"
+	var result = query_safe(query, [id_queja])
+	
+	if result.size() > 0:
 		return result[0]
+	
 	return {}
 
 func obtener_supervisor_disponible() -> String:
@@ -754,17 +792,17 @@ func notificar_escalamiento(id_queja: int, responsable: String, motivo: String, 
 		titulo = " ESCALAMIENTO URGENTE"
 	
 	var mensaje = """
-	%s
-	Caso: %s
-	Asunto: %s
-	---
-	 Nivel anterior: %d
-	 Nuevo nivel: %d
-	 Responsable anterior: %s
-	 Nuevo responsable: %s
-	 Motivo: %s
-	 Prioridad: %s
-	 Fecha límite: %s
+		%s
+		Caso: %s
+		Asunto: %s
+		---
+			Nivel anterior: %d
+			Nuevo nivel: %d
+			Responsable anterior: %s
+			Nuevo responsable: %s
+			Motivo: %s
+			Prioridad: %s
+			Fecha límite: %s
 	""" % [
 		titulo,
 		numero_caso,
@@ -779,7 +817,7 @@ func notificar_escalamiento(id_queja: int, responsable: String, motivo: String, 
 	]
 	
 	# Registrar en historial
-	registrar_historial_queja(id_queja, "notificacion_escalamiento", 
+	registrar_historial_queja(id_queja, "notificacion_escalamiento",
 		"Notificación enviada a " + responsable + " - Motivo: " + motivo)
 	
 	# Métodos de notificación según urgencia
@@ -856,19 +894,20 @@ func es_cliente_reincidente(identificacion: String) -> bool:
 	"""
 	Verifica si un cliente es reincidente en quejas.
 	"""
-	if not identificacion:
+	if not identificacion or identificacion == "":
 		return false
 	
-	var result = Bd.query(
+	var result = query_safe(
 		"SELECT COUNT(*) as total FROM quejas_reclamaciones WHERE identificacion = ? AND reincidente = 1",
 		[identificacion]
 	)
 	
-	if result and result.size() > 0:
-		return result[0]["total"] > 0
+	if result.size() > 0:
+		var count = result[0].get("total", 0)
+		return int(count) > 0
 	
 	return false
-
+	
 func calcular_tiempo_respuesta(id_queja: int):
 	"""
 	Calcula el tiempo de respuesta de una queja.
@@ -899,16 +938,16 @@ func solicitar_documentacion_cliente(id_queja: int, documentos: Array):
 		lista_documentos += "- " + doc + "\n"
 	
 	var mensaje = """
-	Estimado/a %s,
-	
-	Hemos recibido su queja #%s y necesitamos la siguiente documentación adicional para procesarla:
-	
-	%s
-	
-	Por favor, envíe estos documentos a la mayor brevedad.
-	
-	Saludos,
-	Departamento de Atención al Cliente
+		Estimado/a %s,
+    
+		Hemos recibido su queja #%s y necesitamos la siguiente documentación adicional para procesarla:
+    
+		%s
+    
+		Por favor, envíe estos documentos a la mayor brevedad.
+    
+		Saludos,
+		Departamento de Atención al Cliente
 	""" % [
 		queja.get("nombres", "Cliente"),
 		queja.get("numero_caso", "N/A"),
@@ -916,9 +955,36 @@ func solicitar_documentacion_cliente(id_queja: int, documentos: Array):
 	]
 	
 	# Enviar solicitud por email
-	enviar_notificacion_email(queja.get("email", ""), 
+	enviar_notificacion_email(queja.get("email", ""),
 		"Solicitud de documentación - Caso " + queja.get("numero_caso", ""),
 		mensaje)
 	
-	registrar_historial_queja(id_queja, "solicitud_documentacion", 
+	registrar_historial_queja(id_queja, "solicitud_documentacion",
 		"Solicitud de documentación enviada al cliente")
+		
+func test_insercion_simple():
+	var test_data = {
+		"nombres": "Test Cliente",
+		"asunto": "Test de inserción",
+		"descripcion_detallada": "Prueba de funcionamiento",
+		"prioridad": "media",
+		"estado": "recibida"
+	}
+	
+	var id = Bd.insert("quejas_reclamaciones", test_data)
+	print("Test inserción - ID: ", id)
+
+
+
+func _on_cambiar_password_pressed():
+	# Abrir diálogo de cambio de contraseña
+	var dialogo = preload("res://escenas/autentificar.tscn").instantiate()
+	add_child(dialogo)
+	dialogo.mostrar_dialogo_cambiar_password()
+
+func _on_perfil_pressed():
+	# Mostrar menú de perfil con opción para cambiar contraseña
+	var menu_perfil = $MenuPerfil
+	var opcion_cambiar_password = menu_perfil.find_child("OpcionCambiarPassword")
+	opcion_cambiar_password.pressed.connect(_on_cambiar_password_pressed)
+	menu_perfil.visible = true

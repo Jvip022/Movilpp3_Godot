@@ -4,6 +4,9 @@ class_name global
 # Datos del usuario actual
 var usuario_actual: Dictionary = {}
 
+# Permisos del usuario
+var permisos: Array = []
+
 # Configuración del sistema
 var config_sistema: Dictionary = {
 	"modo_oscuro": false,
@@ -22,18 +25,31 @@ func _ready():
 	# Cargar sesión guardada
 	cargar_sesion()
 
+func esta_autenticado() -> bool:
+	return not usuario_actual.is_empty()
+
+func obtener_rol() -> String:
+	return usuario_actual.get("rol", "")
+
+func obtener_id_usuario() -> int:
+	return usuario_actual.get("id", -1)
+
 func cargar_sesion():
 	var config = ConfigFile.new()
 	if config.load("user://sesion.cfg") == OK:
 		usuario_actual = config.get_value("sesion", "usuario", {})
+		# También podrías cargar permisos si los guardas
+		permisos = config.get_value("sesion", "permisos", [])
 
 func guardar_sesion():
 	var config = ConfigFile.new()
 	config.set_value("sesion", "usuario", usuario_actual)
+	config.set_value("sesion", "permisos", permisos)
 	config.save("user://sesion.cfg")
 
 func cerrar_sesion():
 	usuario_actual = {}
+	permisos.clear()
 	
 	# Eliminar archivo de sesión
 	var dir = DirAccess.open("user://")

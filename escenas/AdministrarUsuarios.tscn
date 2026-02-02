@@ -1,0 +1,410 @@
+[gd_scene load_steps=4 format=3 uid="uid://cuentalarga"]
+
+[ext_resource type="Script" uid="uid://dsr0vk4h4uk2f" path="res://scripts/UserManagement.gd" id="2_j8h3f"]
+[ext_resource type="Script" uid="uid://ull2jq3d71fk" path="res://scripts/RoleAssignment.gd" id="3_k9l4m"]
+
+[sub_resource type="Theme" id="Theme_5c7kh"]
+default_base_scale = 1.7
+
+[node name="AdministrarUsuarios" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_j8h3f")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.95, 0.95, 0.96, 1)
+
+[node name="Header" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.1
+offset_bottom = 80.0
+theme = SubResource("Theme_5c7kh")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Header"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+
+[node name="Titulo" type="Label" parent="Header/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "Administración de Usuarios"
+
+[node name="Spacer" type="Control" parent="Header/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnExportar" type="Button" parent="Header/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Exportar usuarios a CSV"
+text = "Exportar Lista"
+
+[node name="BtnActualizar" type="Button" parent="Header/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Actualizar lista de usuarios"
+text = "Actualizar"
+
+[node name="ContentContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 80.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="SearchBar" type="HBoxContainer" parent="ContentContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="LabelBuscar" type="Label" parent="ContentContainer/SearchBar"]
+layout_mode = 2
+text = "Buscar:"
+
+[node name="InputBuscar" type="LineEdit" parent="ContentContainer/SearchBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Nombre, usuario o email..."
+
+[node name="BtnBuscar" type="Button" parent="ContentContainer/SearchBar"]
+layout_mode = 2
+tooltip_text = "Buscar usuarios"
+text = "Buscar"
+
+[node name="BtnNuevoUsuario" type="Button" parent="ContentContainer/SearchBar"]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "+ Nuevo Usuario"
+
+[node name="UserTableContainer" type="ScrollContainer" parent="ContentContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TablaUsuarios" type="Tree" parent="ContentContainer/UserTableContainer"]
+layout_mode = 2
+columns = 7
+column_titles_visible = true
+allow_reselect = true
+allow_rmb_select = true
+hide_root = true
+
+[node name="ActionButtons" type="HBoxContainer" parent="ContentContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+alignment = 1
+
+[node name="BtnModificar" type="Button" parent="ContentContainer/ActionButtons"]
+layout_mode = 2
+tooltip_text = "Modificar usuario seleccionado"
+disabled = true
+text = "Modificar"
+
+[node name="BtnDesactivar" type="Button" parent="ContentContainer/ActionButtons"]
+layout_mode = 2
+tooltip_text = "Desactivar usuario seleccionado"
+disabled = true
+text = "Desactivar"
+
+[node name="BtnAsignarRol" type="Button" parent="ContentContainer/ActionButtons"]
+layout_mode = 2
+tooltip_text = "Asignar/Modificar rol del usuario"
+disabled = true
+text = "Asignar Rol"
+
+[node name="BtnVerTrazas" type="Button" parent="ContentContainer/ActionButtons"]
+layout_mode = 2
+tooltip_text = "Ver historial de acciones del usuario"
+disabled = true
+text = "Ver Trazas"
+
+[node name="DialogoUsuario" type="Window" parent="."]
+title = "Nuevo Usuario"
+visible = false
+wrap_controls = true
+unresizable = true
+theme = SubResource("Theme_5c7kh")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoUsuario"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="InputNombre" type="LineEdit" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Nombre completo*"
+
+[node name="InputApellido" type="LineEdit" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Apellidos*"
+
+[node name="InputEmail" type="LineEdit" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Correo electrónico*"
+
+[node name="InputUsuario" type="LineEdit" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Nombre de usuario*"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="InputPassword" type="LineEdit" parent="DialogoUsuario/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Contraseña*"
+secret = true
+
+[node name="BtnGenerarPass" type="Button" parent="DialogoUsuario/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Generar contraseña aleatoria"
+text = "Generar"
+
+[node name="ComboRol" type="OptionButton" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ComboSucursal" type="OptionButton" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CheckBoxNotificaciones" type="CheckBox" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+text = "Enviar notificaciones por email"
+
+[node name="Separator" type="HSeparator" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+
+[node name="LabelPermisos" type="Label" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"SubHeaderLabel"
+text = "Permisos Específicos:"
+
+[node name="PermisosContainer" type="VBoxContainer" parent="DialogoUsuario/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CheckProcesarIncidencias" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer"]
+layout_mode = 2
+text = "Procesar Incidencias"
+
+[node name="CheckProcesarQuejas" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer"]
+layout_mode = 2
+text = "Procesar Quejas y Reclamaciones"
+
+[node name="CheckAdministrarUsuarios" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer"]
+layout_mode = 2
+text = "Administrar Usuarios"
+
+[node name="CheckVerTrazas" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer"]
+layout_mode = 2
+text = "Visualizar Trazas"
+
+[node name="CheckConfiguracion" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer"]
+layout_mode = 2
+text = "Configuración del Sistema"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="DialogoUsuario"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -40.0
+offset_right = 150.0
+offset_bottom = -10.0
+
+[node name="BtnCancelar" type="Button" parent="DialogoUsuario/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cancelar"
+
+[node name="BtnGuardar" type="Button" parent="DialogoUsuario/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PrimaryButton"
+text = "Guardar Usuario"
+
+[node name="DialogoConfirmacion" type="AcceptDialog" parent="."]
+title = "Confirmación"
+theme = SubResource("Theme_5c7kh")
+dialog_text = "¿Está seguro de que desea realizar esta acción?"
+dialog_hide_on_ok = false
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoConfirmacion"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 50.0
+offset_right = -20.0
+offset_bottom = -60.0
+
+[node name="MensajeConfirmacion" type="Label" parent="DialogoConfirmacion/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="DialogoConfirmacion/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnConfirmarSi" type="Button" parent="DialogoConfirmacion/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Sí, confirmar"
+
+[node name="BtnConfirmarNo" type="Button" parent="DialogoConfirmacion/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "No, cancelar"
+
+[node name="DialogoAsignarRol" type="Window" parent="."]
+title = "Asignar Rol"
+visible = false
+wrap_controls = true
+unresizable = true
+theme = SubResource("Theme_5c7kh")
+script = ExtResource("3_k9l4m")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoAsignarRol"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="LabelUsuario" type="Label" parent="DialogoAsignarRol/VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Usuario: [Nombre del usuario]"
+horizontal_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="DialogoAsignarRol/VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="DialogoAsignarRol/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RolesContainer" type="VBoxContainer" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CheckAdmin" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer"]
+layout_mode = 2
+tooltip_text = "Acceso completo al sistema"
+text = "Administrador"
+
+[node name="CheckSupervisor" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer"]
+layout_mode = 2
+tooltip_text = "Gestiona incidencias, quejas e indicadores"
+text = "Supervisor de Calidad"
+
+[node name="CheckInspector" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer"]
+layout_mode = 2
+tooltip_text = "Registra y procesa incidencias"
+text = "Inspector de Calidad"
+
+[node name="CheckAuditor" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer"]
+layout_mode = 2
+tooltip_text = "Realiza auditorías internas"
+text = "Auditor Interno"
+
+[node name="CheckCliente" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer"]
+layout_mode = 2
+tooltip_text = "Solo lectura de informes públicos"
+text = "Cliente Externo"
+
+[node name="CheckConsulta" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer"]
+layout_mode = 2
+tooltip_text = "Solo visualización de datos"
+text = "Consulta General"
+
+[node name="Separator2" type="HSeparator" parent="DialogoAsignarRol/VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="DialogoAsignarRol/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnCancelarRol" type="Button" parent="DialogoAsignarRol/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Cancelar"
+
+[node name="BtnGuardarRol" type="Button" parent="DialogoAsignarRol/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "Guardar Cambios"
+
+[node name="PanelCargando" type="Panel" parent="."]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Semi-transparente" type="ColorRect" parent="PanelCargando"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.5)
+
+[node name="MensajeCarga" type="Label" parent="PanelCargando"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = 30.0
+text = "Procesando..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="PanelCargando"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.6
+offset_left = 40.0
+offset_top = 5.0
+offset_right = -40.0
+offset_bottom = 25.0
+
+[node name="MensajeExito" type="AcceptDialog" parent="."]
+title = "Operación Exitosa"
+theme = SubResource("Theme_5c7kh")
+dialog_text = "La operación se realizó correctamente."
+
+[node name="MensajeError" type="AcceptDialog" parent="."]
+title = "Error"
+theme = SubResource("Theme_5c7kh")
+dialog_text = "Ocurrió un error al procesar la solicitud."

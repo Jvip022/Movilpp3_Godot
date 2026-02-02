@@ -1,0 +1,382 @@
+[gd_scene load_steps=3 format=3 uid="uid://0hblj686hil8"]
+
+[ext_resource type="Script" uid="uid://2vo2bi20076s" path="res://scripts/RegistrarIncidencia.gd" id="1_incidencia"]
+
+[sub_resource type="Theme" id="Theme_incidencia"]
+default_base_scale = 1.7
+
+[node name="RegistrarIncidencia" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_incidencia")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.95, 0.95, 0.96, 1)
+
+[node name="Header" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.1
+offset_bottom = 80.0
+theme = SubResource("Theme_incidencia")
+
+[node name="HeaderHBox" type="HBoxContainer" parent="Header"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+
+[node name="Titulo" type="Label" parent="Header/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "Registrar Incidencia"
+
+[node name="Spacer" type="Control" parent="Header/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnCerrar" type="Button" parent="Header/HeaderHBox"]
+layout_mode = 2
+tooltip_text = "Cerrar ventana"
+text = "Cerrar"
+
+[node name="ContentContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 80.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="FormContainer" type="VBoxContainer" parent="ContentContainer"]
+custom_minimum_size = Vector2(600, 800)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SeccionCliente" type="VBoxContainer" parent="ContentContainer/FormContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelCliente" type="Label" parent="ContentContainer/FormContainer/SeccionCliente"]
+layout_mode = 2
+theme_type_variation = &"SubHeaderLabel"
+text = "Datos del Cliente"
+
+[node name="ClienteHBox" type="HBoxContainer" parent="ContentContainer/FormContainer/SeccionCliente"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="InputCliente" type="LineEdit" parent="ContentContainer/FormContainer/SeccionCliente/ClienteHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Buscar cliente por nombre o código..."
+editable = false
+
+[node name="BtnBuscarCliente" type="Button" parent="ContentContainer/FormContainer/SeccionCliente/ClienteHBox"]
+layout_mode = 2
+tooltip_text = "Buscar cliente en base de datos Oracle"
+text = "Buscar"
+
+[node name="InfoCliente" type="VBoxContainer" parent="ContentContainer/FormContainer/SeccionCliente"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelNombreCliente" type="Label" parent="ContentContainer/FormContainer/SeccionCliente/InfoCliente"]
+layout_mode = 2
+text = "Nombre: [Nombre del cliente]"
+
+[node name="LabelCodigoCliente" type="Label" parent="ContentContainer/FormContainer/SeccionCliente/InfoCliente"]
+layout_mode = 2
+text = "Código: [Código]"
+
+[node name="LabelContacto" type="Label" parent="ContentContainer/FormContainer/SeccionCliente/InfoCliente"]
+layout_mode = 2
+text = "Contacto: [Email/Teléfono]"
+
+[node name="Separator1" type="HSeparator" parent="ContentContainer/FormContainer"]
+layout_mode = 2
+
+[node name="SeccionIncidencia" type="VBoxContainer" parent="ContentContainer/FormContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelIncidencia" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia"]
+layout_mode = 2
+theme_type_variation = &"SubHeaderLabel"
+text = "Datos de la Incidencia"
+
+[node name="GridContainer" type="GridContainer" parent="ContentContainer/FormContainer/SeccionIncidencia"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+
+[node name="LabelTitulo" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "Título*:"
+
+[node name="InputTitulo" type="LineEdit" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+placeholder_text = "Título breve de la incidencia"
+
+[node name="LabelTipo" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "Tipo de Hallazgo*:"
+
+[node name="ComboTipo" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+
+[node name="LabelProducto" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "Producto/Servicio*:"
+
+[node name="ComboProducto" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+
+[node name="LabelSucursal" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "Sucursal*:"
+
+[node name="ComboSucursal" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+
+[node name="LabelFecha" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "Fecha de Ocurrencia*:"
+
+[node name="InputFecha" type="LineEdit" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+placeholder_text = "DD/MM/AAAA"
+editable = false
+
+[node name="BtnCalendario" type="Button" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "Seleccionar"
+
+[node name="LabelGravedad" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "Nivel de Gravedad*:"
+
+[node name="ComboGravedad" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+
+[node name="LabelInvestigacion" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+text = "¿Conlleva investigación?*:"
+
+[node name="ComboInvestigacion" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer"]
+layout_mode = 2
+
+[node name="LabelDescripcion" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia"]
+layout_mode = 2
+text = "Descripción del Hallazgo*:"
+
+[node name="InputDescripcion" type="TextEdit" parent="ContentContainer/FormContainer/SeccionIncidencia"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Describa en detalle el hallazgo..."
+
+[node name="Separator2" type="HSeparator" parent="ContentContainer/FormContainer"]
+layout_mode = 2
+
+[node name="SeccionAcciones" type="HBoxContainer" parent="ContentContainer/FormContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnCancelar" type="Button" parent="ContentContainer/FormContainer/SeccionAcciones"]
+layout_mode = 2
+text = "Cancelar"
+
+[node name="BtnRegistrar" type="Button" parent="ContentContainer/FormContainer/SeccionAcciones"]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+disabled = true
+text = "Registrar Incidencia"
+
+[node name="DialogoBuscarCliente" type="Window" parent="."]
+title = "Buscar Cliente (Oracle DB)"
+visible = false
+wrap_controls = true
+unresizable = true
+
+[node name="BuscarClienteVBox" type="VBoxContainer" parent="DialogoBuscarCliente"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="BuscarClienteHBox" type="HBoxContainer" parent="DialogoBuscarCliente/BuscarClienteVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="InputBuscarCliente" type="LineEdit" parent="DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Ingrese nombre, código o documento del cliente"
+
+[node name="BtnBuscarClienteDialog" type="Button" parent="DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox"]
+layout_mode = 2
+text = "Buscar en Oracle"
+
+[node name="TablaClientes" type="Tree" parent="DialogoBuscarCliente/BuscarClienteVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+columns = 5
+column_titles_visible = true
+hide_root = true
+
+[node name="BotonesSeleccionCliente" type="HBoxContainer" parent="DialogoBuscarCliente/BuscarClienteVBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnSeleccionarCliente" type="Button" parent="DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente"]
+layout_mode = 2
+disabled = true
+text = "Seleccionar"
+
+[node name="BtnCancelarCliente" type="Button" parent="DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente"]
+layout_mode = 2
+text = "Cancelar"
+
+[node name="DialogoCalendario" type="Window" parent="."]
+title = "Seleccionar Fecha"
+visible = false
+wrap_controls = true
+unresizable = true
+
+[node name="DatePicker" type="DatePicker" parent="DialogoCalendario"]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+layout_mode = 2
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = -20.0
+offset_bottom = -60.0
+script = null
+
+[node name="BotonesFecha" type="HBoxContainer" parent="DialogoCalendario"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+offset_bottom = -10.0
+
+[node name="BtnAceptarFecha" type="Button" parent="DialogoCalendario/BotonesFecha"]
+layout_mode = 2
+text = "Aceptar"
+
+[node name="BtnCancelarFecha" type="Button" parent="DialogoCalendario/BotonesFecha"]
+layout_mode = 2
+text = "Cancelar"
+
+[node name="PanelCargando" type="Panel" parent="."]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Semi-transparente" type="ColorRect" parent="PanelCargando"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.5)
+
+[node name="MensajeCarga" type="Label" parent="PanelCargando"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = 30.0
+text = "Conectando con Oracle..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="PanelCargando"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.6
+offset_left = 40.0
+offset_top = 5.0
+offset_right = -40.0
+offset_bottom = 25.0
+
+[node name="MensajeExito" type="AcceptDialog" parent="."]
+title = "Incidencia Registrada"
+dialog_text = "La incidencia se ha registrado exitosamente."
+
+[node name="MensajeError" type="AcceptDialog" parent="."]
+title = "Error"
+dialog_text = "Ocurrió un error al registrar la incidencia."
+
+[node name="ValidacionCampos" type="AcceptDialog" parent="."]
+title = "Campos Incompletos"
+dialog_text = "Por favor, complete todos los campos obligatorios (*)."
+
+[node name="ConfirmacionEstado" type="AcceptDialog" parent="."]
+title = "Confirmación de Estado"
+dialog_text = "La incidencia no requiere investigación. Se registrará en estado CERRADO."
+dialog_hide_on_ok = false
+
+[node name="ConfirmacionVBox" type="VBoxContainer" parent="ConfirmacionEstado"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 50.0
+offset_right = -20.0
+offset_bottom = -60.0
+
+[node name="LabelConfirmacion" type="Label" parent="ConfirmacionEstado/ConfirmacionVBox"]
+layout_mode = 2
+text = "¿Desea continuar con el registro en estado CERRADO?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="BotonesConfirmacion" type="HBoxContainer" parent="ConfirmacionEstado/ConfirmacionVBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnConfirmarSi" type="Button" parent="ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion"]
+layout_mode = 2
+text = "Sí, registrar"
+
+[node name="BtnConfirmarNo" type="Button" parent="ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion"]
+layout_mode = 2
+text = "No, modificar"

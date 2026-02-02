@@ -43,11 +43,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="FormGrid" type="GridContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer"]
+[node name="FormGrid" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-columns = 2
 
 [node name="LblTipoCaso" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
 layout_mode = 2
@@ -63,8 +62,12 @@ text = "Nombres:"
 
 [node name="TxtNombres" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
 layout_mode = 2
-text = "Identificación:"
+size_flags_horizontal = 3
 placeholder_text = "Ingrese nombres completos"
+
+[node name="LblIdentificacion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
+layout_mode = 2
+text = "Identificación:"
 
 [node name="TxtIdentificacion" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
 layout_mode = 2
@@ -100,7 +103,6 @@ placeholder_text = "Resumen breve del problema"
 
 [node name="LblDescripcion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]
 layout_mode = 2
-size_flags_vertical = 3
 text = "Descripción:"
 
 [node name="TxtDescripcion" type="TextEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid"]

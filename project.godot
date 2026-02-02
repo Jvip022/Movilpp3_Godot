@@ -18,12 +18,16 @@ config/icon="uid://b610nq8aowfu3"
 [autoload]
 
 Bd="*res://scripts/BD.gd"
-Global="*res://scripts/global.gd"
+Global="*res://scripts/Global.gd"
 
 [display]
 
 window/size/viewport_width=1600
 window/size/viewport_height=800
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/DatePicker/plugin.cfg")
 
 [input_devices]
 
