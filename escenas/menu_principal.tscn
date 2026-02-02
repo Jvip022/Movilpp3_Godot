@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dap8s2l3v5j6m"]
 
-[ext_resource type="Script" uid="uid://l66toq0dm38c" path="res://scripts/generar_reportes.gd" id="1_37xja"]
+[ext_resource type="Script" uid="uid://d0mvh7wnrk7fj" path="res://scripts/menu_Principal.gd" id="1_4k9x2"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
 content_margin_left = 30.0
@@ -50,16 +50,16 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="GenerarReportes" type="Control" unique_id=1519443857]
+[node name="MenuInicio" type="Control" unique_id=300872673]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_37xja")
+script = ExtResource("1_4k9x2")
 
-[node name="Fondo" type="ColorRect" parent="." unique_id=1233757547]
+[node name="Fondo" type="ColorRect" parent="." unique_id=1914841495]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -68,25 +68,23 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.95, 0.96, 0.98, 1)
 
-[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=233017323]
+[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=479570735]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 50.0
-offset_top = 20.0
+offset_top = 50.0
 offset_right = -50.0
-offset_bottom = -20.0
+offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=324305890]
+[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=1766168852]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
-[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=1828440336]
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=949955530]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
@@ -98,120 +96,53 @@ offset_top = 10.0
 offset_right = -20.0
 offset_bottom = -10.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 28
-text = "GENERAR REPORTES"
+text = "SISTEMA DE GESTIÓN DE CALIDAD"
 horizontal_alignment = 1
 
-[node name="CategoriasContainer" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=306968130]
-custom_minimum_size = Vector2(0, 300)
+[node name="BotonesContainer" type="GridContainer" parent="ContenedorPrincipal" unique_id=2046554643]
 layout_mode = 2
+columns = 3
 
-[node name="LabelCategorias" type="Label" parent="ContenedorPrincipal/CategoriasContainer" unique_id=17203108]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 18
-text = "Seleccione categoría de reporte:"
-
-[node name="BtnNoConformidades" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=315937816]
+[node name="BtnAdministrarUsuarios" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1614043212]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_2")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📈 Estadísticas de No Conformidades"
+text = "ADMINISTRAR USUARIOS"
 
-[node name="BtnSatisfaccion" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=1744642141]
+[node name="BtnGestorQuejas" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1125096172]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_2")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "😊 Satisfacción del Cliente"
+text = "GESTOR DE QUEJAS"
 
-[node name="BtnObjetivosCalidad" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=1175523604]
+[node name="BtnRegistrarIncidencia" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=868601125]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_2")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "🎯 Objetivos de Calidad"
+text = "REGISTRAR INCIDENCIA"
 
-[node name="BtnEstadoNC" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=273655745]
+[node name="BtnRegistrarNCAuditoria" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1074384714]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_2")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "⚠️ Estado de No Conformidades"
+text = "REGISTRAR NC AUDITORÍA"
 
-[node name="FiltrosContainer" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=330178099]
-custom_minimum_size = Vector2(0, 200)
+[node name="BtnGenerarReportes" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1455546881]
 layout_mode = 2
-
-[node name="LabelFiltros" type="Label" parent="ContenedorPrincipal/FiltrosContainer" unique_id=1815232797]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 18
-text = "Filtros de reporte:"
-
-[node name="GridFiltros" type="GridContainer" parent="ContenedorPrincipal/FiltrosContainer" unique_id=1776880653]
-layout_mode = 2
-columns = 2
-
-[node name="LabelFechaInicio" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1692047944]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 14
-text = "Fecha inicio:"
-
-[node name="InputFechaInicio" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=787008321]
-layout_mode = 2
-placeholder_text = "DD/MM/AAAA"
-
-[node name="LabelFechaFin" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=2047791995]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 14
-text = "Fecha fin:"
-
-[node name="InputFechaFin" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1667383592]
-layout_mode = 2
-placeholder_text = "DD/MM/AAAA"
-
-[node name="LabelSucursal" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=2098952866]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 14
-text = "Sucursal:"
-
-[node name="SelectSucursal" type="OptionButton" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1289451884]
-layout_mode = 2
-
-[node name="BtnGenerar" type="Button" parent="ContenedorPrincipal" unique_id=964136337]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "GENERAR VISTA PREVIA"
-
-[node name="BtnExportar" type="Button" parent="ContenedorPrincipal" unique_id=1079420867]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.6, 0.2, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📥 EXPORTAR REPORTE"
-
-[node name="ContenedorPrincipal_BotonesContainer#BtnGenerarReportes" type="Button" parent="." unique_id=1734298209]
-layout_mode = 0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_2")
@@ -219,11 +150,68 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "📊 GENERAR REPORTES"
 
-[node name="ContenedorPrincipal_BotonesContainer#BtnRegistrarEncuesta" type="Button" parent="." unique_id=1086924999]
-layout_mode = 0
+[node name="BtnRegistrarEncuesta" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=314643891]
+layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_2")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "📝 REGISTRAR ENCUESTA"
+
+[node name="BtnProcesarExpediente" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1487837289]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📁 PROCESAR EXPEDIENTE"
+
+[node name="BtnProcesarCorrectivas" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1236862143]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "🛠️ ACCIONES CORRECTIVAS"
+
+[node name="BtnSalir" type="Button" parent="ContenedorPrincipal" unique_id=2122104082]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.2, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.7, 0.15, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.9, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "SALIR DEL SISTEMA"
+
+[node name="Footer" type="Panel" parent="." unique_id=1385797965]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 750.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="FooterText" type="Label" parent="Footer" unique_id=1087012528]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = -10.0
+offset_bottom = -5.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "Sistema de Gestión de Calidad v1.0 © 2024"
+horizontal_alignment = 1
+vertical_alignment = 1

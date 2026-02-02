@@ -47,6 +47,7 @@ func _ready():
 	cargar_usuarios_ejemplo()
 	
 	# Conectar señales de los botones principales
+	$Header/HBoxContainer/BtnRegresar.pressed.connect(regresar_menu_principal)
 	$ContentContainer/SearchBar/BtnBuscar.pressed.connect(buscar_usuarios)
 	$ContentContainer/SearchBar/BtnNuevoUsuario.pressed.connect(abrir_dialogo_nuevo_usuario)
 	$Header/HBoxContainer/BtnExportar.pressed.connect(exportar_lista_usuarios)
@@ -619,3 +620,47 @@ func _process(_delta):
 	if $PanelCargando.visible:
 		var progress = $PanelCargando/ProgressBar
 		progress.value = fmod(progress.value + 1.0, 100.0)
+		
+func regresar_menu_principal():
+	# Mostrar diálogo de confirmación si hay cambios sin guardar
+	if hay_cambios_sin_guardar():
+		$DialogoConfirmacion/MensajeConfirmacion.text = "Hay cambios sin guardar. ¿Seguro que desea regresar al menú principal?"
+		$DialogoConfirmacion.popup_centered()
+		
+		# Conectar señales temporales para manejar la confirmación
+		$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.disconnect(confirmar_operacion)
+		$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.disconnect(cancelar_operacion)
+		
+		$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.connect(confirmar_regreso.bind(true), CONNECT_ONE_SHOT)
+		$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.connect(confirmar_regreso.bind(false), CONNECT_ONE_SHOT)
+	else:
+		# Si no hay cambios, regresar directamente
+		cambiar_a_menu_principal()
+
+func hay_cambios_sin_guardar() -> bool:
+	# Esta función debería verificar si hay cambios pendientes
+	# Por ahora, siempre retornamos false para simplificar
+	# En una implementación real, verificarías si hay formularios abiertos o datos modificados
+	return false
+
+func confirmar_regreso(confirmado: bool):
+	$DialogoConfirmacion.hide()
+	
+	if confirmado:
+		cambiar_a_menu_principal()
+	
+	# Reconectar las señales originales
+	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.disconnect(confirmar_regreso)
+	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.disconnect(confirmar_regreso)
+	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.connect(confirmar_operacion)
+	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.connect(cancelar_operacion)
+
+func cambiar_a_menu_principal():
+	# Cerrar cualquier diálogo abierto
+	if $DialogoUsuario.visible:
+		$DialogoUsuario.hide()
+	if $DialogoAsignarRol.visible:
+		$DialogoAsignarRol.hide()
+	
+	# Cambiar a la escena del menú principal
+	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")

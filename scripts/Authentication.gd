@@ -206,12 +206,12 @@ func cambiar_a_escena_principal():
 	await tween.finished
 	
 	# Cargar escena principal
-	var escena_principal_path = "res://escenas/GestorQuejas.tscn"
+	var escena_principal_path = "res://escenas/menu_principal.tscn"
 	if ResourceLoader.exists(escena_principal_path):
 		get_tree().change_scene_to_file(escena_principal_path)
 	else:
 		# Intentar otra ruta común
-		escena_principal_path = "res://GestorQuejas.tscn"
+		escena_principal_path = "res://menu_principal.tscn"
 		if ResourceLoader.exists(escena_principal_path):
 			get_tree().change_scene_to_file(escena_principal_path)
 		else:

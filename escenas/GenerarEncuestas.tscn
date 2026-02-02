@@ -1,0 +1,270 @@
+[gd_scene format=3 uid="uid://0opd4lkrrb16"]
+
+[ext_resource type="Script" uid="uid://dd5jjqyx5c427" path="res://scripts/RegistrarEncuesta.gd" id="1_uycg2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 30.0
+content_margin_top = 20.0
+content_margin_right = 30.0
+content_margin_bottom = 20.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.8, 0.9, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.98, 0.98, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.8, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="RegistrarEncuesta" type="Control" unique_id=1423870265]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_uycg2")
+
+[node name="Fondo" type="ColorRect" parent="." unique_id=1495807755]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.95, 0.96, 0.98, 1)
+
+[node name="ContenedorPrincipal" type="ScrollContainer" parent="." unique_id=461169303]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=508896872]
+layout_mode = 2
+
+[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal/VBoxContainer" unique_id=1820428869]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/VBoxContainer/TituloPanel" unique_id=64881519]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 177.5
+offset_top = 30.0
+offset_right = 441.0
+offset_bottom = 69.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 28
+text = "REGISTRAR ENCUESTA DE SATISFACCIÓN"
+horizontal_alignment = 1
+
+[node name="FormContainer" type="VBoxContainer" parent="ContenedorPrincipal/VBoxContainer" unique_id=1843717503]
+custom_minimum_size = Vector2(0, 400)
+layout_mode = 2
+
+[node name="GridForm" type="GridContainer" parent="ContenedorPrincipal/VBoxContainer/FormContainer" unique_id=1075011420]
+layout_mode = 2
+columns = 2
+
+[node name="LabelCliente" type="Label" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=188134664]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Cliente:"
+vertical_alignment = 1
+
+[node name="InputCliente" type="LineEdit" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=1761411837]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+placeholder_text = "Ingrese nombre del cliente"
+
+[node name="LabelProducto" type="Label" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=1628367484]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Producto/Servicio:"
+vertical_alignment = 1
+
+[node name="SelectProducto" type="OptionButton" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=268062630]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+
+[node name="LabelFecha" type="Label" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=2025378324]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Fecha de aplicación:"
+vertical_alignment = 1
+
+[node name="InputFecha" type="LineEdit" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=1716772954]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+placeholder_text = "DD/MM/AAAA"
+
+[node name="LabelCalidad" type="Label" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=1268937082]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Calidad (1-5):"
+vertical_alignment = 1
+
+[node name="SelectCalidad" type="OptionButton" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=1846815692]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+
+[node name="LabelTiempo" type="Label" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=1235344298]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tiempo respuesta (1-5):"
+vertical_alignment = 1
+
+[node name="SelectTiempo" type="OptionButton" parent="ContenedorPrincipal/VBoxContainer/FormContainer/GridForm" unique_id=219810203]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+
+[node name="LabelObservaciones" type="Label" parent="ContenedorPrincipal/VBoxContainer/FormContainer" unique_id=157696094]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Observaciones:"
+
+[node name="InputObservaciones" type="TextEdit" parent="ContenedorPrincipal/VBoxContainer/FormContainer" unique_id=1137356459]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+
+[node name="PanelResultado" type="Panel" parent="ContenedorPrincipal/VBoxContainer" unique_id=2047877131]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_5")
+
+[node name="LabelResultado" type="Label" parent="ContenedorPrincipal/VBoxContainer/PanelResultado" unique_id=2044715996]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "Satisfacción calculada: --/5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Separador" type="HSeparator" parent="ContenedorPrincipal/VBoxContainer" unique_id=1714293802]
+layout_mode = 2
+
+[node name="BotonesAccion" type="HBoxContainer" parent="ContenedorPrincipal/VBoxContainer" unique_id=749517636]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnGuardar" type="Button" parent="ContenedorPrincipal/VBoxContainer/BotonesAccion" unique_id=2097524279]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "💾 GUARDAR ENCUESTA"
+
+[node name="BtnLimpiar" type="Button" parent="ContenedorPrincipal/VBoxContainer/BotonesAccion" unique_id=1475870679]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "🗑️ LIMPIAR FORMULARIO"
+
+[node name="BtnVolverMenu" type="Button" parent="ContenedorPrincipal/VBoxContainer/BotonesAccion" unique_id=214803028]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "🏠 VOLVER AL MENÚ"

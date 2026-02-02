@@ -1,0 +1,501 @@
+[gd_scene format=3 uid="uid://bacgrbtdqeudn"]
+
+[ext_resource type="Script" uid="uid://hg2av3ty7nn8" path="res://scripts/AccionesCorrectivas.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 30.0
+content_margin_top = 20.0
+content_margin_right = 30.0
+content_margin_bottom = 20.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.23, 0.53, 0.95, 0.1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.23, 0.53, 0.95, 0.3)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.95, 0.97, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.85, 0.9, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0.95, 0.96, 0.98, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.7, 0.7, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="AccionesCorrectivas" type="Control" unique_id=402555513]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Fondo" type="ColorRect" parent="." unique_id=992352161]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.95, 0.96, 0.98, 1)
+
+[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=68361496]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 50.0
+offset_right = -50.0
+offset_bottom = -100.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=799791400]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=1144668981]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "GESTIÓN DE ACCIONES CORRECTIVAS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FormContainer" type="Panel" parent="ContenedorPrincipal" unique_id=462484302]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_5")
+
+[node name="GridForm" type="GridContainer" parent="ContenedorPrincipal/FormContainer" unique_id=1643803800]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -70.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 2
+
+[node name="LabelNoConformidad" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1482437259]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "No Conformidad:"
+vertical_alignment = 1
+
+[node name="SelectNoConformidad" type="OptionButton" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=870410660]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_6")
+theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+
+[node name="LabelDescripcion" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1014785942]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Descripción Acción:"
+vertical_alignment = 1
+
+[node name="InputDescripcion" type="TextEdit" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=2107937081]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+placeholder_text = "Describa la acción correctiva a implementar..."
+
+[node name="LabelResponsable" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1171636158]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Responsable:"
+vertical_alignment = 1
+
+[node name="InputResponsable" type="LineEdit" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=907014101]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+placeholder_text = "Nombre del responsable..."
+
+[node name="LabelFechaLimite" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1142410135]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Fecha Límite:"
+vertical_alignment = 1
+
+[node name="InputFechaLimite" type="LineEdit" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=611066692]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+placeholder_text = "DD/MM/AAAA"
+
+[node name="BotonesForm" type="HBoxContainer" parent="ContenedorPrincipal/FormContainer" unique_id=1495963698]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -50.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="BtnRegistrarAccion" type="Button" parent="ContenedorPrincipal/FormContainer/BotonesForm" unique_id=238431714]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📝 REGISTRAR ACCIÓN"
+
+[node name="BtnLimpiarForm" type="Button" parent="ContenedorPrincipal/FormContainer/BotonesForm" unique_id=1034763329]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
+theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+text = "LIMPIAR FORMULARIO"
+
+[node name="PanelAcciones" type="Panel" parent="ContenedorPrincipal" unique_id=1132994062]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_5")
+
+[node name="LabelTituloTabla" type="Label" parent="ContenedorPrincipal/PanelAcciones" unique_id=964760716]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = 45.0
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Acciones Correctivas Registradas"
+vertical_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ContenedorPrincipal/PanelAcciones" unique_id=918392876]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 50.0
+offset_right = -20.0
+offset_bottom = -70.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TablaAcciones" type="ItemList" parent="ContenedorPrincipal/PanelAcciones/ScrollContainer" unique_id=1989132916]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+select_mode = 1
+auto_height = true
+max_columns = 6
+
+[node name="BotonesAcciones" type="HBoxContainer" parent="ContenedorPrincipal/PanelAcciones" unique_id=740503967]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="BtnAsignarTareas" type="Button" parent="ContenedorPrincipal/PanelAcciones/BotonesAcciones" unique_id=1431328592]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📋 ASIGNAR TAREAS"
+
+[node name="BtnNotificarEstado" type="Button" parent="ContenedorPrincipal/PanelAcciones/BotonesAcciones" unique_id=2029148285]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "🔔 NOTIFICAR ESTADO"
+
+[node name="BtnActualizarTabla" type="Button" parent="ContenedorPrincipal/PanelAcciones/BotonesAcciones" unique_id=560239802]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
+theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+text = "🔄 ACTUALIZAR"
+
+[node name="BotonesInferiores" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=1151659970]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+alignment = 1
+
+[node name="BtnVolverMenu" type="Button" parent="ContenedorPrincipal/BotonesInferiores" unique_id=1144855511]
+custom_minimum_size = Vector2(300, 45)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.15, 0.15, 1)
+theme_override_colors/font_hover_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
+theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+text = "← VOLVER AL MENÚ PRINCIPAL"
+
+[node name="Footer" type="Panel" parent="." unique_id=125169220]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -50.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="FooterText" type="Label" parent="Footer" unique_id=624786850]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = -10.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "Sistema de Gestión de Calidad - Acciones Correctivas v1.0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PopupError" type="AcceptDialog" parent="." unique_id=748006044]
+title = "Error"
+
+[node name="PopupMensaje" type="AcceptDialog" parent="." unique_id=2039338792]
+title = "Mensaje"
+
+[node name="DialogoTareas" type="Window" parent="." unique_id=1160916260]
+oversampling_override = 1.0
+title = "Asignar Tareas"
+position = Vector2i(0, 36)
+size = Vector2i(342, 342)
+wrap_controls = true
+unresizable = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DialogoTareas" unique_id=1656450227]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LabelAccion" type="Label" parent="DialogoTareas/VBoxContainer" unique_id=725979517]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Asignar Tareas a la Acción"
+
+[node name="LabelTareaDescripcion" type="Label" parent="DialogoTareas/VBoxContainer" unique_id=282125881]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Descripción de la Tarea:"
+
+[node name="InputTareaDescripcion" type="TextEdit" parent="DialogoTareas/VBoxContainer" unique_id=1623630317]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+placeholder_text = "Describa la tarea específica..."
+
+[node name="LabelTareaResponsable" type="Label" parent="DialogoTareas/VBoxContainer" unique_id=578038128]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Responsable de la Tarea:"
+
+[node name="InputTareaResponsable" type="LineEdit" parent="DialogoTareas/VBoxContainer" unique_id=439321191]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+placeholder_text = "Nombre del responsable..."
+
+[node name="LabelTareaFechaLimite" type="Label" parent="DialogoTareas/VBoxContainer" unique_id=1571137473]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Fecha Límite de la Tarea:"
+
+[node name="InputTareaFechaLimite" type="LineEdit" parent="DialogoTareas/VBoxContainer" unique_id=421975466]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+placeholder_text = "DD/MM/AAAA"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="DialogoTareas/VBoxContainer" unique_id=1401026243]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BtnGuardarTarea" type="Button" parent="DialogoTareas/VBoxContainer/HBoxContainer" unique_id=1144593610]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "💾 GUARDAR TAREA"
+
+[node name="BtnCancelar" type="Button" parent="DialogoTareas/VBoxContainer/HBoxContainer" unique_id=82594021]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
+theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+text = "CANCELAR"

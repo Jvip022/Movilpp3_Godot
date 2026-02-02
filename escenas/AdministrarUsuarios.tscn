@@ -44,9 +44,14 @@ size_flags_horizontal = 3
 theme_type_variation = &"HeaderLabel"
 text = "Administración de Usuarios"
 
-[node name="Spacer" type="Control" parent="Header/HBoxContainer" unique_id=668786812]
+[node name="SpacerLeft" type="Control" parent="Header/HBoxContainer" unique_id=999888777]
+custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
-size_flags_horizontal = 3
+
+[node name="BtnRegresar" type="Button" parent="Header/HBoxContainer" unique_id=987654321]
+layout_mode = 2
+tooltip_text = "Regresar al menú principal"
+text = "← Regresar"
 
 [node name="BtnExportar" type="Button" parent="Header/HBoxContainer" unique_id=1299259636]
 layout_mode = 2
