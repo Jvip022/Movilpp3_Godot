@@ -1,16 +1,16 @@
 extends Control
 
 # Referencias a nodos
-@onready var label_id: Label = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente/IDExpediente
-@onready var label_tipo: Label = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente/TipoNC
-@onready var label_estado: Label = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente/EstadoNC
-@onready var label_fecha: Label = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente/FechaRegistro
-@onready var label_desc: Label = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente/Descripcion
-@onready var lista_documentos: ItemList = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelInfoExpediente/InfoExpediente/ListaDocumentos
-@onready var boton_cargar: Button = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones/Acciones/BotonCargarDoc
-@onready var boton_cerrar: Button = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones/Acciones/BotonCerrarExp
-@onready var mensaje_estado: Label = $ContenedorPrincipal/ContenidoScroll/Contenido/PanelAcciones/Acciones/MensajeEstado
-@onready var boton_menu: Button = $ContenedorPrincipal/PanelControles/BotonMenuPrincipal
+@onready var label_id: Label = $ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente/IDExpediente
+@onready var label_tipo: Label = $ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente/TipoNC
+@onready var label_estado: Label = $ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente/EstadoNC
+@onready var label_fecha: Label = $ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente/FechaRegistro
+@onready var label_desc: Label = $ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente/Descripcion
+@onready var lista_documentos: ItemList = $ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente/ListaDocumentos
+@onready var boton_cargar: Button = $ContenedorPrincipal/PanelAcciones/Acciones/BotonCargarDoc
+@onready var boton_cerrar: Button = $ContenedorPrincipal/PanelAcciones/Acciones/BotonCerrarExp
+@onready var mensaje_estado: Label = $ContenedorPrincipal/PanelAcciones/Acciones/MensajeEstado
+@onready var boton_menu: Button = $ContenedorPrincipal/BotonesInferiores/BtnVolverMenu
 @onready var dialogo_cargar: FileDialog = $DialogoCargarDoc
 @onready var dialogo_confirmar: AcceptDialog = $DialogoConfirmacion
 @onready var mensaje_exito: AcceptDialog = $MensajeExito

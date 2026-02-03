@@ -11,7 +11,7 @@ class_name MenuInicio
 @onready var btn_registrar_encuesta = $ContenedorPrincipal/BotonesContainer/BtnRegistrarEncuesta
 @onready var btn_procesar_expediente = $ContenedorPrincipal/BotonesContainer/BtnProcesarExpediente
 @onready var btn_procesar_correctivas = $ContenedorPrincipal/BotonesContainer/BtnProcesarCorrectivas
-@onready var btn_procesar_mejoras = $ContenedorPrincipal/BotonesContainer/BtnProcesarMejoras
+#@onready var btn_procesar_mejoras = $ContenedorPrincipal/BotonesContainer/BtnProcesarMejoras
 @onready var btn_salir = $ContenedorPrincipal/BtnSalir
 
 func _ready():

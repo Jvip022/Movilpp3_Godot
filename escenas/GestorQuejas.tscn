@@ -3,6 +3,70 @@
 [ext_resource type="Script" uid="uid://d2mlrfo2jlxj4" path="res://scripts/Gestor_quejas.gd" id="1_6pdcs"]
 [ext_resource type="Script" uid="uid://y2okqol32px6" path="res://scripts/InterfaceManager.gd" id="2_xxrdc"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(1, 1, 1, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.290196, 0.533333, 0.3)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="GestorQuejas" type="Node" unique_id=1421529623]
 script = ExtResource("1_6pdcs")
 
@@ -17,19 +81,60 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("2_xxrdc")
 
-[node name="MainPanel" type="Panel" parent="InterfaceManager" unique_id=1696886456]
-layout_mode = 0
+[node name="TituloPanel" type="Panel" parent="InterfaceManager" unique_id=1373258980]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = 70.0
+grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="Titulo" type="Label" parent="InterfaceManager/TituloPanel" unique_id=819801758]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "SISTEMA DE GESTIÓN DE QUEJAS Y RECLAMOS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MainPanel" type="Panel" parent="InterfaceManager" unique_id=1696886456]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.2
+anchor_right = 0.5
+anchor_bottom = 0.9
+offset_left = -400.0
+offset_right = 400.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_5")
 
 [node name="MainTabContainer" type="TabContainer" parent="InterfaceManager/MainPanel" unique_id=2132540904]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_selected_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
 current_tab = 0
 
 [node name="Registro" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=1020364369]
@@ -50,70 +155,100 @@ size_flags_vertical = 3
 
 [node name="LblTipoCaso" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=447505498]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Tipo de Caso:"
 
 [node name="OptTipoCaso" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=563605112]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="LblNombres" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1918146593]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Nombres:"
 
 [node name="TxtNombres" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=970117237]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Ingrese nombres completos"
 
 [node name="LblIdentificacion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=65046847]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Identificación:"
 
 [node name="TxtIdentificacion" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1364892444]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Cédula/RUC/Pasaporte"
 
 [node name="LblTelefono" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1517041009]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Teléfono:"
 
 [node name="TxtTelefono" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1237141918]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "+593..."
 
 [node name="LblEmail" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=511418616]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Email:"
 
 [node name="TxtEmail" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1573007909]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "cliente@email.com"
 
 [node name="LblAsunto" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1376271934]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Asunto:"
 
 [node name="TxtAsunto" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=514064337]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Resumen breve del problema"
 
 [node name="LblDescripcion" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1443657318]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Descripción:"
 
 [node name="TxtDescripcion" type="TextEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1930730080]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Describa el problema en detalle..."
 wrap_mode = 2
 
 [node name="LblMonto" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=165344163]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Monto Reclamado ($):"
 
 [node name="SpinMonto" type="SpinBox" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1684608770]
@@ -125,18 +260,32 @@ prefix = "$"
 
 [node name="LblPrioridad" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1090684455]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Prioridad:"
 
 [node name="OptPrioridad" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1852602129]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="BtnRegistrar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Registro" unique_id=2142767379]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Registrar Queja"
 
 [node name="BtnCancelar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Registro" unique_id=2142767380]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Cancelar"
 
 [node name="Seguimiento" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=562646461]
@@ -151,19 +300,29 @@ size_flags_horizontal = 3
 [node name="TxtBuscar" type="LineEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel" unique_id=573315962]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Buscar por caso, cliente..."
 
 [node name="OptEstado" type="OptionButton" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel" unique_id=645054279]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="BtnFiltrar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento/FiltrosPanel" unique_id=951599324]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Filtrar"
 
 [node name="ListaQuejas" type="Tree" parent="InterfaceManager/MainPanel/MainTabContainer/Seguimiento" unique_id=1839353809]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
 columns = 6
 column_titles_visible = true
 
@@ -171,20 +330,14 @@ column_titles_visible = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 2
-
-[node name="Seguimiento2" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=163754424]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-metadata/_tab_index = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
 
 [node name="Analiticas" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer" unique_id=586761344]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-metadata/_tab_index = 3
+metadata/_tab_index = 2
 
 [node name="StatsGrid" type="GridContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas" unique_id=353793984]
 layout_mode = 2
@@ -193,16 +346,22 @@ columns = 3
 
 [node name="StatTotal" type="PanelContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid" unique_id=8053922]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
 
 [node name="LblTotal" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid/StatTotal" unique_id=643628544]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
 text = "Total Quejas: 0"
 
 [node name="StatPendientes" type="PanelContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid" unique_id=132928253]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
 
 [node name="LblPendientes" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas/StatsGrid/StatPendientes" unique_id=2079102838]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
 text = "Pendientes: 0"
 
 [node name="GraficosContainer" type="VBoxContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Analiticas" unique_id=254141603]
@@ -219,7 +378,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-metadata/_tab_index = 4
+metadata/_tab_index = 3
 
 [node name="ConfigGrid" type="GridContainer" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion" unique_id=198209584]
 layout_mode = 2
@@ -228,14 +387,20 @@ columns = 2
 
 [node name="LblNotificaciones" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=949598326]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Notificaciones:"
 
 [node name="ChkNotificaciones" type="CheckBox" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=2110639081]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Activar"
 
 [node name="LblIntervalo" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=1229329754]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Intervalo (min):"
 
 [node name="SpinIntervalo" type="SpinBox" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion/ConfigGrid" unique_id=310934114]
@@ -246,7 +411,44 @@ value = 30.0
 
 [node name="BtnGuardar" type="Button" parent="InterfaceManager/MainPanel/MainTabContainer/Configuracion" unique_id=850416899]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Guardar Configuración"
+
+[node name="Footer" type="Panel" parent="InterfaceManager" unique_id=305069291]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -40.0
+offset_right = 400.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="FooterText" type="Label" parent="InterfaceManager/Footer" unique_id=554237778]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = -10.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "Gestor de Quejas - Sistema de Gestión de Calidad v1.0 © 2024"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="AutoUpdateTimer" type="Timer" parent="." unique_id=406710]
 wait_time = 30.0

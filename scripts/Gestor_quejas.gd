@@ -18,6 +18,11 @@ func query_safe(query: String, args: Array = []) -> Array:
 	return result
 
 func _ready():
+	# Verificar si hay datos en la BD y cargar datos de prueba si está vacía
+	var resultado = bd.select_rows("quejas_reclamaciones", "", ["COUNT(*) as total"])
+	if resultado and resultado.size() > 0 and resultado[0]["total"] == 0:
+		print("Base de datos vacía. Cargando datos de prueba...")
+		cargar_datos_prueba_db()
 	# Crear e inicializar ConfigManager
 	config_manager = ConfigManager.new()
 	config_manager.name = "ConfigManager"  # Asignar nombre
@@ -235,7 +240,9 @@ func ejecutar_flujo_queja_completo():
 	# Generar reporte para análisis de tendencias
 	actualizar_analisis_tendencias(id_queja)
 
-func registrar_queja_completa(datos: Dictionary) -> int:
+func registrar_queja_completa(datos: Dictionary):
+	# Normalizar datos antes de enviar a la BD
+	var datos_normalizados = normalizar_datos_para_bd(datos)
 	# Generar número de caso único
 	var numero_caso = generar_numero_caso()
 	
@@ -997,3 +1004,106 @@ func _on_perfil_pressed():
 	var opcion_cambiar_password = menu_perfil.find_child("OpcionCambiarPassword")
 	opcion_cambiar_password.pressed.connect(_on_cambiar_password_pressed)
 	menu_perfil.visible = true
+
+func normalizar_datos_para_bd(datos: Dictionary) -> Dictionary:
+	var datos_normalizados = datos.duplicate(true)
+	
+	# Asegurar que todos los campos de texto estén en el formato correcto
+	if datos_normalizados.has("tipo_caso"):
+		var tipo_caso = str(datos_normalizados["tipo_caso"])
+		# Convertir a minúsculas y eliminar acentos
+		tipo_caso = tipo_caso.to_lower()
+		tipo_caso = tipo_caso.replace("ó", "o").replace("á", "a").replace("é", "e").replace("í", "i").replace("ú", "u")
+		datos_normalizados["tipo_caso"] = tipo_caso
+	
+	# Convertir otros campos a minúsculas si es necesario
+	var campos_a_minusculas = ["tipo_reclamante", "canal_entrada", "recibido_por", "estado", "prioridad"]
+	for campo in campos_a_minusculas:
+		if datos_normalizados.has(campo):
+			datos_normalizados[campo] = str(datos_normalizados[campo]).to_lower()
+	
+	# Asegurar que el monto sea float
+	if datos_normalizados.has("monto_reclamado"):
+		datos_normalizados["monto_reclamado"] = float(datos_normalizados["monto_reclamado"])
+	
+	return datos_normalizados
+
+func cargar_datos_prueba_db():
+	print("Cargando datos de prueba en la base de datos...")
+	
+	var datos_prueba = [
+		{
+			"tipo_caso": "queja",
+			"tipo_reclamante": "cliente",
+			"nombres": "Juan Pérez",
+			"identificacion": "1701234567",
+			"telefono": "+593991234567",
+			"email": "juan.perez@email.com",
+			"asunto": "Producto defectuoso",
+			"descripcion_detallada": "El producto recibido presenta fallas en el funcionamiento desde el primer día de uso.",
+			"monto_reclamado": 150.0,
+			"prioridad": "alta",
+			"estado": "pendiente",
+			"canal_entrada": "sistema",
+			"recibido_por": "admin"
+		},
+		{
+			"tipo_caso": "reclamacion",
+			"tipo_reclamante": "cliente",
+			"nombres": "María González",
+			"identificacion": "1754321098",
+			"telefono": "+593987654321",
+			"email": "maria.gonzalez@email.com",
+			"asunto": "Mala atención al cliente",
+			"descripcion_detallada": "El personal de atención al cliente fue grosero y no resolvió mi problema.",
+			"monto_reclamado": 0.0,
+			"prioridad": "media",
+			"estado": "en_proceso",
+			"canal_entrada": "sistema",
+			"recibido_por": "admin"
+		},
+		{
+			"tipo_caso": "sugerencia",
+			"tipo_reclamante": "cliente",
+			"nombres": "Carlos Rodríguez",
+			"identificacion": "1711122233",
+			"telefono": "+593998877665",
+			"email": "carlos.rodriguez@email.com",
+			"asunto": "Mejora en proceso de compra",
+			"descripcion_detallada": "Sugiero agregar más métodos de pago y reducir los pasos en el proceso de checkout.",
+			"monto_reclamado": 0.0,
+			"prioridad": "baja",
+			"estado": "resuelto",
+			"canal_entrada": "sistema",
+			"recibido_por": "admin"
+		},
+		{
+			"tipo_caso": "felicitacion",
+			"tipo_reclamante": "cliente",
+			"nombres": "Ana López",
+			"identificacion": "1723344556",
+			"telefono": "+593996655443",
+			"email": "ana.lopez@email.com",
+			"asunto": "Excelente servicio post-venta",
+			"descripcion_detallada": "Quiero felicitar al equipo de servicio post-venta por su rápida respuesta y solución efectiva.",
+			"monto_reclamado": 0.0,
+			"prioridad": "baja",
+			"estado": "cerrado",
+			"canal_entrada": "sistema",
+			"recibido_por": "admin"
+		}
+	]
+	
+	var contador_exitos = 0
+	var contador_errores = 0
+	
+	for datos in datos_prueba:
+		# Llamar a la función existente de registro
+		var resultado = registrar_queja_completa(datos)
+		if resultado:
+			contador_exitos += 1
+		else:
+			contador_errores += 1
+	
+	print("✅ Datos de prueba cargados: %d exitos, %d errores" % [contador_exitos, contador_errores])
+	return contador_exitos > 0

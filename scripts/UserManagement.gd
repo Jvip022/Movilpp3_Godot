@@ -35,16 +35,29 @@ var sucursales_disponibles = [
 ]
 
 # Variable para almacenar usuarios (simulación de base de datos)
-var usuarios: Array = []  # Change from Array[Dictionary] to Array
+
 var usuario_seleccionado: Dictionary = {}
 var modo_edicion: bool = false
 
 func _ready():
+	# Quitar despues
+	probar_conexion_bd()
 	# Inicializar tabla de usuarios
 	inicializar_tabla()
-	
-	# Cargar usuarios de ejemplo
-	cargar_usuarios_ejemplo()
+	# Aplicar estilos
+	var tabla = $ContentContainer/UserTableContainer/TablaUsuarios
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(1, 1, 1, 0.9)  # Fondo blanco semi-transparente
+	tabla.add_theme_stylebox_override("panel", style)
+
+	# Botón temporal para crear usuarios de prueba
+	var btn_prueba = Button.new()
+	btn_prueba.text = "Crear Usuarios Prueba"
+	btn_prueba.custom_minimum_size = Vector2(180, 40)
+
+	# Conectar señales del diálogo de confirmación
+	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.connect(confirmar_operacion)
+	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.connect(cancelar_operacion)
 	
 	# Conectar señales de los botones principales
 	$Header/HBoxContainer/BtnRegresar.pressed.connect(regresar_menu_principal)
@@ -69,8 +82,11 @@ func _ready():
 	$ContentContainer/UserTableContainer/TablaUsuarios.nothing_selected.connect(on_nada_seleccionado)
 	
 	# Conectar señales del diálogo de confirmación
-	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.connect(confirmar_operacion)
-	$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.connect(cancelar_operacion)
+	if not $DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.is_connected(confirmar_operacion):
+		$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarSi.pressed.connect(confirmar_operacion)
+	
+	if not $DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.is_connected(cancelar_operacion):
+		$DialogoConfirmacion/VBoxContainer/HBoxContainer/BtnConfirmarNo.pressed.connect(cancelar_operacion)
 	
 	# Conectar señal de búsqueda en tiempo real
 	$ContentContainer/SearchBar/InputBuscar.text_changed.connect(on_busqueda_cambio)
@@ -118,12 +134,14 @@ func inicializar_tabla():
 func inicializar_combo_roles():
 	var combo = $DialogoUsuario/VBoxContainer/ComboRol
 	combo.clear()
-	combo.add_item("Seleccionar Rol*", ROLES_USUARIO.SUPERVISOR_GENERAL)
-	combo.set_item_text(ROLES_USUARIO.SUPERVISOR_GENERAL, "Supervisor General")
-	combo.add_item("Cliente", ROLES_USUARIO.CLIENTE)
-	combo.add_item("Especialista de Calidad", ROLES_USUARIO.ESPECIALISTA_CALIDAD)
-	combo.add_item("Auditor", ROLES_USUARIO.AUDITOR)
-	combo.add_item("Administrador", ROLES_USUARIO.ADMINISTRADOR)
+	combo.add_item("Seleccionar Rol*", 0)
+	combo.set_item_text(0, "Seleccionar Rol*")
+	combo.add_item("Administrador", 1)
+	combo.add_item("Supervisor", 2)
+	combo.add_item("Operador", 3)
+	combo.add_item("Analista", 4)
+	combo.add_item("Legal", 5)
+	combo.add_item("Gerente", 6)
 
 func inicializar_combo_sucursales():
 	var combo = $DialogoUsuario/VBoxContainer/ComboSucursal
@@ -132,104 +150,97 @@ func inicializar_combo_sucursales():
 	for i in range(sucursales_disponibles.size()):
 		combo.add_item(sucursales_disponibles[i])
 
-func cargar_usuarios_ejemplo():
-	# Crear usuarios de ejemplo para pruebas
-	var usuarios_ejemplo = [
-		{
-			"id": "USR001",
-			"nombre": "Carlos Méndez",
-			"usuario": "cmendez",
-			"email": "cmendez@empresa.com",
-			"rol": ROLES_USUARIO.ADMINISTRADOR,
-			"estado": ESTADOS_USUARIO.ACTIVO,
-			"sucursal": "La Habana",
-			"ultimo_acceso": "15/02/2024 09:30",
-			"permisos": ["ADMINISTRAR_USUARIOS", "VER_TRAZAS", "CONFIGURACION"]
-		},
-		{
-			"id": "USR002",
-			"nombre": "Ana Rodríguez",
-			"usuario": "arodriguez",
-			"email": "arodriguez@empresa.com",
-			"rol": ROLES_USUARIO.SUPERVISOR_GENERAL,
-			"estado": ESTADOS_USUARIO.ACTIVO,
-			"sucursal": "Varadero",
-			"ultimo_acceso": "14/02/2024 14:20",
-			"permisos": ["PROCESAR_INCIDENCIAS", "PROCESAR_QUEJAS"]
-		},
-		{
-			"id": "USR003",
-			"nombre": "Luis Fernández",
-			"usuario": "lfernandez",
-			"email": "lfernandez@empresa.com",
-			"rol": ROLES_USUARIO.ESPECIALISTA_CALIDAD,
-			"estado": ESTADOS_USUARIO.ACTIVO,
-			"sucursal": "Viñales",
-			"ultimo_acceso": "13/02/2024 11:15",
-			"permisos": ["PROCESAR_INCIDENCIAS"]
-		},
-		{
-			"id": "USR004",
-			"nombre": "María López",
-			"usuario": "mlopez",
-			"email": "mlopez@empresa.com",
-			"rol": ROLES_USUARIO.AUDITOR,
-			"estado": ESTADOS_USUARIO.ACTIVO,
-			"sucursal": "Trinidad",
-			"ultimo_acceso": "12/02/2024 16:45",
-			"permisos": ["VER_TRAZAS"]
-		},
-		{
-			"id": "USR005",
-			"nombre": "Juan Pérez",
-			"usuario": "jperez",
-			"email": "jperez@empresa.com",
-			"rol": ROLES_USUARIO.CLIENTE,
-			"estado": ESTADOS_USUARIO.ACTIVO,
-			"sucursal": "Santiago de Cuba",
-			"ultimo_acceso": "10/02/2024 10:00",
-			"permisos": []
-		}
-	]
-	
-	usuarios = usuarios_ejemplo
-	actualizar_tabla_usuarios()
+
 
 func actualizar_tabla_usuarios():
 	var tabla = $ContentContainer/UserTableContainer/TablaUsuarios
-	tabla.clear()  # Clear first
+	tabla.clear()
 	
-	# Create root item AFTER clearing
+	# Consulta a la base de datos
+	var consulta = """
+        SELECT id, username, email, nombre_completo, telefono, departamento, 
+               cargo, rol, estado_empleado, fecha_creacion, ultimo_login
+        FROM usuarios 
+        ORDER BY nombre_completo
+	"""
+	
+	print("🔍 Ejecutando consulta para obtener usuarios...")
+	var usuarios_db = Bd.select_query(consulta)
+	
+	if usuarios_db == null:
+		print("❌ Error en la consulta a la base de datos")
+		mostrar_error("Error al cargar usuarios de la base de datos")
+		return
+	
+	print("✅ Usuarios encontrados: " + str(usuarios_db.size()))
+	
+	# Mostrar debug de primer usuario
+	if usuarios_db.size() > 0:
+		print("📋 Primer usuario: ", usuarios_db[0])
+	
 	var root = tabla.create_item()
 	
-	for usuario in usuarios:
-		var item = tabla.create_item(root)  # Create as child of root
+	for usuario in usuarios_db:
+		var item = tabla.create_item(root)
 		
 		# Nombre completo
-		item.set_text(0, usuario["nombre"])
+		item.set_text(0, usuario.get("nombre_completo", "Sin nombre"))
 		
 		# Usuario
-		item.set_text(1, usuario["usuario"])
+		item.set_text(1, usuario.get("username", "Sin usuario"))
 		
 		# Rol
-		var rol_text = obtener_texto_rol(usuario["rol"])
-		item.set_text(2, rol_text)
+		var rol_str = usuario.get("rol", "")
+		item.set_text(2, obtener_texto_rol_string(rol_str))
 		
 		# Estado
-		var estado_text = obtener_texto_estado(usuario["estado"])
-		var estado_color = obtener_color_estado(usuario["estado"])
-		item.set_text(3, estado_text)
-		item.set_custom_color(3, estado_color)
+		var estado_str = usuario.get("estado_empleado", "")
+		item.set_text(3, obtener_texto_estado_string(estado_str))
+		item.set_custom_color(3, obtener_color_estado_string(estado_str))
 		
 		# Último acceso
-		item.set_text(4, usuario.get("ultimo_acceso", "Nunca"))
+		var ultimo_login = usuario.get("ultimo_login", "")
+		if ultimo_login and ultimo_login != "":
+			item.set_text(4, parse_date(ultimo_login))
+		else:
+			item.set_text(4, "Nunca")
 		
-		# Sucursal
-		item.set_text(5, usuario.get("sucursal", "No asignada"))
+		# Departamento/Sucursal
+		item.set_text(5, usuario.get("departamento", "No asignado"))
 		
-		# Botones de acción en la última columna (simulado con texto)
+		# Almacenar ID del usuario para referencia
+		item.set_metadata(0, usuario.get("id", 0))
+		
+		# Botones de acción
 		item.set_text(6, "🔍 ✏️ ⚠️")
-		
+	
+	# Limpiar selección
+	usuario_seleccionado = {}
+	actualizar_botones_accion(false)
+	
+func obtener_texto_rol_string(rol_string: String) -> String:
+	if rol_string == null or rol_string == "":
+		return "Sin rol"
+	
+	match rol_string.to_lower():
+		"admin": return "Administrador"
+		"supervisor": return "Supervisor"
+		"operador": return "Operador"
+		"analista": return "Analista"
+		"legal": return "Legal"
+		"gerente": return "Gerente"
+		_: return rol_string.capitalize()
+
+func obtener_texto_estado_string(estado_string: String) -> String:
+	if estado_string == null or estado_string == "":
+		return "Desconocido"
+	
+	match estado_string.to_lower():
+		"activo": return "Activo"
+		"inactivo": return "Inactivo"
+		"pendiente": return "Pendiente"
+		"bloqueado": return "Bloqueado"
+		_: return estado_string.capitalize()
 func obtener_texto_rol(rol_id: int) -> String:
 	match rol_id:
 		ROLES_USUARIO.SUPERVISOR_GENERAL: return "Supervisor General"
@@ -238,6 +249,15 @@ func obtener_texto_rol(rol_id: int) -> String:
 		ROLES_USUARIO.AUDITOR: return "Auditor"
 		ROLES_USUARIO.ADMINISTRADOR: return "Administrador"
 		_: return "Sin rol"
+
+func obtener_color_estado_string(estado_string: String) -> Color:
+	match estado_string.to_lower():
+		"activo": return Color(0.2, 0.8, 0.2)  # Verde
+		"inactivo": return Color(0.8, 0.8, 0.2)  # Amarillo
+		"pendiente": return Color(0.2, 0.6, 0.8)  # Azul
+		"bloqueado": return Color(0.8, 0.2, 0.2)  # Rojo
+		_: return Color(0.5, 0.5, 0.5)  # Gris
+
 
 func obtener_texto_estado(estado_id: int) -> String:
 	match estado_id:
@@ -254,21 +274,47 @@ func obtener_color_estado(estado_id: int) -> Color:
 		ESTADOS_USUARIO.PENDIENTE: return Color(0.2, 0.6, 0.8)  # Azul
 		ESTADOS_USUARIO.BLOQUEADO: return Color(0.8, 0.2, 0.2)  # Rojo
 		_: return Color(0.5, 0.5, 0.5)  # Gris
+		
+
+func parse_date(fecha_string: String) -> String:
+	# Convertir fecha de la BD a formato legible
+	if fecha_string == "" or fecha_string == null:
+		return "N/A"
+	
+	# La fecha viene en formato SQLite: "2024-01-15 14:30:00"
+	var partes = fecha_string.split(" ")
+	if partes.size() > 0:
+		return partes[0]  # Retornar solo la fecha (YYYY-MM-DD)
+	return fecha_string
 
 func on_usuario_seleccionado():
 	var tabla = $ContentContainer/UserTableContainer/TablaUsuarios
 	var seleccionado = tabla.get_selected()
 	
 	if seleccionado:
-		var index = seleccionado.get_index()
-		if index >= 0 and index < usuarios.size():
-			usuario_seleccionado = usuarios[index]
-			actualizar_botones_accion(true)
+		var id_usuario = seleccionado.get_metadata(0)
+		
+		if id_usuario != null:
+			# Obtener TODOS los campos necesarios del usuario
+			var usuario_encontrado = Bd.select_query("""
+				SELECT id, username, email, nombre_completo as nombre, 
+					   rol, estado_empleado as estado, departamento, 
+					   ultimo_login, permisos, telefono, cargo
+				FROM usuarios 
+				WHERE id = ?
+			""", [id_usuario])
 			
-			# Habilitar botones según el estado del usuario
-			var estado = usuario_seleccionado.get("estado", ESTADOS_USUARIO.ACTIVO)
-			$ContentContainer/ActionButtons/BtnDesactivar.disabled = (estado == ESTADOS_USUARIO.INACTIVO)
-
+			if usuario_encontrado and usuario_encontrado.size() > 0:
+				usuario_seleccionado = usuario_encontrado[0]
+				actualizar_botones_accion(true)
+				
+				# Habilitar botones según estado
+				var estado = usuario_seleccionado.get("estado", "activo")
+				$ContentContainer/ActionButtons/BtnDesactivar.disabled = (estado.to_lower() == "inactivo")
+			else:
+				usuario_seleccionado = {}
+				actualizar_botones_accion(false)
+				
 func on_nada_seleccionado():
 	usuario_seleccionado = {}
 	actualizar_botones_accion(false)
@@ -280,48 +326,81 @@ func actualizar_botones_accion(habilitar: bool):
 	$ContentContainer/ActionButtons/BtnVerTrazas.disabled = not habilitar
 
 func buscar_usuarios():
-	var texto_busqueda = $ContentContainer/SearchBar/InputBuscar.text.strip_edges().to_lower()
+	var texto_busqueda = $ContentContainer/SearchBar/InputBuscar.text.strip_edges()
 	
 	if texto_busqueda == "":
 		actualizar_tabla_usuarios()
 		return
 	
-	var resultados = []
-	for usuario in usuarios:
-		var nombre_completo = usuario["nombre"].to_lower()
-		var nombre_usuario = usuario["usuario"].to_lower()
-		var email = usuario["email"].to_lower()
-		
-		if (texto_busqueda in nombre_completo or 
-			texto_busqueda in nombre_usuario or 
-			texto_busqueda in email):
-			resultados.append(usuario)
+	# Buscar en la base de datos usando consulta SQL
+	var resultados = Bd.select_query("""
+		SELECT id, username, email, nombre_completo, rol, estado_empleado, 
+			   departamento, ultimo_login, fecha_creacion
+		FROM usuarios 
+		WHERE LOWER(nombre_completo) LIKE ? 
+		   OR LOWER(username) LIKE ? 
+		   OR LOWER(email) LIKE ?
+		   OR LOWER(departamento) LIKE ?
+		ORDER BY nombre_completo
+	""", [
+		"%" + texto_busqueda.to_lower() + "%",
+		"%" + texto_busqueda.to_lower() + "%", 
+		"%" + texto_busqueda.to_lower() + "%",
+		"%" + texto_busqueda.to_lower() + "%"
+	])
 	
-	# Mostrar resultados filtrados
-	mostrar_usuarios_filtrados(resultados)
-
+	if resultados != null:
+		mostrar_usuarios_filtrados(resultados)
+	else:
+		print("❌ Error al buscar usuarios")
+		mostrar_usuarios_filtrados([])
 func on_busqueda_cambio(_nuevo_texto: String):
 	# Búsqueda en tiempo real
 	buscar_usuarios()
 
 func mostrar_usuarios_filtrados(usuarios_filtrados: Array):
 	var tabla = $ContentContainer/UserTableContainer/TablaUsuarios
-	tabla.clear()  # Clear first
+	tabla.clear()
 	
-	# Create root item AFTER clearing
+	if usuarios_filtrados == null:
+		print("❌ Error: usuarios_filtrados es null")
+		return
+	
 	var root = tabla.create_item()
 	
 	for usuario in usuarios_filtrados:
-		var item = tabla.create_item(root)  # Create as child of root
-		item.set_text(0, usuario["nombre"])
-		item.set_text(1, usuario["usuario"])
-		item.set_text(2, obtener_texto_rol(usuario["rol"]))
-		item.set_text(3, obtener_texto_estado(usuario["estado"]))
-		item.set_custom_color(3, obtener_color_estado(usuario["estado"]))
-		item.set_text(4, usuario.get("ultimo_acceso", "Nunca"))
-		item.set_text(5, usuario.get("sucursal", "No asignada"))
+		var item = tabla.create_item(root)
+		
+		# Validar que usuario sea un Dictionary
+		if not (usuario is Dictionary):
+			print("⚠️ Advertencia: elemento no es Dictionary: ", usuario)
+			continue
+		
+		# Usar claves con valores por defecto
+		item.set_text(0, usuario.get("nombre_completo", "Sin nombre"))
+		item.set_text(1, usuario.get("username", "Sin usuario"))
+		item.set_text(2, obtener_texto_rol_string(usuario.get("rol", "")))
+		item.set_text(3, obtener_texto_estado_string(usuario.get("estado_empleado", "")))
+		
+		# Color estado
+		item.set_custom_color(3, obtener_color_estado_string(usuario.get("estado_empleado", "")))
+		
+		# Último acceso
+		var ultimo_login = usuario.get("ultimo_login", "")
+		if ultimo_login and ultimo_login != "":
+			item.set_text(4, parse_date(ultimo_login))
+		else:
+			item.set_text(4, "Nunca")
+		
+		# Sucursal
+		item.set_text(5, usuario.get("departamento", "No asignada"))
+		
+		# ID en metadata
+		item.set_metadata(0, usuario.get("id", 0))
+		
+		# Botones de acción
 		item.set_text(6, "🔍 ✏️ ⚠️")
-
+		
 func abrir_dialogo_nuevo_usuario():
 	modo_edicion = false
 	limpiar_formulario_usuario()
@@ -359,38 +438,55 @@ func limpiar_formulario_usuario():
 
 func llenar_formulario_usuario(usuario: Dictionary):
 	# Separar nombre y apellido (simulación)
-	var nombre_completo = usuario["nombre"].split(" ")
+	# Usar .get() con valor por defecto
+	var nombre_completo = usuario.get("nombre", "").split(" ")
 	if nombre_completo.size() >= 2:
 		$DialogoUsuario/VBoxContainer/InputNombre.text = nombre_completo[0]
 		$DialogoUsuario/VBoxContainer/InputApellido.text = " ".join(nombre_completo.slice(1))
 	else:
-		$DialogoUsuario/VBoxContainer/InputNombre.text = usuario["nombre"]
+		$DialogoUsuario/VBoxContainer/InputNombre.text = usuario.get("nombre", "")
 		$DialogoUsuario/VBoxContainer/InputApellido.text = ""
 	
-	$DialogoUsuario/VBoxContainer/InputEmail.text = usuario["email"]
-	$DialogoUsuario/VBoxContainer/InputUsuario.text = usuario["usuario"]
+	$DialogoUsuario/VBoxContainer/InputEmail.text = usuario.get("email", "")
+	$DialogoUsuario/VBoxContainer/InputUsuario.text = usuario.get("username", "")
 	
-	# Seleccionar rol en combo
+	# Seleccionar rol en combo - mapear desde BD a ID del combo
+	var rol_bd = usuario.get("rol", "")
+	var rol_id = 0
+	match rol_bd:
+		"admin": rol_id = 1
+		"supervisor": rol_id = 2
+		"operador": rol_id = 3
+		"analista": rol_id = 4
+		"legal": rol_id = 5
+		"gerente": rol_id = 6
+	
 	var combo_rol = $DialogoUsuario/VBoxContainer/ComboRol
 	for i in range(combo_rol.item_count):
-		if combo_rol.get_item_id(i) == usuario["rol"]:
+		if combo_rol.get_item_id(i) == rol_id:
 			combo_rol.select(i)
 			break
 	
 	# Seleccionar sucursal en combo
+	var sucursal = usuario.get("departamento", "")
 	var combo_sucursal = $DialogoUsuario/VBoxContainer/ComboSucursal
 	for i in range(1, combo_sucursal.item_count):  # Empezar desde 1 (saltar "Seleccionar Sucursal*")
-		if combo_sucursal.get_item_text(i) == usuario.get("sucursal", ""):
+		if combo_sucursal.get_item_text(i) == sucursal:
 			combo_sucursal.select(i)
 			break
 	
 	# Configurar permisos según el usuario
-	var permisos = usuario.get("permisos", [])
+	var permisos_str = usuario.get("permisos", "[]")
+	var permisos = JSON.parse_string(permisos_str)
+	if permisos == null:
+		permisos = []
+	
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckProcesarIncidencias.button_pressed = "PROCESAR_INCIDENCIAS" in permisos
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckProcesarQuejas.button_pressed = "PROCESAR_QUEJAS" in permisos
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckAdministrarUsuarios.button_pressed = "ADMINISTRAR_USUARIOS" in permisos
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckVerTrazas.button_pressed = "VER_TRAZAS" in permisos
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckConfiguracion.button_pressed = "CONFIGURACION" in permisos
+	
 
 func generar_contrasena_aleatoria():
 	var caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%"
@@ -400,7 +496,7 @@ func generar_contrasena_aleatoria():
 	
 	$DialogoUsuario/VBoxContainer/HBoxContainer/InputPassword.text = contrasena
 
-func obtener_permisos_seleccionados() -> Array[String]:
+func obtener_permisos_seleccionados() -> Array:
 	var permisos = []
 	
 	if $DialogoUsuario/VBoxContainer/PermisosContainer/CheckProcesarIncidencias.button_pressed:
@@ -442,22 +538,31 @@ func validar_formulario_usuario() -> bool:
 		mostrar_error("Debe seleccionar un rol")
 		return false
 	
-	# Validar que se haya seleccionado una sucursal (excepto para clientes)
-	var rol_seleccionado = $DialogoUsuario/VBoxContainer/ComboRol.get_item_id($DialogoUsuario/VBoxContainer/ComboRol.selected)
-	if rol_seleccionado != ROLES_USUARIO.CLIENTE and $DialogoUsuario/VBoxContainer/ComboSucursal.selected == 0:
+	# Validar que se haya seleccionado una sucursal
+	if $DialogoUsuario/VBoxContainer/ComboSucursal.selected == 0:
 		mostrar_error("Debe seleccionar una sucursal")
 		return false
 	
 	# Validar nombre de usuario único (solo en modo creación)
 	if not modo_edicion:
 		var nuevo_usuario = $DialogoUsuario/VBoxContainer/InputUsuario.text.strip_edges()
-		for usuario in usuarios:
-			if usuario["usuario"].to_lower() == nuevo_usuario.to_lower():
-				mostrar_error("El nombre de usuario ya existe")
-				return false
+		var existe = Bd.select_query("SELECT COUNT(*) as count FROM usuarios WHERE username = ?", [nuevo_usuario])
+		
+		if existe and existe[0]["count"] > 0:
+			mostrar_error("El nombre de usuario ya existe")
+			return false
 	
 	return true
-
+	
+func obtener_permisos_de_json(permisos_json: String) -> Array:
+	if permisos_json == "" or permisos_json == "[]":
+		return []
+	
+	var result = JSON.parse_string(permisos_json)
+	if result is Array:
+		return result
+	return []
+	
 func guardar_usuario():
 	if not validar_formulario_usuario():
 		return
@@ -465,89 +570,175 @@ func guardar_usuario():
 	mostrar_carga("Guardando usuario...")
 	
 	# Simular operación de guardado con delay
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(0.5).timeout
 	
+	var exito = false
 	if modo_edicion:
-		# Modificar usuario existente
-		modificar_usuario_existente()
+		# Modificar usuario existente en BD
+		exito = modificar_usuario_existente()
 	else:
-		# Crear nuevo usuario
-		crear_nuevo_usuario()
+		# Crear nuevo usuario en BD
+		exito = crear_nuevo_usuario()
 	
 	ocultar_carga()
-	$DialogoUsuario.hide()
-	actualizar_tabla_usuarios()
+	
+	if exito:
+		$DialogoUsuario.hide()
+		actualizar_tabla_usuarios()
 
 func crear_nuevo_usuario():
-	var nuevo_id = "USR" + str(usuarios.size() + 1).pad_zeros(3)
+	# Obtener datos del formulario
+	var nombre_completo = $DialogoUsuario/VBoxContainer/InputNombre.text.strip_edges() + " " + $DialogoUsuario/VBoxContainer/InputApellido.text.strip_edges()
+	var username = $DialogoUsuario/VBoxContainer/InputUsuario.text.strip_edges()
+	var email = $DialogoUsuario/VBoxContainer/InputEmail.text.strip_edges()
+	var password = $DialogoUsuario/VBoxContainer/HBoxContainer/InputPassword.text.strip_edges()
 	
-	var nuevo_usuario = {
-		"id": nuevo_id,
-		"nombre": $DialogoUsuario/VBoxContainer/InputNombre.text.strip_edges() + " " + $DialogoUsuario/VBoxContainer/InputApellido.text.strip_edges(),
-		"usuario": $DialogoUsuario/VBoxContainer/InputUsuario.text.strip_edges(),
-		"email": $DialogoUsuario/VBoxContainer/InputEmail.text.strip_edges(),
-		"contrasena": $DialogoUsuario/VBoxContainer/HBoxContainer/InputPassword.text.strip_edges(),
-		"rol": $DialogoUsuario/VBoxContainer/ComboRol.get_item_id($DialogoUsuario/VBoxContainer/ComboRol.selected),
-		"estado": ESTADOS_USUARIO.ACTIVO,
-		"sucursal": $DialogoUsuario/VBoxContainer/ComboSucursal.get_item_text($DialogoUsuario/VBoxContainer/ComboSucursal.selected),
-		"ultimo_acceso": "Nunca",
-		"permisos": obtener_permisos_seleccionados(),
-		"notificaciones": $DialogoUsuario/VBoxContainer/CheckBoxNotificaciones.button_pressed
+	# Mapear el rol del combo al formato de la BD
+	var rol_combo = $DialogoUsuario/VBoxContainer/ComboRol.get_item_id($DialogoUsuario/VBoxContainer/ComboRol.selected)
+	var rol_bd = mapear_rol_a_bd(rol_combo)
+	
+	# Obtener sucursal
+	var sucursal = $DialogoUsuario/VBoxContainer/ComboSucursal.get_item_text($DialogoUsuario/VBoxContainer/ComboSucursal.selected)
+	
+	# Obtener permisos como JSON string
+	var permisos_json = JSON.stringify(obtener_permisos_seleccionados())
+	
+	# Crear hash de la contraseña (en producción usar bcrypt o similar)
+	var password_hash = password.sha256_text()
+	
+	# Preparar datos para insertar en BD
+	var datos_usuario = {
+		"username": username,
+		"password_hash": password_hash,
+		"email": email,
+		"nombre_completo": nombre_completo,
+		"telefono": "",  # Puedes añadir campo en el formulario si lo necesitas
+		"departamento": sucursal,
+		"cargo": "Usuario",
+		"rol": rol_bd,
+		"estado_empleado": "activo",
+		"permisos": permisos_json,
+		"tema_preferido": "claro",
+		"idioma": "es",
+		"zona_horaria": "America/Havana",
+		"notificaciones_email": $DialogoUsuario/VBoxContainer/CheckBoxNotificaciones.button_pressed,
+		"notificaciones_push": true,
+		"fecha_creacion": Time.get_datetime_string_from_system(),
+		"creado_por": 1  # ID del administrador que crea el usuario
 	}
 	
-	usuarios.append(nuevo_usuario)
-	usuario_creado.emit(nuevo_usuario)
-	mostrar_exito("Usuario creado exitosamente")
+	# Insertar en la base de datos
+	var id_insertado = Bd.insert("usuarios", datos_usuario)
+	
+	if id_insertado > 0:
+		print("✅ Usuario creado en BD con ID: ", id_insertado)
+		usuario_creado.emit(datos_usuario)
+		mostrar_exito("Usuario creado exitosamente en la base de datos")
+		return true
+	else:
+		print("❌ Error al crear usuario en BD")
+		mostrar_error("Error al guardar usuario en base de datos")
+		return false
 
-func modificar_usuario_existente():
+func modificar_usuario_existente() -> bool:
 	if usuario_seleccionado.is_empty():
-		return
+		return false
 	
-	var index = usuarios.find(usuario_seleccionado)
-	if index == -1:
-		return
+	# Obtener datos actualizados del formulario
+	var nombre_completo = $DialogoUsuario/VBoxContainer/InputNombre.text.strip_edges() + " " + $DialogoUsuario/VBoxContainer/InputApellido.text.strip_edges()
+	var email = $DialogoUsuario/VBoxContainer/InputEmail.text.strip_edges()
+	var username = $DialogoUsuario/VBoxContainer/InputUsuario.text.strip_edges()
 	
-	# Actualizar datos del usuario
-	var usuario_actualizado = usuario_seleccionado.duplicate()
-	usuario_actualizado["nombre"] = $DialogoUsuario/VBoxContainer/InputNombre.text.strip_edges() + " " + $DialogoUsuario/VBoxContainer/InputApellido.text.strip_edges()
-	usuario_actualizado["email"] = $DialogoUsuario/VBoxContainer/InputEmail.text.strip_edges()
-	usuario_actualizado["usuario"] = $DialogoUsuario/VBoxContainer/InputUsuario.text.strip_edges()
-	usuario_actualizado["rol"] = $DialogoUsuario/VBoxContainer/ComboRol.get_item_id($DialogoUsuario/VBoxContainer/ComboRol.selected)
-	usuario_actualizado["sucursal"] = $DialogoUsuario/VBoxContainer/ComboSucursal.get_item_text($DialogoUsuario/VBoxContainer/ComboSucursal.selected)
-	usuario_actualizado["permisos"] = obtener_permisos_seleccionados()
+	# Mapear rol
+	var rol_combo = $DialogoUsuario/VBoxContainer/ComboRol.get_item_id($DialogoUsuario/VBoxContainer/ComboRol.selected)
+	var rol_bd = mapear_rol_a_bd(rol_combo)
 	
-	usuarios[index] = usuario_actualizado
-	usuario_modificado.emit(usuario_seleccionado["id"], usuario_actualizado)
-	mostrar_exito("Usuario modificado exitosamente")
+	# Obtener permisos como JSON
+	var permisos_json = JSON.stringify(obtener_permisos_seleccionados())
+	
+	# Datos a actualizar
+	var datos_actualizados = {
+		"nombre_completo": nombre_completo,
+		"email": email,
+		"username": username,
+		"rol": rol_bd,
+		"departamento": $DialogoUsuario/VBoxContainer/ComboSucursal.get_item_text($DialogoUsuario/VBoxContainer/ComboSucursal.selected),
+		"permisos": permisos_json,
+		"notificaciones_email": $DialogoUsuario/VBoxContainer/CheckBoxNotificaciones.button_pressed,
+		"fecha_modificacion": Time.get_datetime_string_from_system(),
+		"modificado_por": 1
+	}
+	
+	# Actualizar en la BD - CORREGIR: Manejar diferentes tipos de retorno
+	var resultado = Bd.update("usuarios", datos_actualizados, "id = ?", [usuario_seleccionado.get("id", 0)])
+	
+	# Manejar diferentes tipos de retorno
+	var exito = false
+	
+	if resultado is bool:
+		exito = resultado
+		print("✅ Resultado de update (bool): ", resultado)
+	elif resultado is int:
+		exito = resultado > 0
+		print("✅ Filas afectadas (int): ", resultado)
+	else:
+		print("❌ Tipo de retorno desconocido: ", typeof(resultado))
+	
+	if exito:
+		print("✅ Usuario actualizado en BD, ID: ", usuario_seleccionado.get("id", 0))
+		usuario_modificado.emit(str(usuario_seleccionado.get("id", 0)), datos_actualizados)
+		mostrar_exito("Usuario modificado exitosamente")
+		return true
+	else:
+		print("❌ Error al actualizar usuario en BD")
+		mostrar_error("Error al actualizar usuario en base de datos")
+		return false
 
 func solicitar_desactivar_usuario():
 	if usuario_seleccionado.is_empty():
 		mostrar_error("No hay usuario seleccionado")
 		return
 	
-	if usuario_seleccionado["estado"] == ESTADOS_USUARIO.INACTIVO:
+	# Usar .get() con valor por defecto
+	var estado = usuario_seleccionado.get("estado", "activo")
+	if estado.to_lower() == "inactivo":
 		mostrar_error("El usuario ya está inactivo")
 		return
 	
-	$DialogoConfirmacion/MensajeConfirmacion.text = "¿Está seguro de que desea desactivar al usuario:\n" + usuario_seleccionado["nombre"] + "?"
+	# CORREGIR: La ruta correcta es VBoxContainer/MensajeConfirmacion
+	$DialogoConfirmacion/VBoxContainer/MensajeConfirmacion.text = "¿Está seguro de que desea desactivar al usuario:\n" + usuario_seleccionado.get("nombre", "Usuario sin nombre") + "?"
 	$DialogoConfirmacion.popup_centered()
-
+	
 func confirmar_operacion():
 	$DialogoConfirmacion.hide()
 	
 	if usuario_seleccionado.is_empty():
 		return
 	
-	var index = usuarios.find(usuario_seleccionado)
-	if index == -1:
-		return
+	# Actualizar estado en la BD
+	var resultado = Bd.update("usuarios", 
+		{"estado_empleado": "inactivo", "fecha_modificacion": Time.get_datetime_string_from_system()},
+		"id = ?", 
+		[usuario_seleccionado.get("id", 0)]
+	)
 	
-	# Cambiar estado a INACTIVO
-	usuarios[index]["estado"] = ESTADOS_USUARIO.INACTIVO
-	usuario_desactivado.emit(usuario_seleccionado["id"])
+	# Manejar diferentes tipos de retorno
+	var exito = false
 	
-	mostrar_exito("Usuario desactivado exitosamente")
-	actualizar_tabla_usuarios()
+	if resultado is bool:
+		exito = resultado
+	elif resultado is int:
+		exito = resultado > 0
+	
+	if exito:
+		print("✅ Usuario desactivado en BD, ID: ", usuario_seleccionado.get("id", 0))
+		usuario_desactivado.emit(str(usuario_seleccionado.get("id", 0)))
+		mostrar_exito("Usuario desactivado exitosamente")
+		
+		# Actualizar la tabla
+		actualizar_tabla_usuarios()
+	else:
+		mostrar_error("Error al desactivar usuario en base de datos")
 	
 	# Limpiar selección
 	usuario_seleccionado = {}
@@ -561,9 +752,71 @@ func abrir_dialogo_asignar_rol():
 		mostrar_error("No hay usuario seleccionado")
 		return
 	
-	$DialogoAsignarRol/LabelUsuario.text = "Usuario: " + usuario_seleccionado["nombre"]
-	$DialogoAsignarRol.popup_centered()
+	# Crear un diálogo de confirmación (mejor que AcceptDialog)
+	var dialog = ConfirmationDialog.new()
+	dialog.title = "Asignar Rol"
+	dialog.dialog_text = "Asignar nuevo rol a: " + usuario_seleccionado.get("nombre", "Usuario sin nombre")
+	dialog.size = Vector2(400, 250)
+	
+	# Agregar opciones de rol
+	var vbox = VBoxContainer.new()
+	var label = Label.new()
+	label.text = "Seleccione el nuevo rol:"
+	vbox.add_child(label)
+	
+	var option_button = OptionButton.new()
+	option_button.add_item("Administrador", 1)
+	option_button.add_item("Supervisor", 2)
+	option_button.add_item("Operador", 3)
+	option_button.add_item("Analista", 4)
+	option_button.add_item("Legal", 5)
+	option_button.add_item("Gerente", 6)
+	vbox.add_child(option_button)
+	
+	# Centrar contenido
+	var container = CenterContainer.new()
+	container.add_child(vbox)
+	dialog.add_child(container)
+	
+	# Conectar señales
+	dialog.confirmed.connect(
+		func():
+			var nuevo_rol_id = option_button.get_selected_id()
+			asignar_nuevo_rol(nuevo_rol_id)
+			dialog.queue_free()
+	)
+	
+	dialog.canceled.connect(func(): dialog.queue_free())
+	
+	# Mostrar diálogo
+	add_child(dialog)
+	dialog.popup_centered()
 
+func asignar_nuevo_rol(rol_id: int):
+	# Convertir ID a string de rol
+	var rol_bd = mapear_rol_a_bd(rol_id)
+	
+	# Actualizar en BD
+	var resultado = Bd.update("usuarios", 
+		{"rol": rol_bd, "fecha_modificacion": Time.get_datetime_string_from_system()},
+		"id = ?", 
+		[usuario_seleccionado.get("id", 0)]
+	)
+	
+	# Manejar diferentes tipos de retorno
+	var exito = false
+	
+	if resultado is bool:
+		exito = resultado
+	elif resultado is int:
+		exito = resultado > 0
+	
+	if exito:
+		mostrar_exito("Rol actualizado exitosamente")
+		actualizar_tabla_usuarios()
+	else:
+		mostrar_error("Error al actualizar el rol")
+		
 func ver_trazas_usuario():
 	if usuario_seleccionado.is_empty():
 		mostrar_error("No hay usuario seleccionado")
@@ -575,18 +828,44 @@ func ver_trazas_usuario():
 	await get_tree().create_timer(1.5).timeout
 	ocultar_carga()
 	
-	# En un sistema real, aquí se abriría una ventana con las trazas
-	mostrar_exito("Trazas cargadas para: " + usuario_seleccionado["nombre"] + "\n(Esta funcionalidad se implementará en la ventana de trazas)")
-
+	# Usar .get() con valor por defecto
+	mostrar_exito("Trazas cargadas para: " + usuario_seleccionado.get("nombre", "Usuario") )
+	get_tree().change_scene_to_file("res://escenas/TrazasVisualizar.tscn")
+				
 func exportar_lista_usuarios():
-	mostrar_carga("Exportando lista de usuarios...")
+	# Obtener usuarios de la base de datos - CAMBIAR NOMBRE DE VARIABLE
+	var usuarios_db = Bd.select_query("""
+		SELECT username, email, nombre_completo, rol 
+		FROM usuarios 
+		ORDER BY username
+	""")
 	
-	# Simular exportación
-	await get_tree().create_timer(2.0).timeout
-	ocultar_carga()
+	if usuarios_db == null or usuarios_db.size() == 0:
+		print("❌ No hay usuarios para exportar")
+		return
 	
-	mostrar_exito("Lista de usuarios exportada exitosamente a CSV")
-
+	# Crear CSV simple
+	var csv = "Usuario,Email,Nombre,Rol\n"
+	for usuario in usuarios_db:  # Usar la variable renombrada
+		csv += "%s,%s,%s,%s\n" % [
+			usuario.get("username", ""),
+			usuario.get("email", ""),
+			usuario.get("nombre_completo", ""),
+			usuario.get("rol", "")
+		]
+	
+	# Guardar en archivo
+	var nombre_archivo = "usuarios_" + str(Time.get_unix_time_from_system()) + ".csv"
+	var archivo = FileAccess.open("user://" + nombre_archivo, FileAccess.WRITE)
+	
+	if archivo:
+		archivo.store_string(csv)
+		archivo.close()
+		print("✅ Exportados %d usuarios a: %s" % [usuarios_db.size(), nombre_archivo])
+	else:
+		print("❌ Error al guardar archivo")
+		
+		
 func actualizar_lista_usuarios():
 	mostrar_carga("Actualizando lista de usuarios...")
 	
@@ -624,7 +903,8 @@ func _process(_delta):
 func regresar_menu_principal():
 	# Mostrar diálogo de confirmación si hay cambios sin guardar
 	if hay_cambios_sin_guardar():
-		$DialogoConfirmacion/MensajeConfirmacion.text = "Hay cambios sin guardar. ¿Seguro que desea regresar al menú principal?"
+		# CORREGIR: Usar la ruta correcta
+		$DialogoConfirmacion/VBoxContainer/MensajeConfirmacion.text = "Hay cambios sin guardar. ¿Seguro que desea regresar al menú principal?"
 		$DialogoConfirmacion.popup_centered()
 		
 		# Conectar señales temporales para manejar la confirmación
@@ -664,3 +944,131 @@ func cambiar_a_menu_principal():
 	
 	# Cambiar a la escena del menú principal
 	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
+
+# pruebas
+
+
+
+
+# Función mejorada para crear usuarios de prueba
+func crear_varios_usuarios_prueba():
+	print("📝 Creando usuarios de prueba...")
+	
+	# Lista de usuarios de prueba CON ROLES VÁLIDOS
+	var usuarios_prueba = [
+		{
+			"username": "admin",
+			"password_hash": "admin123",
+			"email": "admin@sistema.com",
+			"nombre_completo": "Administrador Sistema",
+			"rol": "admin",  # VÁLIDO
+			"estado_empleado": "activo",
+			"departamento": "TI",
+			"cargo": "Administrador",
+			"permisos": "[\"todos_permisos\"]",
+			"telefono": "555-0101"
+		},
+		{
+			"username": "supervisor1",
+			"password_hash": "pass123",
+			"email": "supervisor@empresa.com",
+			"nombre_completo": "Juan Pérez López",
+			"rol": "supervisor",  # VÁLIDO
+			"estado_empleado": "activo",
+			"departamento": "Calidad",
+			"cargo": "Supervisor de Calidad",
+			"permisos": "[\"procesar_incidencias\", \"procesar_quejas\"]",
+			"telefono": "555-0102"
+		},
+		{
+			"username": "analista1",  # CAMBIADO de calidad1
+			"password_hash": "pass123",
+			"email": "analista@empresa.com",
+			"nombre_completo": "María García Ruiz",
+			"rol": "analista",  # VÁLIDO (en lugar de "especialista_calidad")
+			"estado_empleado": "activo",
+			"departamento": "Control Calidad",
+			"cargo": "Analista de Calidad",  # CAMBIADO
+			"permisos": "[\"procesar_incidencias\"]",
+			"telefono": "555-0103"
+		},
+		{
+			"username": "legal1",  # CAMBIADO de auditor1
+			"password_hash": "pass123",
+			"email": "legal@empresa.com",
+			"nombre_completo": "Carlos López Méndez",
+			"rol": "legal",  # VÁLIDO (en lugar de "auditor")
+			"estado_empleado": "activo",
+			"departamento": "Legal",
+			"cargo": "Especialista Legal",  # CAMBIADO
+			"permisos": "[\"ver_trazas\"]",
+			"telefono": "555-0104"
+		},
+		{
+			"username": "operador1",
+			"password_hash": "pass123",
+			"email": "operador@empresa.com",
+			"nombre_completo": "Ana Martínez Sánchez",
+			"rol": "operador",  # VÁLIDO
+			"estado_empleado": "inactivo",
+			"departamento": "Ventas",
+			"cargo": "Operadora",
+			"permisos": "[\"ver_dashboard\", \"crear_queja\"]",
+			"telefono": "555-0105"
+		}
+	]
+	
+	var creados = 0
+	for usuario in usuarios_prueba:
+		# Verificar si ya existe
+		var existe = Bd.select_query("SELECT COUNT(*) as count FROM usuarios WHERE username = ?", [usuario["username"]])
+		
+		if existe and existe[0]["count"] == 0:
+			# Insertar usuario
+			var id = Bd.insert("usuarios", usuario)
+			if id > 0:
+				creados += 1
+				print("✅ Usuario creado: %s (ID: %d)" % [usuario["username"], id])
+			else:
+				print("❌ Error al crear usuario: %s" % usuario["username"])
+		else:
+			print("⚠️ Usuario ya existe: %s" % usuario["username"])
+	
+	print("🎉 Total usuarios creados/actualizados: %d" % creados)
+	
+	# Actualizar la tabla
+	actualizar_tabla_usuarios()
+	
+	return creados
+
+
+
+
+
+func probar_conexion_bd():
+	print("🧪 Probando conexión a BD desde UserManagement...")
+	
+	# Prueba simple
+	var test = Bd.select_query("SELECT COUNT(*) as total FROM usuarios")
+	if test:
+		print("✅ Conexión BD OK. Usuarios totales: ", test[0]["total"])
+	else:
+		print("❌ Error en conexión BD")
+	
+	# Verificar estructura de tabla
+	var estructura = Bd.select_query("PRAGMA table_info(usuarios)")
+	if estructura:
+		print("📊 Columnas de tabla 'usuarios':")
+		for col in estructura:
+			print("  - ", col["name"], " (", col["type"], ")")
+			
+func mapear_rol_a_bd(rol_combo_id: int) -> String:
+	# Mapear los IDs del combo a los valores de rol de la BD
+	match rol_combo_id:
+		1: return "admin"      # Administrador
+		2: return "supervisor" # Supervisor
+		3: return "operador"   # Operador
+		4: return "analista"   # Analista
+		5: return "legal"      # Legal
+		6: return "gerente"    # Gerente
+		_: return "operador"   # Valor por defecto

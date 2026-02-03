@@ -5,6 +5,54 @@
 [sub_resource type="Theme" id="Theme_incidencia"]
 default_base_scale = 1.7
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="RegistrarIncidencia" type="Control" unique_id=1213572991]
 layout_mode = 3
 anchors_preset = 15
@@ -27,9 +75,11 @@ anchor_right = 1.0
 anchor_bottom = 0.1
 offset_bottom = 80.0
 theme = SubResource("Theme_incidencia")
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
 [node name="HeaderHBox" type="HBoxContainer" parent="Header" unique_id=252189903]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
@@ -40,7 +90,8 @@ offset_bottom = -10.0
 [node name="Titulo" type="Label" parent="Header/HeaderHBox" unique_id=1494569501]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
 text = "Registrar Incidencia"
 
 [node name="Spacer" type="Control" parent="Header/HeaderHBox" unique_id=7776059]
@@ -50,6 +101,11 @@ size_flags_horizontal = 3
 [node name="BtnCerrar" type="Button" parent="Header/HeaderHBox" unique_id=1984337886]
 layout_mode = 2
 tooltip_text = "Cerrar ventana"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Cerrar"
 
 [node name="ContentContainer" type="ScrollContainer" parent="." unique_id=1824089098]
@@ -74,7 +130,8 @@ size_flags_horizontal = 3
 
 [node name="LabelCliente" type="Label" parent="ContentContainer/FormContainer/SeccionCliente" unique_id=1816441914]
 layout_mode = 2
-theme_type_variation = &"SubHeaderLabel"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 18
 text = "Datos del Cliente"
 
 [node name="ClienteHBox" type="HBoxContainer" parent="ContentContainer/FormContainer/SeccionCliente" unique_id=154627022]
@@ -84,12 +141,19 @@ size_flags_horizontal = 3
 [node name="InputCliente" type="LineEdit" parent="ContentContainer/FormContainer/SeccionCliente/ClienteHBox" unique_id=1404034963]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Buscar cliente por nombre o código..."
 editable = false
 
 [node name="BtnBuscarCliente" type="Button" parent="ContentContainer/FormContainer/SeccionCliente/ClienteHBox" unique_id=1938572863]
 layout_mode = 2
 tooltip_text = "Buscar cliente en base de datos Oracle"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Buscar"
 
 [node name="InfoCliente" type="VBoxContainer" parent="ContentContainer/FormContainer/SeccionCliente" unique_id=598253378]
@@ -99,14 +163,20 @@ size_flags_horizontal = 3
 
 [node name="LabelNombreCliente" type="Label" parent="ContentContainer/FormContainer/SeccionCliente/InfoCliente" unique_id=647233148]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Nombre: [Nombre del cliente]"
 
 [node name="LabelCodigoCliente" type="Label" parent="ContentContainer/FormContainer/SeccionCliente/InfoCliente" unique_id=1126090800]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Código: [Código]"
 
 [node name="LabelContacto" type="Label" parent="ContentContainer/FormContainer/SeccionCliente/InfoCliente" unique_id=342102509]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Contacto: [Email/Teléfono]"
 
 [node name="Separator1" type="HSeparator" parent="ContentContainer/FormContainer" unique_id=793357411]
@@ -118,7 +188,8 @@ size_flags_horizontal = 3
 
 [node name="LabelIncidencia" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia" unique_id=570956500]
 layout_mode = 2
-theme_type_variation = &"SubHeaderLabel"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 18
 text = "Datos de la Incidencia"
 
 [node name="GridContainer" type="GridContainer" parent="ContentContainer/FormContainer/SeccionIncidencia" unique_id=1640592252]
@@ -128,68 +199,105 @@ columns = 2
 
 [node name="LabelTitulo" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1264999937]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Título*:"
 
 [node name="InputTitulo" type="LineEdit" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1417925798]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Título breve de la incidencia"
 
 [node name="LabelTipo" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1326708957]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Tipo de Hallazgo*:"
 
 [node name="ComboTipo" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1366981958]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="LabelProducto" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=127937133]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Producto/Servicio*:"
 
 [node name="ComboProducto" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1763199263]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="LabelSucursal" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=785659811]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Sucursal*:"
 
-[node name="ComboSucursal" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1390829701]
+[node name="s" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1390829701]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="LabelFecha" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=2096646275]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Fecha de Ocurrencia*:"
 
 [node name="InputFecha" type="LineEdit" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=219321604]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "DD/MM/AAAA"
 editable = false
 
 [node name="BtnCalendario" type="Button" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=2119319384]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Seleccionar"
 
 [node name="LabelGravedad" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1976921832]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Nivel de Gravedad*:"
 
 [node name="ComboGravedad" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1076313221]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="LabelInvestigacion" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=246609465]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "¿Conlleva investigación?*:"
 
 [node name="ComboInvestigacion" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=747677286]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="LabelDescripcion" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia" unique_id=1544071870]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Descripción del Hallazgo*:"
 
 [node name="InputDescripcion" type="TextEdit" parent="ContentContainer/FormContainer/SeccionIncidencia" unique_id=1916219848]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Describa en detalle el hallazgo..."
 
 [node name="Separator2" type="HSeparator" parent="ContentContainer/FormContainer" unique_id=1174979481]
@@ -201,19 +309,32 @@ alignment = 1
 
 [node name="BtnCancelar" type="Button" parent="ContentContainer/FormContainer/SeccionAcciones" unique_id=2083777600]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Cancelar"
 
 [node name="BtnRegistrar" type="Button" parent="ContentContainer/FormContainer/SeccionAcciones" unique_id=1417688767]
 layout_mode = 2
-theme_type_variation = &"PrimaryButton"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 disabled = true
 text = "Registrar Incidencia"
 
 [node name="DialogoBuscarCliente" type="Window" parent="." unique_id=1786456303]
-title = "Buscar Cliente (Oracle DB)"
+oversampling_override = 1.0
+title = "Buscar Cliente (BD Local)"
+position = Vector2i(0, 36)
+size = Vector2i(600, 600)
 visible = false
 wrap_controls = true
 unresizable = true
+min_size = Vector2i(600, 600)
 
 [node name="BuscarClienteVBox" type="VBoxContainer" parent="DialogoBuscarCliente" unique_id=1254339008]
 anchors_preset = 15
@@ -231,15 +352,23 @@ size_flags_horizontal = 3
 [node name="InputBuscarCliente" type="LineEdit" parent="DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox" unique_id=1921460438]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Ingrese nombre, código o documento del cliente"
 
 [node name="BtnBuscarClienteDialog" type="Button" parent="DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox" unique_id=389085717]
 layout_mode = 2
-text = "Buscar en Oracle"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "Buscar en Base Datos"
 
 [node name="TablaClientes" type="Tree" parent="DialogoBuscarCliente/BuscarClienteVBox" unique_id=185703960]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
 columns = 5
 column_titles_visible = true
 hide_root = true
@@ -250,28 +379,30 @@ alignment = 1
 
 [node name="BtnSeleccionarCliente" type="Button" parent="DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente" unique_id=92370463]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 disabled = true
 text = "Seleccionar"
 
 [node name="BtnCancelarCliente" type="Button" parent="DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente" unique_id=519369773]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Cancelar"
 
 [node name="DialogoCalendario" type="Window" parent="." unique_id=537251259]
+oversampling_override = 1.0
 title = "Seleccionar Fecha"
+size = Vector2i(149, 100)
 visible = false
 wrap_controls = true
 unresizable = true
-
-[node name="DatePicker" type="DatePicker" parent="DialogoCalendario" unique_id=145895770]
-_import_path = NodePath("")
-layout_mode = 2
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 40.0
-offset_right = -20.0
-offset_bottom = -60.0
 
 [node name="BotonesFecha" type="HBoxContainer" parent="DialogoCalendario" unique_id=983959509]
 anchors_preset = 7
@@ -286,10 +417,20 @@ offset_bottom = -10.0
 
 [node name="BtnAceptarFecha" type="Button" parent="DialogoCalendario/BotonesFecha" unique_id=85625163]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Aceptar"
 
 [node name="BtnCancelarFecha" type="Button" parent="DialogoCalendario/BotonesFecha" unique_id=2095908827]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Cancelar"
 
 [node name="PanelCargando" type="Panel" parent="." unique_id=1053657238]
@@ -313,6 +454,8 @@ offset_left = 20.0
 offset_top = 10.0
 offset_right = -20.0
 offset_bottom = 30.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
 text = "Conectando con Oracle..."
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -367,8 +510,18 @@ alignment = 1
 
 [node name="BtnConfirmarSi" type="Button" parent="ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion" unique_id=610453705]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "Sí, registrar"
 
 [node name="BtnConfirmarNo" type="Button" parent="ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion" unique_id=417310121]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
 text = "No, modificar"

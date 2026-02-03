@@ -42,6 +42,7 @@ offset_bottom = -10.0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "Administración de Usuarios"
 
 [node name="SpacerLeft" type="Control" parent="Header/HBoxContainer" unique_id=999888777]
@@ -99,10 +100,13 @@ text = "+ Nuevo Usuario"
 
 [node name="UserTableContainer" type="ScrollContainer" parent="ContentContainer" unique_id=1990969021]
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="TablaUsuarios" type="Tree" parent="ContentContainer/UserTableContainer" unique_id=1088238272]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 columns = 7
 column_titles_visible = true
 allow_reselect = true

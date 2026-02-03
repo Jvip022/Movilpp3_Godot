@@ -409,7 +409,8 @@ title = "Mensaje"
 oversampling_override = 1.0
 title = "Asignar Tareas"
 position = Vector2i(0, 36)
-size = Vector2i(342, 342)
+size = Vector2i(345, 345)
+visible = false
 wrap_controls = true
 unresizable = true
 

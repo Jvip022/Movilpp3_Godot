@@ -1,0 +1,362 @@
+[gd_scene format=3 uid="uid://dg8bvunsksxna"]
+
+[ext_resource type="Script" uid="uid://bf1iw3fuhqn7j" path="res://scripts/UserTracesVisualizer.gd" id="1_traces"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_filter_panel"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.9, 0.95, 1, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.8, 0.9, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 0.8)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="VisualizarTrazas" type="Control" unique_id=100000001]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_traces")
+
+[node name="Fondo" type="ColorRect" parent="." unique_id=100000002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.95, 0.96, 0.98, 1)
+
+[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=100000003]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 20.0
+offset_right = -30.0
+offset_bottom = -100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=100000004]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=100000005]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "VISUALIZACIÓN DE TRAZAS DE USUARIO"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelInfoUsuario" type="Panel" parent="ContenedorPrincipal" unique_id=100000006]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="InfoUsuario" type="GridContainer" parent="ContenedorPrincipal/PanelInfoUsuario" unique_id=100000007]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 2
+
+[node name="LabelNombre" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000008]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Usuario:"
+
+[node name="ValorNombre" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000009]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "[Cargando...]"
+
+[node name="LabelRol" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000010]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Rol:"
+
+[node name="ValorRol" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000011]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "[Cargando...]"
+
+[node name="LabelEstado" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000012]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Estado:"
+
+[node name="ValorEstado" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000013]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "[Cargando...]"
+
+[node name="LabelUltimoLogin" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000014]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Último acceso:"
+
+[node name="ValorUltimoLogin" type="Label" parent="ContenedorPrincipal/PanelInfoUsuario/InfoUsuario" unique_id=100000015]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "[Cargando...]"
+
+[node name="PanelFiltros" type="Panel" parent="ContenedorPrincipal" unique_id=100000016]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_filter_panel")
+
+[node name="Filtros" type="HBoxContainer" parent="ContenedorPrincipal/PanelFiltros" unique_id=100000017]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 10.0
+offset_right = -15.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LabelFiltrar" type="Label" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000018]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Filtrar por:"
+
+[node name="ComboTipoAccion" type="OptionButton" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000019]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+
+[node name="ComboPeriodo" type="OptionButton" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000020]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+
+[node name="BtnAplicarFiltro" type="Button" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000021]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+text = "Aplicar Filtro"
+
+[node name="BtnExportar" type="Button" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000022]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+text = "Exportar a CSV"
+
+[node name="EspaciadorFiltros" type="Control" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000023]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="ContenedorTrazas" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=100000024]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LabelTrazas" type="Label" parent="ContenedorPrincipal/ContenedorTrazas" unique_id=100000025]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Historial de Actividades:"
+
+[node name="ScrollTrazas" type="ScrollContainer" parent="ContenedorPrincipal/ContenedorTrazas" unique_id=100000026]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ListaTrazas" type="VBoxContainer" parent="ContenedorPrincipal/ContenedorTrazas/ScrollTrazas" unique_id=100000027]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PanelControles" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=100000028]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="Espaciador" type="Control" parent="ContenedorPrincipal/PanelControles" unique_id=100000029]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+
+[node name="BtnVolver" type="Button" parent="ContenedorPrincipal/PanelControles" unique_id=100000030]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+text = "← Volver a Administración de Usuarios"
+
+[node name="Footer" type="Panel" parent="." unique_id=100000031]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 700.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="FooterText" type="Label" parent="Footer" unique_id=100000032]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = -10.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.8)
+theme_override_font_sizes/font_size = 12
+text = "Visualización de Trazas - Sistema de Gestión de Calidad v1.0 © 2024"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MensajeCarga" type="Panel" parent="." unique_id=100000033]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_filter_panel")
+
+[node name="LabelCarga" type="Label" parent="MensajeCarga" unique_id=100000034]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 18
+text = "Cargando trazas del usuario..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DialogoConfirmacion" type="AcceptDialog" parent="." unique_id=100000035]
+title = "Confirmar Exportación"
+dialog_text = "¿Exportar las trazas filtradas a CSV?"
+
+[node name="MensajeExito" type="AcceptDialog" parent="." unique_id=100000036]
+title = "Exportación Exitosa"
+dialog_text = "Las trazas se exportaron correctamente."
+
+[node name="MensajeError" type="AcceptDialog" parent="." unique_id=100000037]
+title = "Error"
+dialog_text = "Ocurrió un error al cargar las trazas."

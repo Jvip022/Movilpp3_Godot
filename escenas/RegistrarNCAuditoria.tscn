@@ -1,10 +1,82 @@
 [gd_scene format=3 uid="uid://fedswpiu2sft"]
 
+[ext_resource type="Script" uid="uid://clqu10thgadj3" path="res://scripts/registrarNCAuditoria.gd" id="1_4wi3y"]
+
+[sub_resource type="Theme" id="Theme_auditoria"]
+default_base_scale = 1.7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_notificacion"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
 [node name="RegistrarNCAuditoriaScene" type="Control" unique_id=2029285258]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_4wi3y")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1786396354]
 layout_mode = 0
@@ -16,85 +88,126 @@ color = Color(0.95, 0.95, 0.96, 1)
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 0.15
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = 150.0
+anchor_bottom = 0.1
+offset_bottom = 80.0
+theme = SubResource("Theme_auditoria")
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
 
-[node name="HeaderLabel" type="Label" parent="HeaderPanel" unique_id=538234356]
-layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.5
+[node name="HeaderHBox" type="HBoxContainer" parent="HeaderPanel" unique_id=153228226]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
+offset_left = 20.0
 offset_top = 10.0
-offset_right = -10.0
+offset_right = -20.0
 offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 2
+
+[node name="HeaderLabel" type="Label" parent="HeaderPanel/HeaderHBox" unique_id=538234356]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
 text = "REGISTRAR NO CONFORMIDAD DE AUDITORÍA"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="FormContainer" type="VBoxContainer" parent="." unique_id=1581072210]
+[node name="Spacer" type="Control" parent="HeaderPanel/HeaderHBox" unique_id=1576275034]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnRegresar" type="Button" parent="HeaderPanel/HeaderHBox" unique_id=2073613029]
+layout_mode = 2
+tooltip_text = "Regresar al Menú Principal"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+text = "Regresar"
+
+[node name="ContentContainer" type="ScrollContainer" parent="." unique_id=2082557273]
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.8
-anchor_bottom = 0.8
-offset_left = 50.0
-offset_top = 160.0
-offset_right = -50.0
-offset_bottom = -50.0
+anchor_top = 0.1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 80.0
+offset_right = -20.0
+offset_bottom = -20.0
 
-[node name="CodigoNCLabel" type="Label" parent="FormContainer" unique_id=2046223295]
+[node name="FormContainer" type="VBoxContainer" parent="ContentContainer" unique_id=1581072210]
+custom_minimum_size = Vector2(600, 400)
 layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CodigoNCLabel" type="Label" parent="ContentContainer/FormContainer" unique_id=2046223295]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
 theme_override_font_sizes/font_size = 16
 text = "Código NC: NC-AUD-INT-0001-2024-01-15"
 
-[node name="HBoxContainer1" type="HBoxContainer" parent="FormContainer" unique_id=1706294618]
+[node name="GridContainer" type="GridContainer" parent="ContentContainer/FormContainer" unique_id=671178200]
 layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
 
-[node name="Label1" type="Label" parent="FormContainer/HBoxContainer1" unique_id=1848613705]
+[node name="Label1" type="Label" parent="ContentContainer/FormContainer/GridContainer" unique_id=1848613705]
 layout_mode = 2
-text = "Tipo de NC:"
-vertical_alignment = 1
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tipo de NC*:"
 
-[node name="TipoNCDropdown" type="OptionButton" parent="FormContainer/HBoxContainer1" unique_id=1526729277]
+[node name="TipoNCDropdown" type="OptionButton" parent="ContentContainer/FormContainer/GridContainer" unique_id=1526729277]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
-[node name="Label2" type="Label" parent="FormContainer/HBoxContainer1" unique_id=2107766886]
+[node name="Label2" type="Label" parent="ContentContainer/FormContainer/GridContainer" unique_id=2107766886]
 layout_mode = 2
-text = "Auditoría:"
-vertical_alignment = 1
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Auditoría*:"
 
-[node name="AuditoriaDropdown" type="OptionButton" parent="FormContainer/HBoxContainer1" unique_id=2112614505]
+[node name="AuditoriaDropdown" type="OptionButton" parent="ContentContainer/FormContainer/GridContainer" unique_id=2112614505]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="FormContainer" unique_id=333367078]
+[node name="Label3" type="Label" parent="ContentContainer/FormContainer/GridContainer" unique_id=1246897422]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Severidad*:"
 
-[node name="Label3" type="Label" parent="FormContainer/HBoxContainer2" unique_id=1246897422]
+[node name="SeveridadDropdown" type="OptionButton" parent="ContentContainer/FormContainer/GridContainer" unique_id=1919054917]
 layout_mode = 2
-text = "Severidad:"
-vertical_alignment = 1
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
-[node name="SeveridadDropdown" type="OptionButton" parent="FormContainer/HBoxContainer2" unique_id=1919054917]
+[node name="LabelDescripcion" type="Label" parent="ContentContainer/FormContainer" unique_id=1345165264]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Descripción del Hallazgo*:"
 
-[node name="Label4" type="Label" parent="FormContainer/HBoxContainer2" unique_id=348490500]
+[node name="DescripcionTextEdit" type="TextEdit" parent="ContentContainer/FormContainer" unique_id=1447169900]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
-text = "Descripción:"
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+placeholder_text = "Describa en detalle el hallazgo de auditoría..."
 
-[node name="DescripcionTextEdit" type="TextEdit" parent="FormContainer" unique_id=1447169900]
+[node name="SeccionAcciones" type="HBoxContainer" parent="ContentContainer/FormContainer" unique_id=1034906780]
 layout_mode = 2
-size_flags_vertical = 3
+alignment = 1
 
-[node name="RegistrarButton" type="Button" parent="FormContainer" unique_id=922322076]
+[node name="BtnRegistrar" type="Button" parent="ContentContainer/FormContainer/SeccionAcciones" unique_id=922322076]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 text = "REGISTRAR NO CONFORMIDAD"
 
 [node name="StatusLabel" type="Label" parent="." unique_id=838373625]
@@ -110,6 +223,8 @@ offset_right = -50.0
 offset_bottom = 690.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -126,6 +241,7 @@ offset_right = -200.0
 offset_bottom = -300.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_notificacion")
 
 [node name="MensajeLabel" type="Label" parent="NotificacionPanel" unique_id=1977872700]
 layout_mode = 1
@@ -139,7 +255,20 @@ offset_right = -20.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "Notificaciones enviadas"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="MensajeExito" type="AcceptDialog" parent="." unique_id=1642895206]
+title = "NC Registrada"
+dialog_text = "La no conformidad se ha registrado exitosamente."
+
+[node name="MensajeError" type="AcceptDialog" parent="." unique_id=1573124898]
+title = "Error"
+dialog_text = "Ocurrió un error al registrar la no conformidad."
+
+[node name="ValidacionCampos" type="AcceptDialog" parent="." unique_id=1244348717]
+title = "Campos Incompletos"
+dialog_text = "Por favor, complete todos los campos obligatorios (*)."
