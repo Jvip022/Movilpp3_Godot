@@ -3,38 +3,6 @@
 [ext_resource type="Script" uid="uid://d2mlrfo2jlxj4" path="res://scripts/Gestor_quejas.gd" id="1_6pdcs"]
 [ext_resource type="Script" uid="uid://y2okqol32px6" path="res://scripts/InterfaceManager.gd" id="2_xxrdc"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
-content_margin_left = 20.0
-content_margin_top = 15.0
-content_margin_right = 20.0
-content_margin_bottom = 15.0
-bg_color = Color(0.12549, 0.290196, 0.533333, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.219608, 0.458824, 0.792157, 1)
-corner_radius_top_left = 15
-corner_radius_top_right = 15
-corner_radius_bottom_right = 15
-corner_radius_bottom_left = 15
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
-content_margin_left = 10.0
-content_margin_top = 10.0
-content_margin_right = 10.0
-content_margin_bottom = 10.0
-bg_color = Color(1, 1, 1, 0.95)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.12549, 0.290196, 0.533333, 0.3)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
 content_margin_left = 15.0
 content_margin_top = 10.0
@@ -67,6 +35,38 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(1, 1, 1, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.290196, 0.533333, 0.3)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="GestorQuejas" type="Node" unique_id=1421529623]
 script = ExtResource("1_6pdcs")
 
@@ -81,12 +81,25 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("2_xxrdc")
 
+[node name="BtnRegresar" type="Button" parent="InterfaceManager" unique_id=987654321]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 110.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "← Regresar"
+
 [node name="TituloPanel" type="Panel" parent="InterfaceManager" unique_id=1373258980]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 20.0
-offset_top = 10.0
+offset_top = 50.0
 offset_right = -20.0
 offset_bottom = 70.0
 grow_horizontal = 0
@@ -237,6 +250,7 @@ theme_override_font_sizes/font_size = 14
 text = "Descripción:"
 
 [node name="TxtDescripcion" type="TextEdit" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=1930730080]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -244,6 +258,7 @@ theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
 theme_override_font_sizes/font_size = 14
 placeholder_text = "Describa el problema en detalle..."
 wrap_mode = 2
+scroll_fit_content_height = true
 
 [node name="LblMonto" type="Label" parent="InterfaceManager/MainPanel/MainTabContainer/Registro/FormContainer/FormGrid" unique_id=165344163]
 layout_mode = 2

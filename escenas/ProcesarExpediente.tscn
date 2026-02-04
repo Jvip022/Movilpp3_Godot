@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dvjd40vhuc25f" path="res://scripts/ProcesarExpediente.gd" id="1_k9x2"]
 
+[sub_resource type="Theme" id="Theme_expediente"]
+default_base_scale = 1.7
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
 content_margin_left = 30.0
 content_margin_top = 20.0
@@ -51,10 +54,10 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
-content_margin_left = 20.0
-content_margin_top = 15.0
-content_margin_right = 20.0
-content_margin_bottom = 15.0
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
 bg_color = Color(0.188235, 0.439216, 0.803922, 1)
 border_width_left = 2
 border_width_top = 2
@@ -67,10 +70,10 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
-content_margin_left = 20.0
-content_margin_top = 15.0
-content_margin_right = 20.0
-content_margin_bottom = 15.0
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
 bg_color = Color(0.227451, 0.52549, 0.94902, 1)
 border_width_left = 2
 border_width_top = 2
@@ -105,6 +108,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = SubResource("Theme_expediente")
 script = ExtResource("1_k9x2")
 
 [node name="Fondo" type="ColorRect" parent="." unique_id=976964329]
@@ -112,33 +116,23 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = -32.0
-offset_right = 24.0
-offset_bottom = -32.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.95, 0.96, 0.98, 1)
 
-[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=696791922]
+[node name="Header" type="Panel" parent="." unique_id=1373258980]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 50.0
-offset_top = 30.0
-offset_right = -50.0
-offset_bottom = -150.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=1373258980]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
+anchor_bottom = 0.1
+offset_bottom = 80.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
-[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=819801758]
+[node name="Titulo" type="Label" parent="Header" unique_id=819801758]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -150,116 +144,142 @@ offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 24
 text = "PROCESAR EXPEDIENTE DE NO CONFORMIDAD"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PanelInfoExpediente" type="Panel" parent="ContenedorPrincipal" unique_id=1431361861]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_5")
-
-[node name="ScrollInfo" type="ScrollContainer" parent="ContenedorPrincipal/PanelInfoExpediente" unique_id=1181094017]
+[node name="ContentContainer" type="HBoxContainer" parent="." unique_id=696791922]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
+anchor_top = 0.1
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.9
 offset_left = 20.0
-offset_top = 20.0
+offset_top = 80.0
 offset_right = -20.0
-offset_bottom = -20.0
+offset_bottom = -80.0
 grow_horizontal = 2
 grow_vertical = 2
-vertical_scroll_mode = 2
+theme_override_constants/separation = 20
 
-[node name="InfoExpediente" type="VBoxContainer" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo" unique_id=784658929]
+[node name="PanelIzquierdo" type="VBoxContainer" parent="ContentContainer" unique_id=1431361861]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 15
 
-[node name="SeccionTituloInfo" type="HBoxContainer" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=287037992]
+[node name="PanelInfoExpediente" type="Panel" parent="ContentContainer/PanelIzquierdo" unique_id=784658929]
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="LabelTituloInfo" type="Label" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente/SeccionTituloInfo" unique_id=287037991]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 22
-text = "📋 INFORMACIÓN DEL EXPEDIENTE"
-
-[node name="IDExpediente" type="Label" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=287037993]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 18
-text = "ID Expediente: [Cargando...]"
-
-[node name="TipoNC" type="Label" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=206447695]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 18
-text = "Tipo No Conformidad: [Cargando...]"
-
-[node name="EstadoNC" type="Label" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1620257103]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 18
-text = "Estado No Conformidad: [Cargando...]"
-
-[node name="FechaRegistro" type="Label" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1943553011]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 18
-text = "Fecha Registro: [Cargando...]"
-
-[node name="Descripcion" type="Label" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1445119428]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 18
-text = "Descripción: [Cargando...]"
-autowrap_mode = 1
-
-[node name="DocumentosActualesLabel" type="Label" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=981887422]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 20
-text = "📎 Documentos Actuales:"
-
-[node name="ListaDocumentos" type="ItemList" parent="ContenedorPrincipal/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1344947075]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_6")
-
-[node name="PanelAcciones" type="Panel" parent="ContenedorPrincipal" unique_id=705280998]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_5")
 
-[node name="Acciones" type="VBoxContainer" parent="ContenedorPrincipal/PanelAcciones" unique_id=1272589495]
+[node name="ScrollInfo" type="ScrollContainer" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente" unique_id=1181094017]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = -70.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 25
+vertical_scroll_mode = 2
 
-[node name="LabelAcciones" type="Label" parent="ContenedorPrincipal/PanelAcciones/Acciones" unique_id=567434176]
+[node name="InfoExpediente" type="VBoxContainer" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo" unique_id=287037992]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/font_size = 22
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="SeccionTituloInfo" type="HBoxContainer" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=287037991]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelTituloInfo" type="Label" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente/SeccionTituloInfo" unique_id=287037993]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 18
+text = "📋 INFORMACIÓN DEL EXPEDIENTE"
+
+[node name="IDExpediente" type="Label" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=206447695]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "ID Expediente: [Cargando...]"
+
+[node name="TipoNC" type="Label" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1620257103]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Tipo No Conformidad: [Cargando...]"
+
+[node name="EstadoNC" type="Label" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1943553011]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Estado No Conformidad: [Cargando...]"
+
+[node name="FechaRegistro" type="Label" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1445119428]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Fecha Registro: [Cargando...]"
+
+[node name="Descripcion" type="Label" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=981887422]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
+text = "Descripción: [Cargando...]"
+autowrap_mode = 3
+
+[node name="DocumentosActualesLabel" type="Label" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=1344947075]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 16
+text = "📎 Documentos Actuales:"
+
+[node name="ListaDocumentos" type="ItemList" parent="ContentContainer/PanelIzquierdo/PanelInfoExpediente/ScrollInfo/InfoExpediente" unique_id=705280998]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_6")
+
+[node name="PanelDerecho" type="VBoxContainer" parent="ContentContainer" unique_id=1272589495]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="PanelAcciones" type="Panel" parent="ContentContainer/PanelDerecho" unique_id=567434176]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_5")
+
+[node name="Acciones" type="VBoxContainer" parent="ContentContainer/PanelDerecho/PanelAcciones" unique_id=1523263854]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="LabelAcciones" type="Label" parent="ContentContainer/PanelDerecho/PanelAcciones/Acciones" unique_id=926712086]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 18
 text = "🚀 ACCIONES DISPONIBLES"
 
-[node name="BotonCargarDoc" type="Button" parent="ContenedorPrincipal/PanelAcciones/Acciones" unique_id=1523263854]
+[node name="BotonCargarDoc" type="Button" parent="ContentContainer/PanelDerecho/PanelAcciones/Acciones" unique_id=656676751]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -270,7 +290,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_4")
 disabled = true
 text = "📁 Cargar Nuevo Documento al Expediente"
 
-[node name="BotonCerrarExp" type="Button" parent="ContenedorPrincipal/PanelAcciones/Acciones" unique_id=926712086]
+[node name="BotonCerrarExp" type="Button" parent="ContentContainer/PanelDerecho/PanelAcciones/Acciones" unique_id=740503967]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
@@ -281,106 +301,94 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_4")
 disabled = true
 text = "✅ Cerrar Expediente"
 
-[node name="MensajeEstado" type="Label" parent="ContenedorPrincipal/PanelAcciones/Acciones" unique_id=656676751]
+[node name="MensajeEstado" type="Label" parent="ContentContainer/PanelDerecho/PanelAcciones/Acciones" unique_id=560239802]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.1, 0.1, 1)
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
 theme_override_font_sizes/font_size = 14
 text = "Estado: Verificando precondiciones..."
-autowrap_mode = 1
+autowrap_mode = 3
 
-[node name="BotonesAcciones" type="HBoxContainer" parent="ContenedorPrincipal/PanelAcciones" unique_id=740503967]
+[node name="Separator" type="HSeparator" parent="ContentContainer/PanelDerecho/PanelAcciones/Acciones" unique_id=399944163]
+layout_mode = 2
+
+[node name="BtnActualizarInfo" type="Button" parent="ContentContainer/PanelDerecho/PanelAcciones/Acciones" unique_id=532541737]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "🔄 ACTUALIZAR INFORMACIÓN"
+
+[node name="Footer" type="Panel" parent="." unique_id=305069291]
 layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
+anchors_preset = -1
+anchor_top = 0.9
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
 offset_top = -60.0
 offset_right = -20.0
-offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
-
-[node name="BtnActualizarInfo" type="Button" parent="ContenedorPrincipal/PanelAcciones/BotonesAcciones" unique_id=560239802]
-custom_minimum_size = Vector2(150, 40)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_4")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
-theme_override_styles/hover = SubResource("StyleBoxFlat_4")
-text = "🔄 ACTUALIZAR"
-
-[node name="EspaciadorContenido" type="Control" parent="ContenedorPrincipal" unique_id=399944163]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="BotonesInferiores" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=1151659970]
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
-alignment = 1
-
-[node name="BtnVolverMenu" type="Button" parent="ContenedorPrincipal/BotonesInferiores" unique_id=532541737]
-custom_minimum_size = Vector2(300, 45)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_colors/font_pressed_color = Color(0.15, 0.15, 0.15, 1)
-theme_override_colors/font_hover_color = Color(0.3, 0.3, 0.3, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_4")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
-theme_override_styles/hover = SubResource("StyleBoxFlat_4")
-text = "← VOLVER AL MENÚ PRINCIPAL"
-
-[node name="Footer" type="Panel" parent="." unique_id=305069291]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -50.0
-offset_right = -20.0
-offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_bottom = -20.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
-[node name="FooterText" type="Label" parent="Footer" unique_id=554237778]
+[node name="FooterHBox" type="HBoxContainer" parent="Footer" unique_id=554237778]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 5.0
-offset_right = -10.0
-offset_bottom = -5.0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = -20.0
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="FooterText" type="Label" parent="Footer/FooterHBox" unique_id=1494552467]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 1, 1, 0.8)
 theme_override_font_sizes/font_size = 12
 text = "Procesar Expediente - Sistema de Gestión de Calidad v1.0 © 2024"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="DialogoCargarDoc" type="FileDialog" parent="." unique_id=1494552467]
+[node name="Spacer" type="Control" parent="Footer/FooterHBox" unique_id=1821965735]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnVolverMenu" type="Button" parent="Footer/FooterHBox" unique_id=1813225282]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "← VOLVER AL MENÚ PRINCIPAL"
+
+[node name="DialogoCargarDoc" type="FileDialog" parent="." unique_id=588989566]
+oversampling_override = 1.0
 title = "Open File(s)"
-size = Vector2i(600, 400)
+position = Vector2i(0, 36)
+size = Vector2i(800, 500)
+min_size = Vector2i(800, 500)
 file_mode = 1
 
-[node name="DialogoConfirmacion" type="AcceptDialog" parent="." unique_id=1821965735]
+[node name="DialogoConfirmacion" type="AcceptDialog" parent="." unique_id=1700567892]
+oversampling_override = 1.0
 title = "Confirmar Acción"
+position = Vector2i(0, 36)
+size = Vector2i(400, 200)
 dialog_text = "¿Está seguro de realizar esta acción?"
 
-[node name="MensajeExito" type="AcceptDialog" parent="." unique_id=1813225282]
+[node name="MensajeExito" type="AcceptDialog" parent="." unique_id=1754326891]
+oversampling_override = 1.0
 title = "Operación Exitosa"
+position = Vector2i(0, 36)
+size = Vector2i(400, 200)
 dialog_text = "La operación se completó correctamente."
 
-[node name="MensajeError" type="AcceptDialog" parent="." unique_id=588989566]
+[node name="MensajeError" type="AcceptDialog" parent="." unique_id=1894325678]
+oversampling_override = 1.0
 title = "Error"
+position = Vector2i(0, 36)
+size = Vector2i(400, 200)
 dialog_text = "Ocurrió un error al procesar la solicitud."

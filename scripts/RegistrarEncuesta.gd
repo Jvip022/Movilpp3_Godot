@@ -176,7 +176,7 @@ func verificar_tabla_encuestas() -> bool:
                     acciones_mejora TEXT,
                     notas_internas TEXT
                 )
-            """
+			"""
 			
 			if db.has_method("query") and db.query(sql_tabla_encuestas):
 				print("✅ Tabla 'encuestas_satisfaccion' creada exitosamente")
@@ -186,7 +186,7 @@ func verificar_tabla_encuestas() -> bool:
                     CREATE INDEX IF NOT EXISTS idx_encuestas_cliente ON encuestas_satisfaccion(cliente);
                     CREATE INDEX IF NOT EXISTS idx_encuestas_fecha ON encuestas_satisfaccion(fecha_aplicacion);
                     CREATE INDEX IF NOT EXISTS idx_encuestas_satisfaccion ON encuestas_satisfaccion(satisfaccion_promedio);
-                """
+				"""
 				
 				# Ejecutar índices uno por uno para mayor compatibilidad
 				var indices = sql_indices.split(";")

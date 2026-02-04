@@ -86,6 +86,8 @@ offset_left = 20.0
 offset_top = 10.0
 offset_right = -20.0
 offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Titulo" type="Label" parent="Header/HeaderHBox" unique_id=1494569501]
 layout_mode = 2
@@ -237,7 +239,7 @@ theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
 theme_override_font_sizes/font_size = 14
 text = "Sucursal*:"
 
-[node name="s" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1390829701]
+[node name="ComboSucursal" type="OptionButton" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1390829701]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
 theme_override_font_sizes/font_size = 14
@@ -254,15 +256,6 @@ theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
 theme_override_font_sizes/font_size = 14
 placeholder_text = "DD/MM/AAAA"
 editable = false
-
-[node name="BtnCalendario" type="Button" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=2119319384]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "Seleccionar"
 
 [node name="LabelGravedad" type="Label" parent="ContentContainer/FormContainer/SeccionIncidencia/GridContainer" unique_id=1976921832]
 layout_mode = 2
@@ -399,7 +392,7 @@ text = "Cancelar"
 [node name="DialogoCalendario" type="Window" parent="." unique_id=537251259]
 oversampling_override = 1.0
 title = "Seleccionar Fecha"
-size = Vector2i(149, 100)
+size = Vector2i(152, 100)
 visible = false
 wrap_controls = true
 unresizable = true

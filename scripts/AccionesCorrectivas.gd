@@ -131,7 +131,16 @@ func _on_asignar_tareas():
 		mostrar_error("Debe seleccionar una acción de la tabla")
 		return
 	
-	var indice = seleccionados[0] - 1  # Restar 1 por el encabezado
+	# CORREGIDO: Calcular correctamente el índice en el array
+	# Cada fila en la tabla tiene 6 columnas, y hay 6 encabezados
+	var fila_tabla = seleccionados[0]
+	if fila_tabla < 6:  # Los primeros 6 son encabezados
+		mostrar_error("Selección inválida: No puede seleccionar encabezados")
+		return
+	
+	# Calcular índice en el array (restar encabezados y dividir por columnas)
+	var indice = (fila_tabla - 6) / 6
+	
 	if indice < 0 or indice >= acciones_correctivas.size():
 		mostrar_error("Selección inválida")
 		return
@@ -170,7 +179,17 @@ func _on_dialogo_tareas_guardar():
 	if seleccionados.size() == 0:
 		return
 	
-	var indice = seleccionados[0] - 1
+	# CORREGIDO: Calcular correctamente el índice en el array
+	var fila_tabla = seleccionados[0]
+	if fila_tabla < 6:  # Los primeros 6 son encabezados
+		mostrar_error("Selección inválida: No puede seleccionar encabezados")
+		return
+	
+	var indice = (fila_tabla - 6) / 6
+	if indice < 0 or indice >= acciones_correctivas.size():
+		mostrar_error("Selección inválida")
+		return
+	
 	var accion = acciones_correctivas[indice]
 	
 	# Agregar tarea
@@ -203,7 +222,13 @@ func _on_notificar_estado():
 		mostrar_error("Debe seleccionar una acción de la tabla")
 		return
 	
-	var indice = seleccionados[0] - 1
+	# CORREGIDO: Calcular correctamente el índice en el array
+	var fila_tabla = seleccionados[0]
+	if fila_tabla < 6:  # Los primeros 6 son encabezados
+		mostrar_error("Selección inválida: No puede seleccionar encabezados")
+		return
+	
+	var indice = (fila_tabla - 6) / 6
 	if indice < 0 or indice >= acciones_correctivas.size():
 		mostrar_error("Selección inválida")
 		return
@@ -221,7 +246,6 @@ func _on_notificar_estado():
 	print("---------------------------")
 	
 	mostrar_mensaje("Notificación Enviada", "Se ha enviado notificación del estado a los responsables")
-
 func _on_limpiar_formulario():
 	$ContenedorPrincipal/FormContainer/GridForm/SelectNoConformidad.selected = 0
 	$ContenedorPrincipal/FormContainer/GridForm/InputDescripcion.text = ""
@@ -236,8 +260,19 @@ func _actualizar_tabla():
 	var tabla = $ContenedorPrincipal/PanelAcciones/ScrollContainer/TablaAcciones
 	
 	# Limpiar tabla (excepto encabezados)
-	while tabla.get_item_count() > 6:  # 6 encabezados
-		tabla.remove_item(6)
+	tabla.clear()
+	
+	# Agregar encabezados nuevamente
+	tabla.add_item("ID")
+	tabla.add_item("No Conformidad")
+	tabla.add_item("Descripción")
+	tabla.add_item("Responsable")
+	tabla.add_item("Fecha Límite")
+	tabla.add_item("Estado")
+	
+	# Deshabilitar selección de encabezados
+	for i in range(6):
+		tabla.set_item_selectable(i, false)
 	
 	# Agregar acciones
 	for i in range(acciones_correctivas.size()):

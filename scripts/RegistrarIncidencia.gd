@@ -19,32 +19,17 @@ var clientes_falsos: Array = []
 var incidencias_registradas: Array = []
 var codigo_incidencia_counter: int = 1000
 
-# Datos para combos
-enum TIPOS_HALLAZGO {
-	RETRASO = 0,
-	DEFECTO_PRODUCTO = 1,
-	ERROR_SERVICIO = 2,
-	ATENCION_CLIENTE = 3,
-	PROBLEMA_LOGISTICO = 4,
-	OTRO = 5
-}
-
-enum NIVELES_GRAVEDAD {
-	LEVE = 0,
-	MODERADO = 1,
-	GRAVE = 2,
-	CRITICO = 3
-}
-
 func _ready():
+	print("🔧 Inicializando módulo de Registrar Incidencia...")
+	
 	# Inicializar datos de prueba
 	inicializar_datos_prueba()
 	
-	# Inicializar la interfaz visual
-	inicializar_interfaz()
-	
 	# Cargar usuario actual (simulado para pruebas)
 	cargar_usuario_actual()
+	
+	# Inicializar la interfaz visual
+	inicializar_interfaz()
 	
 	print("✅ Módulo de Registrar Incidencias listo (Modo de Prueba)")
 
@@ -105,61 +90,6 @@ func inicializar_datos_prueba():
 			"direccion": "Av. Shyris 654",
 			"ciudad": "Quito",
 			"tipo_cliente": "Regular"
-		},
-		{
-			"id": 6,
-			"codigo_cliente": "CLI006",
-			"nombre": "Laura Patricia",
-			"apellidos": "Sánchez Fernández",
-			"email": "laura.sanchez@ejemplo.com",
-			"telefono": "0944455566",
-			"direccion": "Av. 6 de Diciembre 987",
-			"ciudad": "Quito",
-			"tipo_cliente": "Premium"
-		},
-		{
-			"id": 7,
-			"codigo_cliente": "CLI007",
-			"nombre": "David Alejandro",
-			"apellidos": "Fernández Pérez",
-			"email": "david.fernandez@ejemplo.com",
-			"telefono": "0933344455",
-			"direccion": "Calle Rumiñahui 147",
-			"ciudad": "Manta",
-			"tipo_cliente": "Regular"
-		},
-		{
-			"id": 8,
-			"codigo_cliente": "CLI008",
-			"nombre": "Elena Beatriz",
-			"apellidos": "Pérez Gómez",
-			"email": "elena.perez@ejemplo.com",
-			"telefono": "0922233344",
-			"direccion": "Av. del Ejército 258",
-			"ciudad": "Guayaquil",
-			"tipo_cliente": "VIP"
-		},
-		{
-			"id": 9,
-			"codigo_cliente": "CLI009",
-			"nombre": "Miguel Ángel",
-			"apellidos": "Gómez López",
-			"email": "miguel.gomez@ejemplo.com",
-			"telefono": "0911122233",
-			"direccion": "Av. Amazonas N35-12",
-			"ciudad": "Quito",
-			"tipo_cliente": "Regular"
-		},
-		{
-			"id": 10,
-			"codigo_cliente": "CLI010",
-			"nombre": "Sofía Isabel",
-			"apellidos": "López Rodríguez",
-			"email": "sofia.lopez@ejemplo.com",
-			"telefono": "0900099887",
-			"direccion": "Av. González Suárez 369",
-			"ciudad": "Cuenca",
-			"tipo_cliente": "Premium"
 		}
 	]
 	
@@ -168,7 +98,7 @@ func inicializar_datos_prueba():
 	# Crear base de datos simulada
 	db = {
 		"buscar_cliente": func(termino: String) -> Array:
-			return buscar_cliente_simulado(termino),
+			return await buscar_cliente_simulado(termino),
 		
 		"generar_codigo_incidencia": func() -> String:
 			return generar_codigo_incidencia_simulado(),
@@ -196,6 +126,9 @@ func buscar_cliente_simulado(termino: String) -> Array:
 	
 	if termino_lower == "":
 		return []
+	
+	# Pequeña pausa para simular procesamiento (no bloqueante)
+	await get_tree().create_timer(0.1).timeout
 	
 	for cliente in clientes_falsos:
 		if (termino_lower in cliente["nombre"].to_lower() or
@@ -265,7 +198,12 @@ func cargar_usuario_actual():
 	print("👤 Usuario actual cargado: " + usuario_actual["nombre_completo"])
 
 func inicializar_interfaz():
-	# Inicializar combos primero
+	print("🎨 Inicializando interfaz...")
+	
+	# Esperar un frame para asegurar que todos los nodos estén cargados
+	await get_tree().process_frame
+	
+	# Inicializar combos
 	inicializar_combos()
 	
 	# Configurar diálogo de búsqueda de cliente
@@ -273,171 +211,166 @@ func inicializar_interfaz():
 		$DialogoBuscarCliente.size = Vector2(700, 500)
 		$DialogoBuscarCliente.min_size = Vector2(700, 500)
 	
-	# Conectar señales después de que todos los nodos estén listos
-	await get_tree().process_frame
+	# Conectar señales
 	conectar_senales()
 	
 	# Configurar fecha actual
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha.text = obtener_fecha_actual()
+	var inputFecha = find_child("InputFecha", true, false)
+	if inputFecha:
+		inputFecha.text = obtener_fecha_actual()
 	
 	# Deshabilitar botón registrar inicialmente
-	$ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar.disabled = true
+	var btnRegistrar = find_child("BtnRegistrar", true, false)
+	if btnRegistrar:
+		btnRegistrar.disabled = true
 	
-	# Si el diálogo de calendario tiene un DatePicker, eliminarlo o desactivarlo
-	if has_node("DialogoCalendario"):
-		# Ocultar el diálogo de calendario ya que no funciona
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/BtnCalendario.visible = false
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/BtnCalendario.disabled = true
-		print("⚠️ Selector de fecha desactivado")
+	print("✅ Interfaz inicializada")
 
 func inicializar_combos():
-	# Combo tipo de hallazgo
-	var comboTipo = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo
-	if comboTipo:
-		comboTipo.clear()
-		comboTipo.add_item("Seleccionar tipo*")
-		comboTipo.add_item("Retraso en servicio")
-		comboTipo.add_item("Defecto de producto")
-		comboTipo.add_item("Error en servicio")
-		comboTipo.add_item("Atención al cliente")
-		comboTipo.add_item("Problema logístico")
-		comboTipo.add_item("Otro")
+	print("⚙️ Inicializando combos...")
 	
-	# Combo producto/servicio
-	var comboProducto = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto
-	if comboProducto:
-		comboProducto.clear()
-		comboProducto.add_item("Seleccionar producto/servicio*")
-		comboProducto.add_item("Paquete turístico")
-		comboProducto.add_item("Hospedaje")
-		comboProducto.add_item("Transporte aéreo")
-		comboProducto.add_item("Transporte terrestre")
-		comboProducto.add_item("Excursión")
-		comboProducto.add_item("Seguro de viaje")
-		comboProducto.add_item("Alquiler de auto")
-		comboProducto.add_item("Asistencia al viajero")
-		comboProducto.add_item("Tour guiado")
+	# Mapeo de nombres lógicos a nombres reales en la escena
+	var nombre_mapping = {
+		"ComboTipo": "ComboTipo",
+		"ComboProducto": "ComboProducto", 
+		"ComboSucursal": "ComboSucursal",
+		"ComboGravedad": "ComboGravedad",
+		"ComboInvestigacion": "ComboInvestigacion"
+	}
 	
-	# Combo sucursal
-	var comboSucursal = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal
-	if comboSucursal:
-		comboSucursal.clear()
-		comboSucursal.add_item("Seleccionar sucursal*")
-		comboSucursal.add_item("Quito - Centro")
-		comboSucursal.add_item("Quito - Norte")
-		comboSucursal.add_item("Guayaquil")
-		comboSucursal.add_item("Cuenca")
-		comboSucursal.add_item("Manta")
-		comboSucursal.add_item("Ambato")
-		comboSucursal.add_item("Portoviejo")
-		comboSucursal.add_item("Machala")
+	# Datos para cada combo
+	var combos_data = {
+		"ComboTipo": ["Seleccionar tipo*", "Retraso en servicio", "Defecto de producto", 
+					 "Error en servicio", "Atención al cliente", "Problema logístico", "Otro"],
+		"ComboProducto": ["Seleccionar producto/servicio*", "Paquete turístico", "Hospedaje",
+					 "Transporte aéreo", "Transporte terrestre", "Excursión", 
+					 "Seguro de viaje", "Alquiler de auto", "Asistencia al viajero", "Tour guiado"],
+		"ComboSucursal": ["Seleccionar sucursal*","Pinar del Río" ,"Artemisa","La Habana","Mayabeque" ,"Matanzas" ,"Cienfuegos" ,"Villa Clara","Sancti Spíritus","Ciego de Ávila" ,"Camagüey","Las Tunas" ,"Granma" ,"Holguín" ,"Santiago", "Guantánamo" ],
+		"ComboGravedad": ["Seleccionar gravedad*", "Leve (sin impacto operativo)", 
+					 "Moderado (impacto parcial)", "Grave (impacto significativo)", 
+					 "Crítico (paro operativo)"],
+		"ComboInvestigacion": ["Seleccionar*", "Sí", "No"]
+	}
 	
-	# Combo gravedad
-	var comboGravedad = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad
-	if comboGravedad:
-		comboGravedad.clear()
-		comboGravedad.add_item("Seleccionar gravedad*")
-		comboGravedad.add_item("Leve (sin impacto operativo)")
-		comboGravedad.add_item("Moderado (impacto parcial)")
-		comboGravedad.add_item("Grave (impacto significativo)")
-		comboGravedad.add_item("Crítico (paro operativo)")
-	
-	# Combo investigación
-	var comboInvestigacion = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion
-	if comboInvestigacion:
-		comboInvestigacion.clear()
-		comboInvestigacion.add_item("Seleccionar*")
-		comboInvestigacion.add_item("Sí")
-		comboInvestigacion.add_item("No")
+	for nombre_logico in combos_data.keys():
+		var nombre_real = nombre_mapping.get(nombre_logico, nombre_logico)
+		var combo = find_child(nombre_real, true, false)
+		
+		if combo:
+			combo.clear()
+			for item in combos_data[nombre_logico]:
+				combo.add_item(item)
+			print("✅ Inicializado: " + nombre_logico + " (nodo: " + nombre_real + ")")
+		else:
+			print("⚠️ No se encontró: " + nombre_logico + " (buscando: " + nombre_real + ")")
 
 func conectar_senales():
+	print("🔌 Conectando señales...")
+	
 	# Botones principales
-	if $ContentContainer/FormContainer/SeccionCliente/ClienteHBox/BtnBuscarCliente:
-		$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/BtnBuscarCliente.pressed.connect(abrir_busqueda_cliente)
+	var btnBuscarCliente = find_child("BtnBuscarCliente", true, false)
+	if btnBuscarCliente:
+		btnBuscarCliente.pressed.connect(abrir_busqueda_cliente)
 	
-	if $ContentContainer/FormContainer/SeccionAcciones/BtnCancelar:
-		$ContentContainer/FormContainer/SeccionAcciones/BtnCancelar.pressed.connect(_on_btn_cancelar_pressed)
+	var btnCancelar = find_child("BtnCancelar", true, false)
+	if btnCancelar:
+		btnCancelar.pressed.connect(_on_btn_cancelar_pressed)
 	
-	if $ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar:
-		$ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar.pressed.connect(validar_y_registrar)
+	var btnRegistrar = find_child("BtnRegistrar", true, false)
+	if btnRegistrar:
+		btnRegistrar.pressed.connect(validar_y_registrar)
 	
-	if $Header/HeaderHBox/BtnCerrar:
-		$Header/HeaderHBox/BtnCerrar.pressed.connect(_on_btn_cerrar_pressed)
+	var btnCerrar = find_child("BtnCerrar", true, false)
+	if btnCerrar:
+		btnCerrar.pressed.connect(_on_btn_cerrar_pressed)
 	
 	# Diálogo de búsqueda de cliente
-	if $DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/BtnBuscarClienteDialog:
-		$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/BtnBuscarClienteDialog.pressed.connect(buscar_cliente_bd)
+	var btnBuscarClienteDialog = get_node_or_null("DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/BtnBuscarClienteDialog")
+	if btnBuscarClienteDialog:
+		btnBuscarClienteDialog.pressed.connect(buscar_cliente_bd_safe)
 	
-	if $DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnSeleccionarCliente:
-		$DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnSeleccionarCliente.pressed.connect(seleccionar_cliente)
+	var btnSeleccionarCliente = get_node_or_null("DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnSeleccionarCliente")
+	if btnSeleccionarCliente:
+		btnSeleccionarCliente.pressed.connect(seleccionar_cliente)
 	
-	if $DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnCancelarCliente:
-		$DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnCancelarCliente.pressed.connect(cerrar_busqueda_cliente)
+	var btnCancelarCliente = get_node_or_null("DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnCancelarCliente")
+	if btnCancelarCliente:
+		btnCancelarCliente.pressed.connect(cerrar_busqueda_cliente)
 	
-	if $DialogoBuscarCliente:
+	if has_node("DialogoBuscarCliente"):
 		$DialogoBuscarCliente.close_requested.connect(cerrar_busqueda_cliente)
 	
 	# Botones de confirmación
-	if $ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarSi:
+	if has_node("ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarSi"):
 		$ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarSi.pressed.connect(registrar_incidencia_cerrada)
 	
-	if $ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarNo:
+	if has_node("ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarNo"):
 		$ConfirmacionEstado/ConfirmacionVBox/BotonesConfirmacion/BtnConfirmarNo.pressed.connect(cerrar_confirmacion_estado)
 	
 	# Campos de texto
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo:
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text_changed.connect(
+	var inputTitulo = find_child("InputTitulo", true, false)
+	if inputTitulo:
+		inputTitulo.text_changed.connect(
 			func(_texto = ""): validar_formulario()
 		)
 	
-	if $ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion:
-		$ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text_changed.connect(
+	var inputDescripcion = find_child("InputDescripcion", true, false)
+	if inputDescripcion:
+		inputDescripcion.text_changed.connect(
 			func(): validar_formulario()
 		)
 	
 	# Campo de fecha
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha:
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha.text_changed.connect(
+	var inputFecha = find_child("InputFecha", true, false)
+	if inputFecha:
+		inputFecha.text_changed.connect(
 			func(_texto = ""): validar_formulario()
 		)
 	
-	# Combobox - usar funciones lambda para evitar problemas de parámetros
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo:
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo.item_selected.connect(
-			func(_idx = -1): validar_formulario()
-		)
+	# Combobox
+	var comboNombres = ["ComboTipo", "ComboProducto", "s", "ComboGravedad", "ComboInvestigacion"]
+	for nombre in comboNombres:
+		var combo = find_child(nombre, true, false)
+		if combo:
+			combo.item_selected.connect(
+				func(_idx = -1): validar_formulario()
+			)
 	
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto:
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto.item_selected.connect(
-			func(_idx = -1): validar_formulario()
-		)
-	
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal:
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal.item_selected.connect(
-			func(_idx = -1): validar_formulario()
-		)
-	
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad:
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad.item_selected.connect(
-			func(_idx = -1): validar_formulario()
-		)
-	
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion:
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion.item_selected.connect(
-			func(_idx = -1): validar_formulario()
-		)
+	print("✅ Señales conectadas")
 
 func abrir_busqueda_cliente():
-	$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text = ""
-	$DialogoBuscarCliente/BuscarClienteVBox/TablaClientes.clear()
-	$DialogoBuscarCliente.popup_centered()
-	$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.grab_focus()
+	print("📂 Abriendo búsqueda de cliente...")
+	
+	if has_node("DialogoBuscarCliente"):
+		$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text = ""
+		
+		var tabla = $DialogoBuscarCliente/BuscarClienteVBox/TablaClientes
+		if tabla:
+			tabla.clear()
+		
+		$DialogoBuscarCliente.popup_centered()
+		
+		var inputBuscar = $DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente
+		if inputBuscar:
+			inputBuscar.grab_focus()
 	
 func cerrar_busqueda_cliente():
-	$DialogoBuscarCliente.hide()
+	if has_node("DialogoBuscarCliente"):
+		$DialogoBuscarCliente.hide()
 
-func buscar_cliente_bd():
-	var termino = $DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text.strip_edges()
+func buscar_cliente_bd_safe():
+	print("🔍 Iniciando búsqueda segura...")
+	
+	if not has_node("DialogoBuscarCliente"):
+		print("❌ Diálogo no encontrado")
+		return
+	
+	var inputBuscar = $DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente
+	if not inputBuscar:
+		print("❌ Campo de búsqueda no encontrado")
+		return
+	
+	var termino = inputBuscar.text.strip_edges()
 	
 	if termino == "":
 		mostrar_error("Ingrese un término de búsqueda")
@@ -445,24 +378,58 @@ func buscar_cliente_bd():
 	
 	print("🔍 Buscando cliente: '" + termino + "'")
 	
-	# Buscar en base de datos simulada
-	var clientes = db["buscar_cliente"].call(termino)
+	# Deshabilitar botón temporalmente
+	var btnBuscar = $DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/BtnBuscarClienteDialog
+	if btnBuscar:
+		btnBuscar.disabled = true
+		btnBuscar.text = "Buscando..."
+	
+	# Permitir que se procesen eventos de la interfaz
+	await get_tree().process_frame
+	await get_tree().create_timer(0.05).timeout
+	
+	# Realizar búsqueda (ahora es asíncrona) con manejo de errores simplificado
+	var clientes = []
+	
+	# En GDScript no hay try-catch, usamos un método simple
+	var resultado = await db["buscar_cliente"].call(termino)
+	
+	if resultado is Array:
+		clientes = resultado
+	else:
+		print("❌ Error en búsqueda: resultado no es un array")
+		mostrar_error("Error al buscar clientes")
+		# Restaurar botón
+		if btnBuscar:
+			btnBuscar.disabled = false
+			btnBuscar.text = "Buscar en Base Datos"
+		return
 	
 	# Mostrar resultados
 	mostrar_clientes_en_tabla(clientes)
+	
+	# Restaurar botón
+	if btnBuscar:
+		btnBuscar.disabled = false
+		btnBuscar.text = "Buscar en Base Datos"
+	
+	print("✅ Búsqueda completada")
 
 func mostrar_clientes_en_tabla(clientes: Array):
-	var tabla = $DialogoBuscarCliente/BuscarClienteVBox/TablaClientes
-	if not tabla:
-		mostrar_error("Tabla de clientes no disponible")
+	print("📊 Mostrando " + str(clientes.size()) + " clientes en tabla")
+	
+	if not has_node("DialogoBuscarCliente"):
+		print("❌ Diálogo no encontrado")
 		return
 	
+	var tabla = $DialogoBuscarCliente/BuscarClienteVBox/TablaClientes
+	if not tabla:
+		print("❌ Tabla no encontrada")
+		return
+	
+	# Limpiar tabla
 	tabla.clear()
-	
-	# Configurar columnas
 	tabla.columns = 4
-	
-	# Establecer títulos de columnas
 	tabla.set_column_title(0, "Código")
 	tabla.set_column_title(1, "Nombre")
 	tabla.set_column_title(2, "Email")
@@ -474,27 +441,40 @@ func mostrar_clientes_en_tabla(clientes: Array):
 	tabla.set_column_custom_minimum_width(2, 200)
 	tabla.set_column_custom_minimum_width(3, 120)
 	
+	# Obtener referencia al botón UNA SOLA VEZ
+	var btnSeleccionar = $DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnSeleccionarCliente
+	
 	if clientes.size() == 0:
-		mostrar_error("No se encontraron clientes para: '" + $DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text + "'")
-		$DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnSeleccionarCliente.disabled = true
+		print("ℹ️ No se encontraron resultados")
+		if btnSeleccionar:
+			btnSeleccionar.disabled = true
 		return
 	
-	var root = tabla.create_item()
-	
-	for cliente in clientes:
-		var item = tabla.create_item(root)
+	# Crear items (sin root para simplificar)
+	for i in range(clientes.size()):
+		var cliente = clientes[i]
+		var item = tabla.create_item()
 		item.set_text(0, cliente.get("codigo_cliente", ""))
 		item.set_text(1, cliente.get("nombre", "") + " " + cliente.get("apellidos", ""))
 		item.set_text(2, cliente.get("email", ""))
 		item.set_text(3, cliente.get("telefono", ""))
-		
-		# Guardar datos completos del cliente en metadata del item
 		item.set_metadata(0, cliente)
+		
+		# Permitir que se procesen eventos periódicamente
+		if i % 5 == 0:
+			await get_tree().process_frame
 	
-	print("📊 Mostrando " + str(clientes.size()) + " cliente(s) encontrado(s)")
-	$DialogoBuscarCliente/BuscarClienteVBox/BotonesSeleccionCliente/BtnSeleccionarCliente.disabled = false
+	print("✅ Tabla actualizada con " + str(clientes.size()) + " clientes")
+	
+	if btnSeleccionar:
+		btnSeleccionar.disabled = false
 
 func seleccionar_cliente():
+	print("✅ Seleccionando cliente...")
+	
+	if not has_node("DialogoBuscarCliente"):
+		return
+	
 	var tabla = $DialogoBuscarCliente/BuscarClienteVBox/TablaClientes
 	if not tabla:
 		mostrar_error("Tabla de clientes no disponible")
@@ -509,16 +489,18 @@ func seleccionar_cliente():
 	cliente_seleccionado = seleccionado.get_metadata(0)
 	
 	# Mostrar información del cliente en el formulario
-	$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
-	$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
-	$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelCodigoCliente.text = "Código: " + cliente_seleccionado.get("codigo_cliente", "")
-	$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelContacto.text = "Contacto: " + cliente_seleccionado.get("email", "") + " / " + cliente_seleccionado.get("telefono", "")
+	if has_node("ContentContainer/FormContainer/SeccionCliente/InfoCliente"):
+		$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
+		$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
+		$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelCodigoCliente.text = "Código: " + cliente_seleccionado.get("codigo_cliente", "")
+		$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelContacto.text = "Contacto: " + cliente_seleccionado.get("email", "") + " / " + cliente_seleccionado.get("telefono", "")
 	
-	# Deshabilitar campo de búsqueda
-	$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
+	# Actualizar campo de búsqueda
+	if has_node("ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente"):
+		$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
 	
 	$DialogoBuscarCliente.hide()
-	print("✅ Cliente seleccionado: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", ""))
+	print("✅ Cliente seleccionado: " + cliente_seleccionado.get("nombre", ""))
 	validar_formulario()
 
 func validar_formulario():
@@ -530,53 +512,57 @@ func validar_formulario():
 		campos_ok = false
 	
 	# Campos de incidencia
-	var inputTitulo = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo
-	if inputTitulo.text.strip_edges() == "":
+	var inputTitulo = find_child("InputTitulo", true, false)
+	if inputTitulo and inputTitulo.text.strip_edges() == "":
 		campos_ok = false
 	
-	var comboInvestigacion = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion
-	if comboInvestigacion.selected <= 0:
+	var comboInvestigacion = find_child("ComboInvestigacion", true, false)
+	if comboInvestigacion and comboInvestigacion.selected <= 0:
 		campos_ok = false
 	
-	var inputDescripcion = $ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion
-	if inputDescripcion.text.strip_edges() == "":
+	var inputDescripcion = find_child("InputDescripcion", true, false)
+	if inputDescripcion and inputDescripcion.text.strip_edges() == "":
 		campos_ok = false
 	
 	# Combo boxes
 	var combos = [
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo,
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto,
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal,
-		$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad
+		find_child("ComboTipo", true, false),
+		find_child("ComboProducto", true, false),
+		find_child("s", true, false),  # Nodo real para sucursal
+		find_child("ComboGravedad", true, false)
 	]
 	
 	for combo in combos:
-		if combo.selected <= 0:
+		if combo and combo.selected <= 0:
 			campos_ok = false
 	
 	# Fecha de ocurrencia
-	var inputFecha = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha
-	if inputFecha.text.strip_edges() == "":
-		campos_ok = false
-	else:
-		# Validar formato de fecha (DD/MM/AAAA)
-		var fecha_parts = inputFecha.text.split("/")
-		if fecha_parts.size() != 3:
+	var inputFecha = find_child("InputFecha", true, false)
+	if inputFecha:
+		if inputFecha.text.strip_edges() == "":
 			campos_ok = false
 		else:
-			var dia = fecha_parts[0].to_int()
-			var mes = fecha_parts[1].to_int()
-			var anio = fecha_parts[2].to_int()
-			
-			if dia < 1 or dia > 31 or mes < 1 or mes > 12 or anio < 2000 or anio > 2100:
+			# Validar formato de fecha (DD/MM/AAAA)
+			var fecha_parts = inputFecha.text.split("/")
+			if fecha_parts.size() != 3:
 				campos_ok = false
+			else:
+				var dia = fecha_parts[0].to_int()
+				var mes = fecha_parts[1].to_int()
+				var anio = fecha_parts[2].to_int()
+				
+				if dia < 1 or dia > 31 or mes < 1 or mes > 12 or anio < 2000 or anio > 2100:
+					campos_ok = false
 	
 	formulario_valido = campos_ok
-	$ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar.disabled = not formulario_valido
 	
-	# Actualizar variable requiere_investigacion basada en combo seleccionado
-	var idxInvestigacion = comboInvestigacion.selected
-	requiere_investigacion = (idxInvestigacion == 1)  # 1=Sí, 2=No
+	var btnRegistrar = find_child("BtnRegistrar", true, false)
+	if btnRegistrar:
+		btnRegistrar.disabled = not formulario_valido
+	
+	# Actualizar variable requiere_investigacion
+	if comboInvestigacion:
+		requiere_investigacion = (comboInvestigacion.selected == 1)  # 1=Sí, 2=No
 	
 	return formulario_valido
 
@@ -590,7 +576,8 @@ func validar_y_registrar():
 	# Verificar si requiere investigación
 	if not requiere_investigacion:  # "No" (no requiere investigación)
 		# Mostrar diálogo de confirmación
-		$ConfirmacionEstado.popup_centered()
+		if has_node("ConfirmacionEstado"):
+			$ConfirmacionEstado.popup_centered()
 	else:
 		registrar_incidencia_abierta()
 
@@ -601,10 +588,12 @@ func registrar_incidencia_abierta():
 func registrar_incidencia_cerrada():
 	# Registrar incidencia con estado "cerrada" (no requiere investigación)
 	registrar_incidencia_con_estado("cerrada")
-	$ConfirmacionEstado.hide()
+	if has_node("ConfirmacionEstado"):
+		$ConfirmacionEstado.hide()
 
 func cerrar_confirmacion_estado():
-	$ConfirmacionEstado.hide()
+	if has_node("ConfirmacionEstado"):
+		$ConfirmacionEstado.hide()
 
 func registrar_incidencia_con_estado(estado: String):
 	# Generar código de incidencia
@@ -666,33 +655,32 @@ func registrar_incidencia_con_estado(estado: String):
 
 func obtener_datos_formulario() -> Dictionary:
 	# Obtener tipo de hallazgo
-	var comboTipo = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo
-	var tipo_hallazgo = comboTipo.get_item_text(comboTipo.selected) if comboTipo.selected > 0 else ""
+	var comboTipo = find_child("ComboTipo", true, false)
+	var tipo_hallazgo = comboTipo.get_item_text(comboTipo.selected) if comboTipo and comboTipo.selected > 0 else ""
 	
 	# Obtener producto/servicio
-	var comboProducto = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto
-	var producto_servicio = comboProducto.get_item_text(comboProducto.selected) if comboProducto.selected > 0 else ""
+	var comboProducto = find_child("ComboProducto", true, false)
+	var producto_servicio = comboProducto.get_item_text(comboProducto.selected) if comboProducto and comboProducto.selected > 0 else ""
 	
-	# Obtener sucursal
-	var comboSucursal = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal
-	var sucursal = comboSucursal.get_item_text(comboSucursal.selected) if comboSucursal.selected > 0 else ""
+	# Obtener sucursal - usar nodo real "s"
+	var comboSucursal = find_child("s", true, false)
+	var sucursal = comboSucursal.get_item_text(comboSucursal.selected) if comboSucursal and comboSucursal.selected > 0 else ""
 	
 	# Obtener gravedad
-	var comboGravedad = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad
-	var nivel_gravedad = comboGravedad.get_item_text(comboGravedad.selected) if comboGravedad.selected > 0 else ""
+	var comboGravedad = find_child("ComboGravedad", true, false)
+	var nivel_gravedad = comboGravedad.get_item_text(comboGravedad.selected) if comboGravedad and comboGravedad.selected > 0 else ""
 	
 	# Convertir fecha de formato DD/MM/AAAA a AAAA-MM-DD
-	var inputFecha = $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha
-	var fecha_parts = inputFecha.text.split("/")
-	var fecha_sql = ""
-	if fecha_parts.size() == 3:
-		fecha_sql = "%s-%s-%s" % [fecha_parts[2], fecha_parts[1].pad_zeros(2), fecha_parts[0].pad_zeros(2)]
-	else:
-		fecha_sql = obtener_fecha_actual_sql()
+	var inputFecha = find_child("InputFecha", true, false)
+	var fecha_sql = obtener_fecha_actual_sql()
+	if inputFecha:
+		var fecha_parts = inputFecha.text.split("/")
+		if fecha_parts.size() == 3:
+			fecha_sql = "%s-%s-%s" % [fecha_parts[2], fecha_parts[1].pad_zeros(2), fecha_parts[0].pad_zeros(2)]
 	
 	return {
-		"titulo": $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text.strip_edges(),
-		"descripcion": $ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text.strip_edges(),
+		"titulo": find_child("InputTitulo", true, false).text.strip_edges() if find_child("InputTitulo", true, false) else "",
+		"descripcion": find_child("InputDescripcion", true, false).text.strip_edges() if find_child("InputDescripcion", true, false) else "",
 		"tipo_hallazgo": tipo_hallazgo,
 		"producto_servicio": producto_servicio,
 		"sucursal": sucursal,
@@ -705,26 +693,37 @@ func obtener_datos_formulario() -> Dictionary:
 func limpiar_formulario():
 	# Limpiar cliente
 	cliente_seleccionado = {}
-	$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = false
-	$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = ""
+	if has_node("ContentContainer/FormContainer/SeccionCliente/InfoCliente"):
+		$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = false
+		$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = ""
 	
 	# Limpiar campos de incidencia
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text = ""
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputFecha.text = obtener_fecha_actual()
-	$ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text = ""
+	var inputTitulo = find_child("InputTitulo", true, false)
+	if inputTitulo:
+		inputTitulo.text = ""
+	
+	var inputFecha = find_child("InputFecha", true, false)
+	if inputFecha:
+		inputFecha.text = obtener_fecha_actual()
+	
+	var inputDescripcion = find_child("InputDescripcion", true, false)
+	if inputDescripcion:
+		inputDescripcion.text = ""
 	
 	# Resetear combos
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo.select(0)
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto.select(0)
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal.select(0)
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad.select(0)
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion.select(0)
+	var combos = ["ComboTipo", "ComboProducto", "s", "ComboGravedad", "ComboInvestigacion"]
+	for nombre in combos:
+		var combo = find_child(nombre, true, false)
+		if combo:
+			combo.select(0)
 	
 	# Restablecer variable requiere_investigacion a su valor por defecto
 	requiere_investigacion = true
 	
 	# Deshabilitar botón registrar
-	$ContentContainer/FormContainer/SeccionAcciones/BtnRegistrar.disabled = true
+	var btnRegistrar = find_child("BtnRegistrar", true, false)
+	if btnRegistrar:
+		btnRegistrar.disabled = true
 	
 	print("🧹 Formulario limpiado")
 
@@ -739,13 +738,16 @@ func cerrar_formulario():
 	var hay_datos = false
 	
 	# Verificar campos principales
-	if $ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text != "":
+	if has_node("ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente"):
+		if $ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text != "":
+			hay_datos = true
+	
+	var inputTitulo = find_child("InputTitulo", true, false)
+	if inputTitulo and inputTitulo.text != "":
 		hay_datos = true
 	
-	if $ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text != "":
-		hay_datos = true
-	
-	if $ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text != "":
+	var inputDescripcion = find_child("InputDescripcion", true, false)
+	if inputDescripcion and inputDescripcion.text != "":
 		hay_datos = true
 	
 	if hay_datos:
@@ -813,24 +815,28 @@ func obtener_fecha_actual_sql() -> String:
 	return "%04d-%02d-%02d" % [fecha.year, fecha.month, fecha.day]
 
 func mostrar_carga(mensaje: String):
-	$PanelCargando/MensajeCarga.text = mensaje
-	$PanelCargando.visible = true
+	if has_node("PanelCargando"):
+		$PanelCargando/MensajeCarga.text = mensaje
+		$PanelCargando.visible = true
 
 func ocultar_carga():
-	$PanelCargando.visible = false
+	if has_node("PanelCargando"):
+		$PanelCargando.visible = false
 
 func mostrar_exito(mensaje: String):
-	$MensajeExito.dialog_text = mensaje
-	$MensajeExito.popup_centered()
+	if has_node("MensajeExito"):
+		$MensajeExito.dialog_text = mensaje
+		$MensajeExito.popup_centered()
 
 func mostrar_error(mensaje: String):
 	error_registro.emit(mensaje)  # Emitir la señal
-	$MensajeError.dialog_text = mensaje
-	$MensajeError.popup_centered()
+	if has_node("MensajeError"):
+		$MensajeError.dialog_text = mensaje
+		$MensajeError.popup_centered()
 
 func _process(_delta):
 	# Animación de barra de progreso
-	if $PanelCargando.visible:
+	if has_node("PanelCargando") and $PanelCargando.visible:
 		var progress = $PanelCargando/ProgressBar
 		if progress:
 			progress.value = fmod(progress.value + 2.0, 100.0)
@@ -850,8 +856,9 @@ func mostrar_estado_sistema():
 # Función para probar búsqueda rápida
 func prueba_busqueda_rapida():
 	print("🧪 Iniciando prueba de búsqueda...")
-	$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text = "Juan"
-	buscar_cliente_bd()
+	if has_node("DialogoBuscarCliente"):
+		$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text = "Juan"
+		buscar_cliente_bd_safe()
 
 # Función para llenar formulario automáticamente para pruebas
 func prueba_formulario_completo():
@@ -860,20 +867,40 @@ func prueba_formulario_completo():
 	# Seleccionar primer cliente
 	if clientes_falsos.size() > 0:
 		cliente_seleccionado = clientes_falsos[0]
-		$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
-		$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
-		$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
+		if has_node("ContentContainer/FormContainer/SeccionCliente/InfoCliente"):
+			$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
+			$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
+			$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
 	
 	# Llenar campos
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/InputTitulo.text = "Prueba: Retraso en entrega de paquete turístico"
-	$ContentContainer/FormContainer/SeccionIncidencia/InputDescripcion.text = "El cliente reporta que su paquete turístico no fue entregado en la fecha acordada, causando inconvenientes en su viaje programado."
+	var inputTitulo = find_child("InputTitulo", true, false)
+	if inputTitulo:
+		inputTitulo.text = "Prueba: Retraso en entrega de paquete turístico"
+	
+	var inputDescripcion = find_child("InputDescripcion", true, false)
+	if inputDescripcion:
+		inputDescripcion.text = "El cliente reporta que su paquete turístico no fue entregado en la fecha acordada, causando inconvenientes en su viaje programado."
 	
 	# Seleccionar combos
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboTipo.select(1)  # Retraso en servicio
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboProducto.select(1)  # Paquete turístico
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboSucursal.select(1)  # Quito - Centro
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboGravedad.select(2)  # Moderado
-	$ContentContainer/FormContainer/SeccionIncidencia/GridContainer/ComboInvestigacion.select(1)  # Sí
+	var comboTipo = find_child("ComboTipo", true, false)
+	if comboTipo:
+		comboTipo.select(1)  # Retraso en servicio
+	
+	var comboProducto = find_child("ComboProducto", true, false)
+	if comboProducto:
+		comboProducto.select(1)  # Paquete turístico
+	
+	var comboSucursal = find_child("s", true, false)
+	if comboSucursal:
+		comboSucursal.select(1)  # Quito - Centro
+	
+	var comboGravedad = find_child("ComboGravedad", true, false)
+	if comboGravedad:
+		comboGravedad.select(2)  # Moderado
+	
+	var comboInvestigacion = find_child("ComboInvestigacion", true, false)
+	if comboInvestigacion:
+		comboInvestigacion.select(1)  # Sí
 	
 	validar_formulario()
 	print("✅ Formulario llenado automáticamente")

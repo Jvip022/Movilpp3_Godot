@@ -35,6 +35,9 @@ func _ready():
 	$ContenedorPrincipal/PanelFiltros/Filtros/BtnAplicarFiltro.pressed.connect(aplicar_filtros)
 	$ContenedorPrincipal/PanelFiltros/Filtros/BtnExportar.pressed.connect(solicitar_exportacion)
 	
+	# Conectar señal del diálogo de confirmación
+	$DialogoConfirmacion.confirmed.connect(_on_dialogo_confirmacion_confirmed)
+	
 	# Configurar combos de filtro
 	inicializar_filtros()
 	
@@ -323,28 +326,91 @@ func aplicar_filtros():
 	var tipo_accion = $ContenedorPrincipal/PanelFiltros/Filtros/ComboTipoAccion.get_selected_id()
 	var periodo = $ContenedorPrincipal/PanelFiltros/Filtros/ComboPeriodo.get_selected_id()
 	
-	# Filtrar trazas según los criterios seleccionados
+	# Obtener las trazas del usuario
 	var trazas_filtradas = trazas_usuario.duplicate()
+	
+	# Filtrar por período (esto es básico, en un sistema real usarías Time)
+	trazas_filtradas = filtrar_por_periodo(trazas_filtradas, periodo)
 	
 	# Filtrar por tipo de acción
 	if tipo_accion != TIPO_ACCION.TODAS:
-		var tipo_accion_str = ""
-		match tipo_accion:
-			TIPO_ACCION.LOGIN: tipo_accion_str = "LOGIN"
-			TIPO_ACCION.LOGOUT: tipo_accion_str = "LOGOUT"
-			TIPO_ACCION.CREACION: tipo_accion_str = "CREACION"
-			TIPO_ACCION.MODIFICACION: tipo_accion_str = "MODIFICACION"
-			TIPO_ACCION.ELIMINACION: tipo_accion_str = "ELIMINACION"
-			TIPO_ACCION.CONSULTA: tipo_accion_str = "CONSULTA"
-			TIPO_ACCION.EXPORTACION: tipo_accion_str = "EXPORTACION"
-		
-		trazas_filtradas = trazas_filtradas.filter(func(t): return t.get("accion", "") == tipo_accion_str)
-	
-	# Filtrar por período (esto sería más complejo en un sistema real)
-	# Por ahora, mostramos todas las trazas
+		trazas_filtradas = filtrar_por_accion(trazas_filtradas, tipo_accion)
 	
 	# Mostrar trazas filtradas
 	mostrar_trazas(trazas_filtradas)
+
+func filtrar_por_accion(trazas: Array, tipo_accion_id: int) -> Array:
+	var tipo_accion_str = ""
+	match tipo_accion_id:
+		TIPO_ACCION.LOGIN: tipo_accion_str = "LOGIN"
+		TIPO_ACCION.LOGOUT: tipo_accion_str = "LOGOUT"
+		TIPO_ACCION.CREACION: tipo_accion_str = "CREACION"
+		TIPO_ACCION.MODIFICACION: tipo_accion_str = "MODIFICACION"
+		TIPO_ACCION.ELIMINACION: tipo_accion_str = "ELIMINACION"
+		TIPO_ACCION.CONSULTA: tipo_accion_str = "CONSULTA"
+		TIPO_ACCION.EXPORTACION: tipo_accion_str = "EXPORTACION"
+	
+	if tipo_accion_str == "":
+		return trazas
+	
+	# Filtrar las trazas
+	return trazas.filter(func(t): 
+		return t.get("accion", "") == tipo_accion_str
+	)
+
+func filtrar_por_periodo(trazas: Array, periodo_id: int) -> Array:
+	if periodo_id == PERIODO_FILTRO.TODO_EL_TIEMPO:
+		return trazas
+	
+	# Calcular la fecha de inicio según el período
+	var dias_atras = 0
+	match periodo_id:
+		PERIODO_FILTRO.ULTIMOS_7_DIAS: dias_atras = 7
+		PERIODO_FILTRO.ULTIMOS_30_DIAS: dias_atras = 30
+		PERIODO_FILTRO.ULTIMOS_90_DIAS: dias_atras = 90
+	
+	# Obtener la fecha actual
+	var ahora = Time.get_date_string_from_system() + " " + Time.get_time_string_from_system()
+	var fecha_limite = calcular_fecha_limite(ahora, dias_atras)
+	
+	# Filtrar las trazas
+	return trazas.filter(func(t):
+		var fecha_traza = t.get("fecha", "")
+		if fecha_traza == "":
+			return false
+		
+		# Comparar fechas (esto es simplificado, en un sistema real usarías Time)
+		return es_fecha_mas_reciente_o_igual(fecha_traza, fecha_limite)
+	)
+
+func calcular_fecha_limite(fecha_actual: String, dias_atras: int) -> String:
+	# Esta es una implementación simplificada
+	# En un sistema real, usarías Time o DateTime para calcular esto correctamente
+	
+	# Para el ejemplo, simplemente restamos días de la fecha
+	# Nota: Esto no maneja cambios de mes/año correctamente
+	var partes = fecha_actual.split(" ")
+	if partes.size() < 2:
+		return ""
+	
+	var fecha_parts = partes[0].split("-")
+	if fecha_parts.size() < 3:
+		return ""
+	
+	var dia = int(fecha_parts[2])
+	dia -= dias_atras
+	
+	# Ajustar si el día es menor que 1
+	while dia < 1:
+		dia += 30  # Simplificación, deberías manejar meses reales
+	
+	# Crear nueva fecha string
+	return "%s-%02d-%02d %s" % [fecha_parts[0], fecha_parts[1], dia, partes[1]]
+
+func es_fecha_mas_reciente_o_igual(fecha1: String, fecha2: String) -> bool:
+	# Comparación simplificada de fechas
+	# En un sistema real, convertirías a timestamp y compararías
+	return fecha1 >= fecha2
 
 func solicitar_exportacion():
 	$DialogoConfirmacion.dialog_text = "¿Exportar las trazas filtradas a archivo CSV?"

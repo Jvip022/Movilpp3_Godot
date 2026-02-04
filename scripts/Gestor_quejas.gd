@@ -19,10 +19,12 @@ func query_safe(query: String, args: Array = []) -> Array:
 
 func _ready():
 	# Verificar si hay datos en la BD y cargar datos de prueba si está vacía
-	var resultado = bd.select_rows("quejas_reclamaciones", "", ["COUNT(*) as total"])
-	if resultado and resultado.size() > 0 and resultado[0]["total"] == 0:
-		print("Base de datos vacía. Cargando datos de prueba...")
-		cargar_datos_prueba_db()
+	var resultado = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones")
+	if resultado and resultado.size() > 0:
+		var total = resultado[0].get("total", 0)
+		if total == 0:
+			print("Base de datos vacía. Cargando datos de prueba...")
+			cargar_datos_prueba_db()
 	# Crear e inicializar ConfigManager
 	config_manager = ConfigManager.new()
 	config_manager.name = "ConfigManager"  # Asignar nombre
@@ -246,41 +248,41 @@ func registrar_queja_completa(datos: Dictionary):
 	# Generar número de caso único
 	var numero_caso = generar_numero_caso()
 	
-	# Validar datos obligatorios
-	if not datos.has("nombres") or not datos.has("asunto"):
+	# Validar datos obligatorios usando datos_normalizados
+	if not datos_normalizados.has("nombres") or not datos_normalizados.has("asunto"):
 		push_error("Faltan datos obligatorios")
 		return -1
 	
-	# Estructura completa de la queja
+	# Estructura completa de la queja usando datos_normalizados
 	var queja = {
 		"numero_caso": numero_caso,
-		"tipo_caso": datos.get("tipo_caso", "queja"),
-		"tipo_reclamante": datos.get("tipo_reclamante", "cliente"),
-		"nombres": datos["nombres"],
-		"apellidos": datos.get("apellidos", ""),
-		"identificacion": datos.get("identificacion", ""),
-		"telefono": datos.get("telefono", ""),
-		"email": datos.get("email", ""),
+		"tipo_caso": datos_normalizados.get("tipo_caso", "queja"),
+		"tipo_reclamante": datos_normalizados.get("tipo_reclamante", "cliente"),
+		"nombres": datos_normalizados["nombres"],
+		"apellidos": datos_normalizados.get("apellidos", ""),
+		"identificacion": datos_normalizados.get("identificacion", ""),
+		"telefono": datos_normalizados.get("telefono", ""),
+		"email": datos_normalizados.get("email", ""),
 		
-		"asunto": datos["asunto"],
-		"descripcion_detallada": datos.get("descripcion_detallada", ""),
-		"producto_servicio": datos.get("producto_servicio", ""),
-		"numero_factura": datos.get("numero_factura", ""),
-		"fecha_incidente": datos.get("fecha_incidente", ""),
+		"asunto": datos_normalizados["asunto"],
+		"descripcion_detallada": datos_normalizados.get("descripcion_detallada", ""),
+		"producto_servicio": datos_normalizados.get("producto_servicio", ""),
+		"numero_factura": datos_normalizados.get("numero_factura", ""),
+		"fecha_incidente": datos_normalizados.get("fecha_incidente", ""),
 		
-		"categoria": datos.get("categoria", "atencion_cliente"),
-		"monto_reclamado": float(datos.get("monto_reclamado", 0)),
-		"tipo_compensacion": datos.get("tipo_compensacion", "ninguna"),
+		"categoria": datos_normalizados.get("categoria", "atencion_cliente"),
+		"monto_reclamado": float(datos_normalizados.get("monto_reclamado", 0)),
+		"tipo_compensacion": datos_normalizados.get("tipo_compensacion", "ninguna"),
 		
-		"canal_entrada": datos.get("canal_entrada", "presencial"),
-		"recibido_por": datos.get("recibido_por", "sistema"),
-		"prioridad": calcular_prioridad(datos),
+		"canal_entrada": datos_normalizados.get("canal_entrada", "presencial"),
+		"recibido_por": datos_normalizados.get("recibido_por", "sistema"),
+		"prioridad": calcular_prioridad(datos_normalizados),
 		"estado": "recibida",
-		"fecha_limite_respuesta": datos.get("fecha_limite_respuesta", calcular_fecha_limite()),
+		"fecha_limite_respuesta": datos_normalizados.get("fecha_limite_respuesta", calcular_fecha_limite()),
 		
 		# Usar null en lugar de string "sistema" para clave foránea
 		"creado_por": null,
-		"tags": JSON.stringify(datos.get("tags", []))
+		"tags": JSON.stringify(datos_normalizados.get("tags", []))
 	}
 	
 	print("📝 Insertando queja con datos:")

@@ -1,10 +1,58 @@
 [gd_scene format=3 uid="uid://cuentalarga"]
 
-[ext_resource type="Script" uid="uid://dsr0vk4h4uk2f" path="res://scripts/UserManagement.gd" id="2_j8h3f"]
-[ext_resource type="Script" uid="uid://ull2jq3d71fk" path="res://scripts/RoleAssignment.gd" id="3_k9l4m"]
+[ext_resource type="Script" uid="uid://dsr0vk4h4uk2f" path="res://scripts/UserManagement.gd" id="1_management"]
+[ext_resource type="Script" uid="uid://ull2jq3d71fk" path="res://scripts/RoleAssignment.gd" id="2_role"]
 
-[sub_resource type="Theme" id="Theme_5c7kh"]
+[sub_resource type="Theme" id="Theme_usuarios"]
 default_base_scale = 1.7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_usuarios1"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_usuarios2"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_usuarios3"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [node name="AdministrarUsuarios" type="Control" unique_id=1894763874]
 layout_mode = 3
@@ -13,7 +61,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("2_j8h3f")
+script = ExtResource("1_management")
 
 [node name="Fondo" type="ColorRect" parent="." unique_id=1165034094]
 layout_mode = 0
@@ -27,41 +75,60 @@ anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 0.1
 offset_bottom = 80.0
-theme = SubResource("Theme_5c7kh")
+theme = SubResource("Theme_usuarios")
+theme_override_styles/panel = SubResource("StyleBoxFlat_usuarios1")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Header" unique_id=1348908248]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
 offset_top = 10.0
 offset_right = -20.0
 offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Titulo" type="Label" parent="Header/HBoxContainer" unique_id=754376541]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"HeaderLabel"
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
 text = "Administración de Usuarios"
 
 [node name="SpacerLeft" type="Control" parent="Header/HBoxContainer" unique_id=999888777]
-custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="BtnRegresar" type="Button" parent="Header/HBoxContainer" unique_id=987654321]
 layout_mode = 2
 tooltip_text = "Regresar al menú principal"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "← Regresar"
 
 [node name="BtnExportar" type="Button" parent="Header/HBoxContainer" unique_id=1299259636]
 layout_mode = 2
 tooltip_text = "Exportar usuarios a CSV"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Exportar Lista"
 
 [node name="BtnActualizar" type="Button" parent="Header/HBoxContainer" unique_id=597263514]
 layout_mode = 2
 tooltip_text = "Actualizar lista de usuarios"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Actualizar"
 
 [node name="ContentContainer" type="VBoxContainer" parent="." unique_id=2049730791]
@@ -78,24 +145,38 @@ offset_bottom = -20.0
 [node name="SearchBar" type="HBoxContainer" parent="ContentContainer" unique_id=1510253651]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="LabelBuscar" type="Label" parent="ContentContainer/SearchBar" unique_id=451601536]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 16
 text = "Buscar:"
 
 [node name="InputBuscar" type="LineEdit" parent="ContentContainer/SearchBar" unique_id=1733079361]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Nombre, usuario o email..."
 
 [node name="BtnBuscar" type="Button" parent="ContentContainer/SearchBar" unique_id=179072506]
 layout_mode = 2
 tooltip_text = "Buscar usuarios"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Buscar"
 
 [node name="BtnNuevoUsuario" type="Button" parent="ContentContainer/SearchBar" unique_id=60287234]
 layout_mode = 2
-theme_type_variation = &"PrimaryButton"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "+ Nuevo Usuario"
 
 [node name="UserTableContainer" type="ScrollContainer" parent="ContentContainer" unique_id=1990969021]
@@ -107,6 +188,7 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_usuarios2")
 columns = 7
 column_titles_visible = true
 allow_reselect = true
@@ -116,38 +198,62 @@ hide_root = true
 [node name="ActionButtons" type="HBoxContainer" parent="ContentContainer" unique_id=1196466252]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
+size_flags_horizontal = 3
 alignment = 1
 
 [node name="BtnModificar" type="Button" parent="ContentContainer/ActionButtons" unique_id=1331224262]
 layout_mode = 2
 tooltip_text = "Modificar usuario seleccionado"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 disabled = true
 text = "Modificar"
 
 [node name="BtnDesactivar" type="Button" parent="ContentContainer/ActionButtons" unique_id=1314223530]
 layout_mode = 2
 tooltip_text = "Desactivar usuario seleccionado"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 disabled = true
 text = "Desactivar"
 
 [node name="BtnAsignarRol" type="Button" parent="ContentContainer/ActionButtons" unique_id=1323437195]
 layout_mode = 2
 tooltip_text = "Asignar/Modificar rol del usuario"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 disabled = true
 text = "Asignar Rol"
 
 [node name="BtnVerTrazas" type="Button" parent="ContentContainer/ActionButtons" unique_id=1733387806]
 layout_mode = 2
 tooltip_text = "Ver historial de acciones del usuario"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 disabled = true
 text = "Ver Trazas"
 
 [node name="DialogoUsuario" type="Window" parent="." unique_id=1205334106]
+oversampling_override = 1.0
 title = "Nuevo Usuario"
+position = Vector2i(0, 36)
+size = Vector2i(600, 700)
 visible = false
 wrap_controls = true
 unresizable = true
-theme = SubResource("Theme_5c7kh")
+min_size = Vector2i(600, 700)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="DialogoUsuario" unique_id=464002414]
 anchors_preset = 15
@@ -161,21 +267,29 @@ offset_bottom = -20.0
 [node name="InputNombre" type="LineEdit" parent="DialogoUsuario/VBoxContainer" unique_id=1622376254]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Nombre completo*"
 
 [node name="InputApellido" type="LineEdit" parent="DialogoUsuario/VBoxContainer" unique_id=1356130685]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Apellidos*"
 
 [node name="InputEmail" type="LineEdit" parent="DialogoUsuario/VBoxContainer" unique_id=896814241]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Correo electrónico*"
 
 [node name="InputUsuario" type="LineEdit" parent="DialogoUsuario/VBoxContainer" unique_id=1432764067]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Nombre de usuario*"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="DialogoUsuario/VBoxContainer" unique_id=522345136]
@@ -185,24 +299,37 @@ size_flags_horizontal = 3
 [node name="InputPassword" type="LineEdit" parent="DialogoUsuario/VBoxContainer/HBoxContainer" unique_id=83561864]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Contraseña*"
 secret = true
 
 [node name="BtnGenerarPass" type="Button" parent="DialogoUsuario/VBoxContainer/HBoxContainer" unique_id=136458289]
 layout_mode = 2
 tooltip_text = "Generar contraseña aleatoria"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Generar"
 
 [node name="ComboRol" type="OptionButton" parent="DialogoUsuario/VBoxContainer" unique_id=87986861]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="ComboSucursal" type="OptionButton" parent="DialogoUsuario/VBoxContainer" unique_id=1935252946]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="CheckBoxNotificaciones" type="CheckBox" parent="DialogoUsuario/VBoxContainer" unique_id=937016952]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Enviar notificaciones por email"
 
 [node name="Separator" type="HSeparator" parent="DialogoUsuario/VBoxContainer" unique_id=647027526]
@@ -210,7 +337,8 @@ layout_mode = 2
 
 [node name="LabelPermisos" type="Label" parent="DialogoUsuario/VBoxContainer" unique_id=1937177792]
 layout_mode = 2
-theme_type_variation = &"SubHeaderLabel"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 16
 text = "Permisos Específicos:"
 
 [node name="PermisosContainer" type="VBoxContainer" parent="DialogoUsuario/VBoxContainer" unique_id=1747574493]
@@ -219,22 +347,32 @@ size_flags_horizontal = 3
 
 [node name="CheckProcesarIncidencias" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer" unique_id=444147870]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Procesar Incidencias"
 
 [node name="CheckProcesarQuejas" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer" unique_id=637627692]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Procesar Quejas y Reclamaciones"
 
 [node name="CheckAdministrarUsuarios" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer" unique_id=1571002240]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Administrar Usuarios"
 
 [node name="CheckVerTrazas" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer" unique_id=1510225977]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Visualizar Trazas"
 
 [node name="CheckConfiguracion" type="CheckBox" parent="DialogoUsuario/VBoxContainer/PermisosContainer" unique_id=924223252]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Configuración del Sistema"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="DialogoUsuario" unique_id=2017863067]
@@ -251,17 +389,29 @@ offset_bottom = -10.0
 [node name="BtnCancelar" type="Button" parent="DialogoUsuario/HBoxContainer" unique_id=909854805]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Cancelar"
 
 [node name="BtnGuardar" type="Button" parent="DialogoUsuario/HBoxContainer" unique_id=701087114]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"PrimaryButton"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Guardar Usuario"
 
 [node name="DialogoConfirmacion" type="AcceptDialog" parent="." unique_id=974542011]
+oversampling_override = 1.0
 title = "Confirmación"
-theme = SubResource("Theme_5c7kh")
+position = Vector2i(0, 36)
+size = Vector2i(400, 200)
+visible = false
 dialog_text = "¿Está seguro de que desea realizar esta acción?"
 dialog_hide_on_ok = false
 
@@ -277,6 +427,8 @@ offset_bottom = -60.0
 [node name="MensajeConfirmacion" type="Label" parent="DialogoConfirmacion/VBoxContainer" unique_id=1335134085]
 custom_minimum_size = Vector2(300, 50)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
@@ -287,19 +439,32 @@ alignment = 1
 
 [node name="BtnConfirmarSi" type="Button" parent="DialogoConfirmacion/VBoxContainer/HBoxContainer" unique_id=2054361234]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Sí, confirmar"
 
 [node name="BtnConfirmarNo" type="Button" parent="DialogoConfirmacion/VBoxContainer/HBoxContainer" unique_id=1538464948]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "No, cancelar"
 
 [node name="DialogoAsignarRol" type="Window" parent="." unique_id=732674838]
+oversampling_override = 1.0
 title = "Asignar Rol"
+position = Vector2i(0, 36)
+size = Vector2i(500, 500)
 visible = false
 wrap_controls = true
 unresizable = true
-theme = SubResource("Theme_5c7kh")
-script = ExtResource("3_k9l4m")
+min_size = Vector2i(500, 500)
+script = ExtResource("2_role")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="DialogoAsignarRol" unique_id=5026427]
 anchors_preset = 15
@@ -312,7 +477,8 @@ offset_bottom = -20.0
 
 [node name="LabelUsuario" type="Label" parent="DialogoAsignarRol/VBoxContainer" unique_id=976288479]
 layout_mode = 2
-theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 18
 text = "Usuario: [Nombre del usuario]"
 horizontal_alignment = 1
 
@@ -330,31 +496,43 @@ size_flags_horizontal = 3
 [node name="CheckAdmin" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer" unique_id=8732251]
 layout_mode = 2
 tooltip_text = "Acceso completo al sistema"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Administrador"
 
 [node name="CheckSupervisor" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer" unique_id=1583680676]
 layout_mode = 2
 tooltip_text = "Gestiona incidencias, quejas e indicadores"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Supervisor de Calidad"
 
 [node name="CheckInspector" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer" unique_id=2053011332]
 layout_mode = 2
 tooltip_text = "Registra y procesa incidencias"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Inspector de Calidad"
 
 [node name="CheckAuditor" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer" unique_id=13557466]
 layout_mode = 2
 tooltip_text = "Realiza auditorías internas"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Auditor Interno"
 
 [node name="CheckCliente" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer" unique_id=145954076]
 layout_mode = 2
 tooltip_text = "Solo lectura de informes públicos"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Cliente Externo"
 
 [node name="CheckConsulta" type="CheckBox" parent="DialogoAsignarRol/VBoxContainer/ScrollContainer/RolesContainer" unique_id=999652673]
 layout_mode = 2
 tooltip_text = "Solo visualización de datos"
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 14
 text = "Consulta General"
 
 [node name="Separator2" type="HSeparator" parent="DialogoAsignarRol/VBoxContainer" unique_id=1014662391]
@@ -366,11 +544,20 @@ alignment = 1
 
 [node name="BtnCancelarRol" type="Button" parent="DialogoAsignarRol/VBoxContainer/HBoxContainer" unique_id=1266434148]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Cancelar"
 
 [node name="BtnGuardarRol" type="Button" parent="DialogoAsignarRol/VBoxContainer/HBoxContainer" unique_id=1703267494]
 layout_mode = 2
-theme_type_variation = &"PrimaryButton"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_usuarios2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_usuarios3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_usuarios3")
 text = "Guardar Cambios"
 
 [node name="PanelCargando" type="Panel" parent="." unique_id=105484561]
@@ -394,6 +581,8 @@ offset_left = 20.0
 offset_top = 10.0
 offset_right = -20.0
 offset_bottom = 30.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
 text = "Procesando..."
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -410,11 +599,17 @@ offset_right = -40.0
 offset_bottom = 25.0
 
 [node name="MensajeExito" type="AcceptDialog" parent="." unique_id=2131158235]
+oversampling_override = 1.0
 title = "Operación Exitosa"
-theme = SubResource("Theme_5c7kh")
+position = Vector2i(0, 36)
+size = Vector2i(300, 150)
+visible = false
 dialog_text = "La operación se realizó correctamente."
 
 [node name="MensajeError" type="AcceptDialog" parent="." unique_id=26742784]
+oversampling_override = 1.0
 title = "Error"
-theme = SubResource("Theme_5c7kh")
+position = Vector2i(0, 36)
+size = Vector2i(300, 150)
+visible = false
 dialog_text = "Ocurrió un error al procesar la solicitud."

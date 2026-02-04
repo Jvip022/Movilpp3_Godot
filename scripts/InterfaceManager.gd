@@ -68,6 +68,11 @@ func _ready():
 	if btn_guardar_config:
 		btn_guardar_config.pressed.connect(_on_btn_guardar_config_pressed)
 	
+	# NUEVO: Conectar señal del botón regresar
+	var btn_regresar = get_node_or_null("BtnRegresar")
+	if btn_regresar:
+		btn_regresar.pressed.connect(_on_btn_regresar_pressed)
+	
 	# Cargar configuración inicial
 	cargar_configuracion()
 
@@ -455,6 +460,11 @@ func _on_btn_guardar_config_pressed():
 	else:
 		mostrar_mensaje_error("Error en la configuración")
 
+# ===== FUNCIÓN PARA EL BOTÓN REGRESAR =====
+func _on_btn_regresar_pressed():
+	print("Botón Regresar presionado")
+	emit_signal("cancelar_pressed")
+
 # ===== NUEVA FUNCIÓN: Cargar quejas de prueba para previsualización =====
 func cargar_datos_prueba_ui():
 	print("Cargando datos de prueba para previsualización...")
@@ -527,14 +537,12 @@ func cargar_datos_prueba_ui():
 	if lista_quejas:
 		lista_quejas.clear()
 		
-		# Configurar columnas
 		lista_quejas.set_column_title(0, "ID")
 		lista_quejas.set_column_title(1, "Cliente")
 		lista_quejas.set_column_title(2, "Asunto")
 		lista_quejas.set_column_title(3, "Tipo")
 		lista_quejas.set_column_title(4, "Prioridad")
 		lista_quejas.set_column_title(5, "Estado")
-		lista_quejas.set_column_title(6, "Fecha")
 		
 		# Crear items para cada queja de prueba
 		var id = 1
@@ -546,7 +554,6 @@ func cargar_datos_prueba_ui():
 			item.set_text(3, queja["tipo_caso"])
 			item.set_text(4, queja["prioridad"])
 			item.set_text(5, queja["estado"])
-			item.set_text(6, "2024-01-%02d" % id)  # Fecha ficticia
 			
 			# Opcional: agregar metadatos para referencia
 			item.set_metadata(0, queja)
@@ -582,13 +589,13 @@ func actualizar_lista_quejas(filtro: String = ""):
 	elif lista_quejas:
 		lista_quejas.clear()
 		var _root = lista_quejas.create_item()  # Variable con _ para indicar que no se usa
+		
 		lista_quejas.set_column_title(0, "ID")
 		lista_quejas.set_column_title(1, "Cliente")
 		lista_quejas.set_column_title(2, "Asunto")
 		lista_quejas.set_column_title(3, "Tipo")
 		lista_quejas.set_column_title(4, "Prioridad")
 		lista_quejas.set_column_title(5, "Estado")
-		lista_quejas.set_column_title(6, "Fecha")
 
 func actualizar_estadisticas():
 	print("Actualizando estadísticas")
