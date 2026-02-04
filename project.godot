@@ -23,6 +23,7 @@ config/icon="uid://b610nq8aowfu3"
 
 Bd="*res://scripts/BD.gd"
 Global="*res://scripts/Global.gd"
+AuthManager="*uid://ct2k2efd7itcw"
 
 [display]
 

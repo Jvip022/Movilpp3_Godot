@@ -1,6 +1,23 @@
 [gd_scene format=3 uid="uid://dap8s2l3v5j6m"]
 
 [ext_resource type="Script" uid="uid://d0mvh7wnrk7fj" path="res://scripts/menu_Principal.gd" id="1_4k9x2"]
+[ext_resource type="Texture2D" uid="uid://b610nq8aowfu3" path="res://assets/images/logos/havanatur-circular-logo.png" id="2_logo"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_user_panel"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.23, 0.53, 0.95, 0.1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.23, 0.53, 0.95, 0.3)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
 content_margin_left = 30.0
@@ -17,6 +34,22 @@ corner_radius_top_left = 15
 corner_radius_top_right = 15
 corner_radius_bottom_right = 15
 corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sistema"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(0.4, 0.2, 0.8, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.15, 0.6, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
 content_margin_left = 20.0
@@ -66,29 +99,283 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.95, 0.96, 0.98, 1)
+color = Color(0.92, 0.94, 0.96, 1)
 
 [node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=479570735]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 50.0
-offset_top = 50.0
-offset_right = -50.0
-offset_bottom = -50.0
+offset_left = 40.0
+offset_top = 20.0
+offset_right = -40.0
+offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=1766168852]
+[node name="Header" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=1820374661]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LogoContainer" type="HBoxContainer" parent="ContenedorPrincipal/Header" unique_id=2043684932]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Logo" type="TextureRect" parent="ContenedorPrincipal/Header/LogoContainer" unique_id=443337964]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TituloContainer" type="VBoxContainer" parent="ContenedorPrincipal/Header/LogoContainer" unique_id=1766168853]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/Header/LogoContainer/TituloContainer" unique_id=949955531]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
+text = "SISTEMA DE GESTIÓN DE CALIDAD"
+
+[node name="Subtitulo" type="Label" parent="ContenedorPrincipal/Header/LogoContainer/TituloContainer" unique_id=949955532]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Havanatur - Control de Calidad Integral"
+
+[node name="UserInfoPanel" type="Panel" parent="ContenedorPrincipal/Header" unique_id=1766168854]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_user_panel")
+
+[node name="UserInfoContainer" type="VBoxContainer" parent="ContenedorPrincipal/Header/UserInfoPanel" unique_id=1766168855]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -197.0
+offset_top = 10.0
+offset_right = -63.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UserName" type="Label" parent="ContenedorPrincipal/Header/UserInfoPanel/UserInfoContainer" unique_id=1766168856]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Usuario: Invitado"
+horizontal_alignment = 2
+
+[node name="UserRole" type="Label" parent="ContenedorPrincipal/Header/UserInfoPanel/UserInfoContainer" unique_id=1766168857]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "Rol: No autenticado"
+horizontal_alignment = 2
+
+[node name="Separator" type="HSeparator" parent="ContenedorPrincipal" unique_id=2046554644]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MenuTitlePanel" type="Panel" parent="ContenedorPrincipal" unique_id=2046554645]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
-[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=949955530]
+[node name="MenuTitle" type="Label" parent="ContenedorPrincipal/MenuTitlePanel" unique_id=2046554646]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -69.0
+offset_right = -20.0
+offset_bottom = -35.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "MENÚ PRINCIPAL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BotonesGrid" type="GridContainer" parent="ContenedorPrincipal" unique_id=2046554647]
+custom_minimum_size = Vector2(0, 450)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 4
+
+[node name="BtnConfiguracion" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=999999999]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Sistema"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_sistema")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_sistema")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sistema")
+text = "⚙️ CONFIGURACIÓN"
+
+[node name="BtnAdministrarUsuarios" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1614043212]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Administradores"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "👥 ADMINISTRAR USUARIOS"
+
+[node name="BtnGestorQuejas" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1125096172]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Especialista Calidad Sucursal"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📋 GESTOR DE QUEJAS"
+
+[node name="BtnRegistrarIncidencia" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=868601125]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Supervisor General"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "⚠️ REGISTRAR INCIDENCIA"
+
+[node name="BtnRegistrarNCAuditoria" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1074384714]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Auditores"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📊 REGISTRAR NC AUDITORÍA"
+
+[node name="BtnGenerarReportes" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1455546881]
+visible = false
+layout_mode = 2
+tooltip_text = "Para todos los Usuarios autenticados"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📈 GENERAR REPORTES"
+
+[node name="BtnRegistrarEncuesta" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=314643891]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Especialista Calidad Sucursal"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📝 REGISTRAR ENCUESTA"
+
+[node name="BtnProcesarExpediente" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1487837289]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Especialista Calidad Sucursal"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "📁 PROCESAR EXPEDIENTE"
+
+[node name="BtnProcesarCorrectivas" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1236862143]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Supervisor General"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "🔧 ACCIONES CORRECTIVAS"
+
+[node name="BtnVisualizarTrazas" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1236862144]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Administradores"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "👁️ VISUALIZAR TRAZAS"
+
+[node name="BtnCambiarPassword" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1236862145]
+visible = false
+layout_mode = 2
+tooltip_text = "Para todos los Usuarios autenticados"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "🔐 CAMBIAR CONTRASEÑA"
+
+[node name="BtnBackupRestore" type="Button" parent="ContenedorPrincipal/BotonesGrid" unique_id=1236862146]
+visible = false
+layout_mode = 2
+tooltip_text = "Solo para Administradores"
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "💾 SALVAR/RESTAURAR BD"
+
+[node name="ActionButtons" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=2122104083]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BtnCerrarSesion" type="Button" parent="ContenedorPrincipal/ActionButtons" unique_id=2122104084]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = "🚪 CERRAR SESIÓN"
+
+[node name="BtnSalir" type="Button" parent="ContenedorPrincipal/ActionButtons" unique_id=2122104085]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.07999998, 0.14133328, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+text = " SALIR DEL SISTEMA"
+
+[node name="Footer" type="Panel" parent="ContenedorPrincipal" unique_id=1385797966]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+
+[node name="FooterText" type="Label" parent="ContenedorPrincipal/Footer" unique_id=1087012529]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
@@ -96,122 +383,17 @@ offset_top = 10.0
 offset_right = -20.0
 offset_bottom = -10.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 28
-text = "SISTEMA DE GESTIÓN DE CALIDAD"
-horizontal_alignment = 1
-
-[node name="BotonesContainer" type="GridContainer" parent="ContenedorPrincipal" unique_id=2046554643]
-layout_mode = 2
-columns = 3
-
-[node name="BtnAdministrarUsuarios" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1614043212]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "ADMINISTRAR USUARIOS"
-
-[node name="BtnGestorQuejas" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1125096172]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "GESTOR DE QUEJAS"
-
-[node name="BtnRegistrarIncidencia" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=868601125]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "REGISTRAR INCIDENCIA"
-
-[node name="BtnRegistrarNCAuditoria" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1074384714]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "REGISTRAR NC AUDITORÍA"
-
-[node name="BtnGenerarReportes" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1455546881]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📊 GENERAR REPORTES"
-
-[node name="BtnRegistrarEncuesta" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=314643891]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📝 REGISTRAR ENCUESTA"
-
-[node name="BtnProcesarExpediente" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1487837289]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📁 PROCESAR EXPEDIENTE"
-
-[node name="BtnProcesarCorrectivas" type="Button" parent="ContenedorPrincipal/BotonesContainer" unique_id=1236862143]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "🛠️ ACCIONES CORRECTIVAS"
-
-[node name="BtnSalir" type="Button" parent="ContenedorPrincipal" unique_id=2122104082]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.2, 0.2, 1)
-theme_override_colors/font_pressed_color = Color(0.7, 0.15, 0.15, 1)
-theme_override_colors/font_hover_color = Color(0.9, 0.3, 0.3, 1)
-theme_override_font_sizes/font_size = 14
-text = "SALIR DEL SISTEMA"
-
-[node name="Footer" type="Panel" parent="." unique_id=1385797965]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 750.0
-offset_right = -20.0
-offset_bottom = -10.0
-grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_1")
-
-[node name="FooterText" type="Label" parent="Footer" unique_id=1087012528]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.28500003
-anchor_top = 0.05
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -0.6000366
-offset_top = 8.0
-offset_right = -356.0
-offset_bottom = -13.0
-grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.8)
-theme_override_font_sizes/font_size = 12
-text = "Sistema de Gestión de Calidad v1.0 © 2024"
+theme_override_font_sizes/font_size = 14
+text = "Sistema de Gestión de Calidad v1.0 © 2024 - Havanatur Ecuador"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="MensajeAccesoDenegado" type="AcceptDialog" parent="." unique_id=1385797967]
+title = "Acceso Denegado"
+dialog_text = "No tiene permisos para acceder a esta función."
+
+[node name="MensajeNoAutenticado" type="AcceptDialog" parent="." unique_id=1385797968]
+title = "Sesión no iniciada"
+dialog_text = "Debe iniciar sesión para acceder al sistema."

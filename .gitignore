@@ -10,5 +10,6 @@
 *.import
 *.cfg
 *.docx
-Informe_Tecnico_Prueba.docx
-documento_Hola.pdf
+*.docx
+*.pdf
+escenas_godot.txt

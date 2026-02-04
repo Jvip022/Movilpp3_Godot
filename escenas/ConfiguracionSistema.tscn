@@ -1,0 +1,214 @@
+[gd_scene format=3 uid="uid://configuracion_sistema"]
+
+[ext_resource type="Script" path="res://scripts/configuracion_sistema.gd" id="1_config"]
+[ext_resource type="Texture2D" path="res://assets/images/logos/havanatur-circular-logo.png" id="2_logo"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_bottom_margin = 20.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_hover"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lineedit"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.7, 0.7, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_checkbox"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.7, 0.7, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="ConfiguracionSistema" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_config")
+
+[node name="Fondo" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.92, 0.94, 0.96, 1)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.2
+anchor_top = 0.2
+anchor_right = 0.8
+anchor_bottom = 0.8
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="Label" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "Configuración del Sistema"
+horizontal_alignment = 1
+
+[node name="Spacer1" type="Control" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+size_flags_horizontal = 3
+
+[node name="HBoxContainerCheck" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 0
+
+[node name="CheckBox" type="CheckBox" parent="Panel/MarginContainer/VBoxContainer/HBoxContainerCheck"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_styles/unchecked = SubResource("StyleBoxFlat_checkbox")
+theme_override_styles/checked = SubResource("StyleBoxFlat_checkbox")
+theme_override_styles/hover_unchecked = SubResource("StyleBoxFlat_checkbox")
+theme_override_styles/hover_checked = SubResource("StyleBoxFlat_checkbox")
+text = "Notificaciones por email"
+
+[node name="Spacer2" type="Control" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 15)
+size_flags_horizontal = 3
+
+[node name="HBoxContainerEmail" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 0
+
+[node name="LabelEmail" type="Label" parent="Panel/MarginContainer/VBoxContainer/HBoxContainerEmail"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Email del sistema:"
+
+[node name="LineEdit" type="LineEdit" parent="Panel/MarginContainer/VBoxContainer/HBoxContainerEmail"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 2
+custom_minimum_size = Vector2(250, 0)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_lineedit")
+theme_override_styles/focus = SubResource("StyleBoxFlat_lineedit")
+placeholder_text = "ejemplo@empresa.com"
+
+[node name="Spacer3" type="Control" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+size_flags_horizontal = 3
+
+[node name="HBoxContainerBotones" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BtnGuardar" type="Button" parent="Panel/MarginContainer/VBoxContainer/HBoxContainerBotones"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_hover")
+text = "Guardar configuración"
+
+[node name="BtnVolver" type="Button" parent="Panel/MarginContainer/VBoxContainer/HBoxContainerBotones"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_hover")
+text = "Volver al menú"

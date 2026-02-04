@@ -411,7 +411,6 @@ oversampling_override = 1.0
 title = "Confirmación"
 position = Vector2i(0, 36)
 size = Vector2i(400, 200)
-visible = false
 dialog_text = "¿Está seguro de que desea realizar esta acción?"
 dialog_hide_on_ok = false
 
@@ -603,7 +602,6 @@ oversampling_override = 1.0
 title = "Operación Exitosa"
 position = Vector2i(0, 36)
 size = Vector2i(300, 150)
-visible = false
 dialog_text = "La operación se realizó correctamente."
 
 [node name="MensajeError" type="AcceptDialog" parent="." unique_id=26742784]
@@ -611,5 +609,4 @@ oversampling_override = 1.0
 title = "Error"
 position = Vector2i(0, 36)
 size = Vector2i(300, 150)
-visible = false
 dialog_text = "Ocurrió un error al procesar la solicitud."

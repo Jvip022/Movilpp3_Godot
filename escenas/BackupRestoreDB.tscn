@@ -1,0 +1,366 @@
+[gd_scene format=3 uid="uid://cr0n4cpxhnpt1"]
+
+[ext_resource type="Script" uid="uid://dxkceowuegsub" path="res://scripts/backup_restore_db.gd" id="1_backup"]
+[ext_resource type="Texture2D" uid="uid://ce2hs71bwdlbw" path="res://assets/images/logos/backup.jpeg" id="2_vxe84"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.219608, 0.458824, 0.792157, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_label_backup"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.1, 0.1, 0.1, 0.7)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lineedit"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.7, 0.7, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_secundario"]
+content_margin_left = 15.0
+content_margin_top = 8.0
+content_margin_right = 15.0
+content_margin_bottom = 8.0
+bg_color = Color(0.3, 0.3, 0.3, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.5, 0.5, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_principal"]
+content_margin_left = 20.0
+content_margin_top = 12.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boton_principal_hover"]
+content_margin_left = 20.0
+content_margin_top = 12.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="BackupRestoreDB" type="Control" unique_id=1762414081]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_backup")
+
+[node name="Fondo" type="ColorRect" parent="." unique_id=382055449]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.92, 0.94, 0.96, 1)
+
+[node name="Panel" type="Panel" parent="." unique_id=654952737]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.15
+anchor_top = 0.15
+anchor_right = 0.85
+anchor_bottom = 0.85
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel" unique_id=425171912]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer" unique_id=1085324868]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="Header" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1331179965]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Panel/MarginContainer/VBoxContainer/Header" unique_id=907747585]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+texture = ExtResource("2_vxe84")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Title" type="Label" parent="Panel/MarginContainer/VBoxContainer/Header" unique_id=169090760]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "Backup y Restauración de Base de Datos"
+horizontal_alignment = 1
+
+[node name="Spacer1" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=1830280018]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackupSection" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1102493738]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackupTitle" type="Label" parent="Panel/MarginContainer/VBoxContainer/BackupSection" unique_id=492797095]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_label_backup")
+text = "REALIZAR BACKUP"
+
+[node name="BackupInfo" type="Label" parent="Panel/MarginContainer/VBoxContainer/BackupSection" unique_id=841242451]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "Crea una copia de seguridad de toda la base de datos"
+horizontal_alignment = 1
+
+[node name="BackupPathContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/BackupSection" unique_id=1384016532]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackupPathLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/BackupSection/BackupPathContainer" unique_id=1388932090]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ruta:"
+
+[node name="BackupPath" type="LineEdit" parent="Panel/MarginContainer/VBoxContainer/BackupSection/BackupPathContainer" unique_id=1167002798]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_lineedit")
+placeholder_text = "Seleccionar ubicación para el backup"
+editable = false
+
+[node name="BtnSelectBackupPath" type="Button" parent="Panel/MarginContainer/VBoxContainer/BackupSection/BackupPathContainer" unique_id=988765745]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_secundario")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_secundario")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_secundario")
+text = "📁"
+
+[node name="BackupButtons" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/BackupSection" unique_id=285295478]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BtnBackupNow" type="Button" parent="Panel/MarginContainer/VBoxContainer/BackupSection/BackupButtons" unique_id=1420190952]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_principal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_principal_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_principal_hover")
+text = "💾 Realizar Backup Ahora"
+
+[node name="Spacer2" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=1050216094]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RestoreSection" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1478215623]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RestoreTitle" type="Label" parent="Panel/MarginContainer/VBoxContainer/RestoreSection" unique_id=1603629245]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_label_backup")
+text = "RESTAURAR BACKUP"
+
+[node name="RestoreWarning" type="Label" parent="Panel/MarginContainer/VBoxContainer/RestoreSection" unique_id=504933472]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.8, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "¡ADVERTENCIA! Esto sobreescribirá todos los datos actuales"
+horizontal_alignment = 1
+
+[node name="RestorePathContainer" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/RestoreSection" unique_id=884603163]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RestorePathLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/RestoreSection/RestorePathContainer" unique_id=730575039]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "Archivo:"
+
+[node name="RestorePath" type="LineEdit" parent="Panel/MarginContainer/VBoxContainer/RestoreSection/RestorePathContainer" unique_id=1495554148]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_lineedit")
+placeholder_text = "Seleccionar archivo de backup"
+editable = false
+
+[node name="BtnSelectRestoreFile" type="Button" parent="Panel/MarginContainer/VBoxContainer/RestoreSection/RestorePathContainer" unique_id=1823594358]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_secundario")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_secundario")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_secundario")
+text = "📂"
+
+[node name="RestoreButtons" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer/RestoreSection" unique_id=1584034110]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BtnRestoreNow" type="Button" parent="Panel/MarginContainer/VBoxContainer/RestoreSection/RestoreButtons" unique_id=1758159784]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_principal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_principal_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_principal_hover")
+text = "🔄 Restaurar Backup Ahora"
+
+[node name="Spacer3" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=466029538]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusSection" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=1907283767]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer/StatusSection" unique_id=653342384]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Estado:"
+horizontal_alignment = 1
+
+[node name="StatusMessage" type="Label" parent="Panel/MarginContainer/VBoxContainer/StatusSection" unique_id=290930431]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.2, 0.4, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Listo"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="Panel/MarginContainer/VBoxContainer/StatusSection" unique_id=1589248828]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Spacer4" type="Control" parent="Panel/MarginContainer/VBoxContainer" unique_id=1859696784]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ActionButtons" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer" unique_id=675790137]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BtnVerLogs" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionButtons" unique_id=1340072956]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_secundario")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_secundario")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_secundario")
+text = "📋 Ver Logs"
+
+[node name="BtnVolver" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionButtons" unique_id=2122465552]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_boton_principal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_boton_principal_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_boton_principal_hover")
+text = "← Volver al Menú"
+
+[node name="ConfirmationDialog" type="AcceptDialog" parent="." unique_id=1269316339]
+title = "Confirmar Restauración"
+dialog_text = "¿Está seguro que desea restaurar este backup? Todos los datos actuales se perderán."
+
+[node name="SuccessDialog" type="AcceptDialog" parent="." unique_id=248616754]
+title = "Operación Exitosa"
+
+[node name="ErrorDialog" type="AcceptDialog" parent="." unique_id=765610425]
+title = "Error"

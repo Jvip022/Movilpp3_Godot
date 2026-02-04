@@ -45,7 +45,16 @@ func _ready():
 	
 	# Crear tablas
 	if not crear_tablas_quejas():
-		push_error("❌ Error crítico al crear tablas")
+		push_error("❌ Error crítico al crear tablas de quejas")
+		return
+	
+	if not crear_tablas_calidad():
+		push_error("❌ Error crítico al crear tablas de calidad")
+		return
+	
+	# CREAR TABLAS DE NO CONFORMIDADES (NUEVO)
+	if not crear_tablas_no_conformidades():
+		push_error("❌ Error crítico al crear tablas de no conformidades")
 		return
 	
 	# Inicializar usuario admin si no existe
@@ -381,6 +390,178 @@ func insertar_datos_prueba():
 		for cliente in clientes_prueba:
 			insert("clientes", cliente)
 			
+func crear_tablas_no_conformidades():
+	"""Crea las tablas específicas para No Conformidades (NC)"""
+	print("=== CREANDO TABLAS DE NO CONFORMIDADES ===")
+	
+	# Tabla principal de NO CONFORMIDADES
+	print("Creando tabla 'no_conformidades'...")
+	var sql_nc = """
+	CREATE TABLE IF NOT EXISTS no_conformidades (
+		id_nc INTEGER PRIMARY KEY AUTOINCREMENT,
+		codigo_expediente TEXT UNIQUE NOT NULL,
+		tipo_nc TEXT NOT NULL, -- 'Incidencia Diaria', 'Auditoría', 'Queja'
+		estado TEXT NOT NULL DEFAULT 'pendiente', -- 'pendiente', 'analizado', 'cerrada', 'expediente_cerrado'
+		descripcion TEXT NOT NULL,
+		fecha_ocurrencia DATE,
+		fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+		sucursal TEXT,
+		producto_servicio TEXT,
+		cliente_id INTEGER,
+		responsable_id INTEGER,
+		prioridad INTEGER DEFAULT 3, -- 1: Alta, 2: Media, 3: Baja
+		expediente_cerrado BOOLEAN DEFAULT 0,
+		fecha_cierre DATETIME,
+		usuario_cierre INTEGER,
+		creado_por INTEGER,
+		fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+		modificado_por INTEGER,
+		fecha_modificacion DATETIME,
+		FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+		FOREIGN KEY (responsable_id) REFERENCES usuarios(id),
+		FOREIGN KEY (creado_por) REFERENCES usuarios(id),
+		FOREIGN KEY (modificado_por) REFERENCES usuarios(id),
+		FOREIGN KEY (usuario_cierre) REFERENCES usuarios(id)
+	)
+	"""
+	
+	if not query(sql_nc):
+		push_error("ERROR: No se pudo crear la tabla 'no_conformidades'")
+		return false
+	
+	# Tabla de DOCUMENTOS para NC
+	print("Creando tabla 'documentos_nc'...")
+	var sql_docs = """
+	CREATE TABLE IF NOT EXISTS documentos_nc (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		id_nc INTEGER NOT NULL,
+		nombre_archivo TEXT NOT NULL,
+		ruta_archivo TEXT NOT NULL,
+		tipo_archivo TEXT,
+		tamanio_bytes INTEGER,
+		fecha_carga DATETIME DEFAULT CURRENT_TIMESTAMP,
+		usuario_carga INTEGER,
+		descripcion TEXT,
+		verificado BOOLEAN DEFAULT 0,
+		FOREIGN KEY (id_nc) REFERENCES no_conformidades(id_nc),
+		FOREIGN KEY (usuario_carga) REFERENCES usuarios(id)
+	)
+	"""
+	
+	if not query(sql_docs):
+		push_error("ERROR: No se pudo crear la tabla 'documentos_nc'")
+		return false
+	
+	# Tabla de TRAZAS para NC
+	print("Creando tabla 'trazas_nc'...")
+	var sql_trazas = """
+	CREATE TABLE IF NOT EXISTS trazas_nc (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		id_nc INTEGER NOT NULL,
+		usuario_id INTEGER NOT NULL,
+		fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+		accion TEXT NOT NULL,
+		detalles TEXT,
+		ip_address TEXT,
+		FOREIGN KEY (id_nc) REFERENCES no_conformidades(id_nc),
+		FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+	)
+	"""
+	
+	if not query(sql_trazas):
+		push_error("ERROR: No se pudo crear la tabla 'trazas_nc'")
+		return false
+	
+	print("✅ Tablas de NC creadas correctamente")
+	
+	# Insertar datos de prueba si están vacías
+	insertar_datos_prueba_nc()
+	
+	return true
+
+func insertar_datos_prueba_nc():
+	"""Inserta datos de prueba en las tablas de NC"""
+	print("=== INSERTANDO DATOS DE PRUEBA DE NC ===")
+	
+	# Verificar si ya hay datos
+	var count_nc = count("no_conformidades")
+	if count_nc == 0:
+		print("Insertando NC de prueba...")
+		
+		# Primero, necesitamos algunos usuarios y clientes existentes
+		var usuarios = select_query("SELECT id FROM usuarios LIMIT 2")
+		var clientes = select_query("SELECT id FROM clientes LIMIT 2")
+		
+		if usuarios.size() > 0 and clientes.size() > 0:
+			var usuario_id = usuarios[0]["id"]
+			var cliente_id = clientes[0]["id"]
+			
+			var nc_prueba = [
+				{
+					"codigo_expediente": "EXP-2024-00123",
+					"tipo_nc": "Incidencia Diaria",
+					"estado": "analizado",
+					"descripcion": "Producto con defecto de fabricación reportado por cliente",
+					"fecha_ocurrencia": "2024-01-15",
+					"sucursal": "Central",
+					"producto_servicio": "Paquete Turístico Premium",
+					"cliente_id": cliente_id,
+					"responsable_id": usuario_id,
+					"prioridad": 2,
+					"creado_por": usuario_id
+				},
+				{
+					"codigo_expediente": "EXP-2024-00124",
+					"tipo_nc": "Auditoría Interna",
+					"estado": "pendiente",
+					"descripcion": "No conformidad en proceso de check-in",
+					"fecha_ocurrencia": "2024-01-16",
+					"sucursal": "Sucursal Norte",
+					"producto_servicio": "Servicio de Check-in",
+					"cliente_id": null,
+					"responsable_id": usuario_id,
+					"prioridad": 1,
+					"creado_por": usuario_id
+				}
+			]
+			
+			for nc in nc_prueba:
+				var nc_id = insert("no_conformidades", nc)
+				if nc_id > 0:
+					print("✅ NC de prueba insertada con ID: ", nc_id)
+					
+					# Insertar documentos de prueba para la primera NC
+					if nc_id == 1:  # Solo para la primera NC
+						var documentos_prueba = [
+							{
+								"id_nc": nc_id,
+								"nombre_archivo": "informe_tecnico.pdf",
+								"ruta_archivo": "/documentos/nc/informe_tecnico.pdf",
+								"tipo_archivo": "pdf",
+								"tamanio_bytes": 1024000,
+								"usuario_carga": usuario_id,
+								"descripcion": "Informe técnico del defecto"
+							},
+							{
+								"id_nc": nc_id,
+								"nombre_archivo": "fotos_defecto.jpg",
+								"ruta_archivo": "/documentos/nc/fotos_defecto.jpg",
+								"tipo_archivo": "jpg",
+								"tamanio_bytes": 2048000,
+								"usuario_carga": usuario_id,
+								"descripcion": "Fotografías del producto defectuoso"
+							}
+						]
+						
+						for doc in documentos_prueba:
+							var doc_id = insert("documentos_nc", doc)
+							if doc_id > 0:
+								print("✅ Documento de prueba insertado con ID: ", doc_id)
+		else:
+			print("⚠️ No hay usuarios o clientes para crear NC de prueba")
+	else:
+		print("✅ Ya existen datos en la tabla 'no_conformidades' (total: ", count_nc, ")")
+	
 func inicializar_usuario_admin():
 	print("=== VERIFICANDO USUARIO ADMIN ===")
 	
