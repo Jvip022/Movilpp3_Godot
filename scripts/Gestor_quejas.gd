@@ -55,7 +55,7 @@ func _ready():
 func inicializar_interfaz():
 	# Conectar señales del InterfaceManager
 	ui_manager.queja_registrada.connect(_on_queja_registrada_ui)
-	ui_manager.configuracion_guardada.connect(_on_configuracion_guardada_ui)  # Asegúrate que esta línea existe
+	ui_manager.configuracion_guardada.connect(_on_configuracion_guardada_ui)
 	ui_manager.cancelar_pressed.connect(_on_cancelar_pressed_ui)
 	
 	# Configurar pestañas
@@ -64,7 +64,7 @@ func inicializar_interfaz():
 		tab_container.tab_changed.connect(_on_tab_changed)
 	
 	# Cargar configuración en la UI
-	cargar_configuracion_en_ui() 
+	cargar_configuracion_en_ui()
 	
 func _on_queja_registrada_ui(datos: Dictionary):
 	# Agregar datos adicionales de configuración
@@ -76,6 +76,14 @@ func _on_queja_registrada_ui(datos: Dictionary):
 	
 	if id_queja != -1:
 		print("Queja registrada desde UI con ID: ", id_queja)
+		
+		# ===== NUEVO: REGISTRAR COMO NO CONFORMIDAD SI CORRESPONDE =====
+		if debe_registrar_como_nc(datos):
+			var id_nc = registrar_no_conformidad_desde_queja(id_queja, datos)
+			if id_nc != -1:
+				print("📄 Queja registrada también como No Conformidad #", datos.get("numero_caso", ""))
+				# Actualizar la queja con referencia a la NC
+				Bd.update("quejas_reclamaciones", {"no_conformidad_id": id_nc}, "id = ?", [id_queja])
 		
 		# Actualizar la interfaz
 		ui_manager.actualizar_lista_quejas()
@@ -105,21 +113,6 @@ func _on_timer_timeout():
 	actualizar_lista_quejas()
 	actualizar_estadisticas()
 
-# FUNCIÓN CORREGIDA: NUEVO NOMBRE PARA EVITAR CONFLICTO
-func calcular_fecha_limite_con_config(dias: int = -1) -> String:
-	if dias == -1:
-		dias = config_manager.get_limite_tiempo_respuesta()
-	
-	var hoy = Time.get_datetime_dict_from_system()
-	
-	# Crear un objeto Time para manipular fechas
-	var fecha_limite = Time.get_unix_time_from_datetime_dict(hoy)
-	fecha_limite += dias * 24 * 60 * 60  # Agregar días en segundos
-	
-	var fecha_dict = Time.get_datetime_dict_from_unix_time(fecha_limite)
-	
-	return "%04d-%02d-%02d" % [fecha_dict["year"], fecha_dict["month"], fecha_dict["day"]]
-
 func _on_tab_changed(tab_index):
 	match tab_index:
 		0:  # Registro
@@ -130,6 +123,8 @@ func _on_tab_changed(tab_index):
 			actualizar_estadisticas()
 		3:  # Configuración
 			cargar_configuracion()
+		4:  # NUEVO: No Conformidades
+			actualizar_lista_no_conformidades()
 
 func actualizar_lista_quejas():
 	# Lógica para actualizar la lista de quejas
@@ -147,6 +142,12 @@ func actualizar_estadisticas():
 	if ui_manager:
 		ui_manager.actualizar_estadisticas()
 
+func actualizar_lista_no_conformidades():
+	# Lógica para actualizar lista de No Conformidades
+	print("Actualizando lista de No Conformidades...")
+	if ui_manager:
+		ui_manager.actualizar_lista_no_conformidades()
+
 func cargar_pestana_registro():
 	# Lógica para cargar datos en pestaña de registro
 	print("Cargando pestaña de registro...")
@@ -162,6 +163,227 @@ func cargar_configuracion():
 func cargar_datos_iniciales():
 	# Cargar datos necesarios al iniciar
 	print("Cargando datos iniciales del sistema...")
+
+# ============================================================
+# FUNCIONES DE NO CONFORMIDADES
+# ============================================================
+
+func debe_registrar_como_nc(datos: Dictionary) -> bool:
+	"""
+	Determina si una queja debe registrarse como no conformidad.
+	"""
+	var tipo_caso = datos.get("tipo_caso", "")
+	var categoria = datos.get("categoria", "")
+	var monto = float(datos.get("monto_reclamado", 0))
+	
+	# Criterios para registrar como NC:
+	# 1. Todas las reclamaciones con monto > 0
+	# 2. Quejas de categorías específicas
+	# 3. Prioridad alta o urgente
+	
+	if tipo_caso == "reclamacion" and monto > 0:
+		return true
+	
+	var categorias_nc = ["calidad_producto", "daños", "perdidas", "privacidad", "plazos_entrega"]
+	if categoria in categorias_nc:
+		return true
+	
+	var prioridad = calcular_prioridad(datos)
+	if prioridad in ["alta", "urgente"]:
+		return true
+	
+	# Consultar configuración del sistema
+	return config_manager.get_registrar_todas_como_nc() if config_manager else false
+
+func registrar_no_conformidad_desde_queja(id_queja: int, datos_queja: Dictionary) -> int:
+	"""
+	Registra una no conformidad a partir de una queja.
+	Retorna el ID de la no conformidad creada.
+	"""
+	# Obtener la queja completa
+	var queja = obtener_queja_por_id(id_queja)
+	if not queja:
+		print("❌ No se pudo obtener la queja para crear NC")
+		return -1
+	
+	# Generar código de expediente único
+	var codigo_expediente = generar_codigo_expediente_nc()
+	
+	# Determinar el responsable (por defecto, el usuario que recibió la queja)
+	var responsable_id = obtener_responsable_nc(datos_queja)
+	
+	# Crear la No Conformidad
+	var nc_data = {
+		"codigo_expediente": codigo_expediente,
+		"tipo_nc": "Queja",
+		"estado": "pendiente",
+		"descripcion": "No conformidad generada desde queja #%s: %s" % [queja.get("numero_caso", ""), queja.get("asunto", "")],
+		"fecha_ocurrencia": queja.get("fecha_incidente", Time.get_datetime_string_from_system().substr(0, 10)),
+		"sucursal": "Central",  # Esto debería venir de la configuración
+		"producto_servicio": queja.get("producto_servicio", ""),
+		"cliente_id": null,  # Podríamos buscar el cliente en la tabla clientes si existe
+		"responsable_id": responsable_id,
+		"prioridad": prioridad_a_numero(queja.get("prioridad", "media")),
+		"creado_por": queja.get("creado_por", null)
+	}
+	
+	var id_nc = Bd.insert("no_conformidades", nc_data)
+	
+	if id_nc != -1:
+		print("✅ No conformidad registrada desde queja ID: ", id_queja)
+		print("   Código expediente: ", codigo_expediente)
+		
+		# Registrar en trazas
+		registrar_traza_nc(id_nc, "nc_creada", 
+			"No conformidad creada desde queja #%s" % queja.get("numero_caso", ""))
+		
+		# Notificar al responsable
+		notificar_nueva_nc(id_nc, nc_data["prioridad"])
+	
+	return id_nc
+
+func generar_codigo_expediente_nc() -> String:
+	"""
+	Genera un código único para el expediente de NC.
+	Formato: EXP-YYYY-NNNNN
+	"""
+	var year = Time.get_datetime_string_from_system().substr(0, 4)
+	
+	var result = query_safe(
+		"SELECT COUNT(*) as total FROM no_conformidades WHERE strftime('%Y', fecha_registro) = ?", 
+		[year]
+	)
+	
+	var numero = 1
+	if result.size() > 0:
+		var count = result[0].get("total", 0)
+		numero = int(count) + 1
+	
+	return "EXP-%s-%05d" % [year, numero]
+
+func prioridad_a_numero(prioridad: String) -> int:
+	"""
+	Convierte prioridad de texto a número (1-3)
+	"""
+	match prioridad:
+		"urgente", "alta":
+			return 1
+		"media":
+			return 2
+		"baja":
+			return 3
+		_:
+			return 2
+
+func obtener_responsable_nc(datos_queja: Dictionary) -> int:
+	"""
+	Obtiene el ID del responsable para la NC.
+	Por defecto, busca el usuario con rol 'supervisor_calidad'
+	"""
+	var result = query_safe(
+		"SELECT id FROM usuarios WHERE rol LIKE '%calidad%' OR cargo LIKE '%calidad%' LIMIT 1"
+	)
+	
+	if result.size() > 0:
+		return result[0]["id"]
+	
+	# Si no hay responsable de calidad, usar el usuario admin
+	return 1  # ID del usuario admin
+
+func registrar_traza_nc(id_nc: int, accion: String, detalles: String = ""):
+	"""
+	Registra una traza para la No Conformidad.
+	"""
+	var traza = {
+		"id_nc": id_nc,
+		"usuario_id": 1,  # Por defecto, sistema
+		"accion": accion,
+		"detalles": detalles,
+		"fecha_hora": Time.get_datetime_string_from_system(),
+		"ip_address": "127.0.0.1"
+	}
+	
+	Bd.insert("trazas_nc", traza)
+
+func notificar_nueva_nc(id_nc: int, prioridad: int):
+	"""
+	Notifica sobre una nueva no conformidad.
+	"""
+	var nc = obtener_nc_por_id(id_nc)
+	if not nc:
+		return
+	
+	var mensaje = """
+	🚨 NUEVA NO CONFORMIDAD DETECTADA
+	Código: %s
+	Tipo: %s
+	Prioridad: %d
+	Descripción: %s
+	""" % [
+		nc["codigo_expediente"],
+		nc["tipo_nc"],
+		prioridad,
+		nc["descripcion"].substr(0, 100) + "..."
+	]
+	
+	print("📢 Notificación de nueva NC: ", mensaje)
+	
+	# En un sistema real, aquí enviarías un email o notificación
+
+func obtener_nc_por_id(id_nc: int) -> Dictionary:
+	"""
+	Obtiene una no conformidad por su ID.
+	"""
+	var result = query_safe("SELECT * FROM no_conformidades WHERE id_nc = ?", [id_nc])
+	
+	if result.size() > 0:
+		return result[0]
+	
+	return {}
+
+func obtener_no_conformidades_pendientes() -> Array:
+	"""
+	Obtiene todas las no conformidades pendientes.
+	"""
+	var query_str = """
+	SELECT nc.*, u.nombre_completo as responsable_nombre
+	FROM no_conformidades nc
+	LEFT JOIN usuarios u ON nc.responsable_id = u.id
+	WHERE nc.estado IN ('pendiente', 'analizado')
+	ORDER BY 
+		CASE nc.prioridad
+			WHEN 1 THEN 1
+			WHEN 2 THEN 2
+			WHEN 3 THEN 3
+			ELSE 4
+		END,
+		nc.fecha_registro DESC
+	"""
+	
+	return query_safe(query_str)
+
+func cerrar_no_conformidad(id_nc: int, responsable: String, datos: Dictionary):
+	"""
+	Cierra una no conformidad.
+	"""
+	var nc_data = {
+		"estado": "cerrada",
+		"expediente_cerrado": 1,
+		"fecha_cierre": Time.get_datetime_string_from_system(),
+		"usuario_cierre": 1  # Por defecto, sistema
+	}
+	
+	Bd.update("no_conformidades", nc_data, "id_nc = ?", [id_nc])
+	
+	# Registrar traza
+	registrar_traza_nc(id_nc, "nc_cerrada", 
+		"No conformidad cerrada por %s. Resultado: %s" % [responsable, datos.get("resultado", "")])
+	
+	print("✅ No conformidad cerrada: ", id_nc)
+
+# ============================================================
+# FUNCIONES PRINCIPALES DE GESTIÓN DE QUEJAS
+# ============================================================
 
 func ejecutar_flujo_queja_completo():
 	# === ETAPA 1: RECEPCIÓN Y REGISTRO ===
@@ -193,6 +415,24 @@ func ejecutar_flujo_queja_completo():
 	if id_queja == -1:
 		push_error("No se pudo registrar la queja")
 		return
+	
+	# ===== NUEVO: REGISTRAR COMO NO CONFORMIDAD =====
+	var id_nc = -1
+	if debe_registrar_como_nc({
+		"tipo_caso": "reclamacion",
+		"categoria": "calidad_producto",
+		"monto_reclamado": 899.99,
+		"prioridad": "alta"
+	}):
+		id_nc = registrar_no_conformidad_desde_queja(id_queja, {
+			"numero_caso": "Q-2024-001",
+			"asunto": "Producto defectuoso recibido",
+			"fecha_incidente": "2024-01-16",
+			"producto_servicio": "Televisor LG 55' OLED",
+			"prioridad": "alta"
+		})
+		if id_nc != -1:
+			print("📄 Queja registrada también como No Conformidad")
 	
 	# === ETAPA 2: VALIDACIÓN Y ASIGNACIÓN ===
 	validar_documentacion(id_queja)
@@ -241,6 +481,13 @@ func ejecutar_flujo_queja_completo():
 	
 	# Generar reporte para análisis de tendencias
 	actualizar_analisis_tendencias(id_queja)
+	
+	# ===== NUEVO: CERRAR LA NO CONFORMIDAD ASOCIADA =====
+	if id_nc != -1:
+		cerrar_no_conformidad(id_nc, "supervisor_calidad", {
+			"resultado": "Queja resuelta satisfactoriamente",
+			"acciones_correctivas": ["Auditar lote completo", "Capacitar personal de almacén"]
+		})
 
 func registrar_queja_completa(datos: Dictionary):
 	# Normalizar datos antes de enviar a la BD
@@ -441,6 +688,21 @@ func calcular_prioridad(datos: Dictionary) -> String:
 # FUNCIÓN ORIGINAL - NO MODIFICAR NOMBRE
 func calcular_fecha_limite(dias: int = 7) -> String:
 	# Calcular fecha límite de respuesta (7 días naturales por defecto)
+	var hoy = Time.get_datetime_dict_from_system()
+	
+	# Crear un objeto Time para manipular fechas
+	var fecha_limite = Time.get_unix_time_from_datetime_dict(hoy)
+	fecha_limite += dias * 24 * 60 * 60  # Agregar días en segundos
+	
+	var fecha_dict = Time.get_datetime_dict_from_unix_time(fecha_limite)
+	
+	return "%04d-%02d-%02d" % [fecha_dict["year"], fecha_dict["month"], fecha_dict["day"]]
+
+# FUNCIÓN CORREGIDA: NUEVO NOMBRE PARA EVITAR CONFLICTO
+func calcular_fecha_limite_con_config(dias: int = -1) -> String:
+	if dias == -1:
+		dias = config_manager.get_limite_tiempo_respuesta()
+	
 	var hoy = Time.get_datetime_dict_from_system()
 	
 	# Crear un objeto Time para manipular fechas
@@ -807,7 +1069,7 @@ func notificar_escalamiento(id_queja: int, responsable: String, motivo: String, 
 		Asunto: %s
 		---
 			Nivel anterior: %d
-			Nuevo nivel: %d
+			Nivel nuevo: %d
 			Responsable anterior: %s
 			Nuevo responsable: %s
 			Motivo: %s
@@ -994,19 +1256,6 @@ func _on_cancelar_pressed_ui():
 	# Cambiar a la escena del menú principal
 	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
 
-func _on_cambiar_password_pressed():
-	# Abrir diálogo de cambio de contraseña
-	var dialogo = preload("res://escenas/autentificar.tscn").instantiate()
-	add_child(dialogo)
-	dialogo.mostrar_dialogo_cambiar_password()
-
-func _on_perfil_pressed():
-	# Mostrar menú de perfil con opción para cambiar contraseña
-	var menu_perfil = $MenuPerfil
-	var opcion_cambiar_password = menu_perfil.find_child("OpcionCambiarPassword")
-	opcion_cambiar_password.pressed.connect(_on_cambiar_password_pressed)
-	menu_perfil.visible = true
-
 func normalizar_datos_para_bd(datos: Dictionary) -> Dictionary:
 	var datos_normalizados = datos.duplicate(true)
 	
@@ -1102,8 +1351,14 @@ func cargar_datos_prueba_db():
 	for datos in datos_prueba:
 		# Llamar a la función existente de registro
 		var resultado = registrar_queja_completa(datos)
-		if resultado:
+		if resultado > 0:
 			contador_exitos += 1
+			
+			# Registrar como NC si corresponde
+			if debe_registrar_como_nc(datos):
+				var id_nc = registrar_no_conformidad_desde_queja(resultado, datos)
+				if id_nc != -1:
+					print("📄 Queja registrada también como No Conformidad")
 		else:
 			contador_errores += 1
 	

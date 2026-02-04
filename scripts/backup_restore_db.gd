@@ -414,7 +414,7 @@ func _on_ver_logs():
 		logs_dialog.queue_free()
 	)
 
-func _cargar_logs(logs_dialog: AcceptDialog, text_edit: TextEdit, stats_label: Label):
+func _cargar_logs(_logs_dialog: AcceptDialog, text_edit: TextEdit, stats_label: Label):
 	var logs_dir = "user://backups/logs/"
 	var logs_file = logs_dir + "backup_logs.txt"
 	
@@ -508,11 +508,11 @@ func _exportar_logs(logs_dialog: AcceptDialog):
 			dest_file.close()
 			
 			# Mostrar mensaje de éxito
-			var success_dialog = AcceptDialog.new()
-			success_dialog.title = "Exportación Exitosa"
-			success_dialog.dialog_text = "Logs exportados exitosamente a:\n" + export_file
-			logs_dialog.add_child(success_dialog)
-			success_dialog.popup_centered()
+			var export_success_dialog = AcceptDialog.new()
+			export_success_dialog.title = "Exportación Exitosa"
+			export_success_dialog.dialog_text = "Logs exportados exitosamente a:\n" + export_file
+			logs_dialog.add_child(export_success_dialog)
+			export_success_dialog.popup_centered()
 			
 			update_status("Logs exportados exitosamente")
 		else:
@@ -531,7 +531,6 @@ func _on_volver():
 func update_status(message: String, is_error: bool = false):
 	status_message.text = message
 	if is_error:
-		# CORRECCIÓN: Sintaxis correcta para Godot 4
 		status_message.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2, 1))
 	else:
 		status_message.add_theme_color_override("font_color", Color(0.2, 0.4, 0.2, 1))
@@ -613,12 +612,12 @@ func calcular_hash_archivo(ruta: String) -> String:
 	archivo.close()
 	
 	# Hash simple MD5 (para producción usar Crypto más robusto)
-	var hash = 0
+	var hash_val = 0
 	for i in range(contenido.length()):
-		hash = (hash * 31 + contenido.unicode_at(i)) & 0xFFFFFFFF
+		hash_val = (hash_val * 31 + contenido.unicode_at(i)) & 0xFFFFFFFF
 	
 	# Convertir a hexadecimal
-	var hex_string = "%08x" % hash
+	var hex_string = "%08x" % hash_val
 	return "HASH_" + hex_string
 
 # Función para registrar el backup en la BD
@@ -666,7 +665,7 @@ func registrar_backup_en_bd(ruta: String, total_registros: int, hash_backup: Str
 	return false
 
 # Función para registrar restore en la BD
-func registrar_restore_en_bd(ruta_backup: String) -> bool:
+func registrar_restore_en_bd(_ruta_backup: String) -> bool:
 	if not bd_instance:
 		print("⚠️ No se pudo registrar restore en BD")
 		return false
