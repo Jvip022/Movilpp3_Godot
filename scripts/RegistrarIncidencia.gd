@@ -6,7 +6,7 @@ signal incidencia_registrada(codigo_incidencia: String, datos: Dictionary)
 signal error_registro(mensaje: String)
 
 # Variables de conexión a base de datos
-var db = null
+var db = Bd.db
 var usuario_actual: Dictionary = {}
 var cliente_seleccionado: Dictionary = {}
 

@@ -21,7 +21,7 @@ func _ready():
 	print("🔍 INICIANDO SISTEMA DE REPORTES...")
 	
 	# Verificar si BD está disponible como singleton
-	if not has_node("/root/BD"):
+	if not has_node("/root/Bd"):
 		push_error("❌ No se encontró el singleton BD en AutoLoad")
 		print("⚠️ Asegúrate de que BD esté configurado como AutoLoad en el proyecto")
 		# Mostrar error en la interfaz si placeholder_text está disponible
@@ -58,7 +58,7 @@ func probar_conexion_bd():
 	print("\n=== PRUEBA DE CONEXIÓN A BD DESDE REPORTES ===")
 	
 	# Obtener referencia al singleton BD
-	var bd = get_node("/root/BD")
+	var bd = get_node("/root/Bd")
 	if not bd:
 		print("❌ No se pudo obtener referencia a BD")
 		return

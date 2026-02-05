@@ -21,10 +21,10 @@ func _ready():
 	print("Inicializando escena Cambiar Password...")
 	
 	# Obtener referencia a la base de datos
-	bd = get_node("res//data/quejas.db")
+	bd = get_node("/root/Bd")
 	if not bd:
 		print("ERROR: No se encontró el nodo BD en la raíz")
-		bd = get_node("/root/SceneManager/BD")  # Intentar otra ruta común
+		bd = get_node("/root/SceneManager/Bd")  
 		if not bd:
 			push_error("CRÍTICO: No se puede acceder a la base de datos")
 			return

@@ -32,10 +32,10 @@ func inicializar_base_datos():
 	"""Inicializa la conexión a la base de datos"""
 	# Buscar la base de datos en diferentes formas
 	var posibles_rutas = [
-		"/root/BD",  # Si BD está en el árbol como nodo
-		"/root/bd",  # Otra posible ruta
+		"/root/Bd",  # Si BD está en el árbol como nodo
+		"/root/Bd",  # Otra posible ruta
 		"BD",        # Si está como singleton
-		"bd"         # Versión en minúsculas
+		"Bd"         # Versión en minúsculas
 	]
 	
 	for ruta in posibles_rutas:

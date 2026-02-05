@@ -552,9 +552,9 @@ func obtener_instancia_bd():
 	var bd = null
 	
 	# Método 1: Buscar el nodo BD en el árbol
-	if has_node("/root/BD"):
-		bd = get_node("/root/BD")
-		print("BD encontrada en /root/BD")
+	if has_node("/root/Bd"):
+		bd = get_node("/root/Bd")
+		print("BD encontrada en /root/Bd")
 	elif has_node("/root/Bd"):
 		bd = get_node("/root/Bd")
 		print("BD encontrada en /root/Bd")
