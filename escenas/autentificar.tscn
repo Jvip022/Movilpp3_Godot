@@ -2,10 +2,91 @@
 
 [ext_resource type="Texture2D" uid="uid://b610nq8aowfu3" path="res://assets/images/logos/havanatur-circular-logo.png" id="1_5c7kh"]
 [ext_resource type="Script" uid="uid://b6s0ac1sfpjgy" path="res://scripts/Authentication.gd" id="1_oj5rc"]
-[ext_resource type="Script" uid="uid://b8bg2xnh60jld" path="res://scripts/CambiarPasswordDialog.gd" id="3_hg2v3"]
 
-[sub_resource type="Theme" id="Theme_5c7kh"]
+[sub_resource type="Theme" id="Theme_login"]
 default_base_scale = 1.7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+content_margin_left = 40.0
+content_margin_top = 40.0
+content_margin_right = 40.0
+content_margin_bottom = 40.0
+bg_color = Color(0.95, 0.96, 0.98, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.8, 0.85, 0.9, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0, 0, 0, 0.1)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.7, 0.7, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.12549, 0.290196, 0.533333, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.094118, 0.219608, 0.411765, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.95, 0.97, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.85, 0.9, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
 
 [node name="PantallaLogin" type="Control" unique_id=114498592]
 layout_mode = 3
@@ -14,14 +95,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = SubResource("Theme_login")
 script = ExtResource("1_oj5rc")
 
 [node name="Fondo con gradiente" type="ColorRect" parent="." unique_id=1928075908]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme = SubResource("Theme_5c7kh")
-color = Color(0.37435275, 0.31041247, 0.3949255, 1)
+color = Color(0.12549, 0.290196, 0.533333, 1)
 
 [node name="CenterContainer" type="CenterContainer" parent="." unique_id=609136585]
 layout_mode = 1
@@ -32,76 +113,115 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PanelLogin" type="Panel" parent="CenterContainer" unique_id=1086978751]
-custom_minimum_size = Vector2(400, 500)
+custom_minimum_size = Vector2(500, 600)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelLogin" unique_id=1417318903]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = -40.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 25
 alignment = 1
 
 [node name="Titulo" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer" unique_id=1094979173]
-custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-text = "Inicio de Sesión"
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_colors/font_outline_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 28
+text = "INICIO DE SESIÓN"
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Logo de la empresa" type="TextureRect" parent="CenterContainer/PanelLogin/VBoxContainer" unique_id=443337963]
-custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
+size_flags_horizontal = 3
 texture = ExtResource("1_5c7kh")
 expand_mode = 1
 stretch_mode = 6
 
 [node name="ContenedorCampos" type="VBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer" unique_id=1706389191]
-custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 20
 
 [node name="InputUsuario" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1118954961]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.23, 0.23, 0.23, 1)
+theme_override_colors/font_placeholder_color = Color(0, 0, 0, 0.84705883)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/focus = SubResource("StyleBoxFlat_4")
 placeholder_text = "Usuario o Email"
 
-[node name="InputPassword" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1725234926]
+[node name="ContenedorPassword" type="HBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=2125008366]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="InputPassword" type="LineEdit" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/ContenedorPassword" unique_id=1725234926]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.26, 0.26, 0.26, 1)
+theme_override_colors/font_uneditable_color = Color(0.014249998, 0.03, 0.0075, 0.5019608)
+theme_override_colors/font_placeholder_color = Color(0, 0, 0, 0.84705883)
+theme_override_colors/clear_button_color = Color(0.38, 0.38, 0.38, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/focus = SubResource("StyleBoxFlat_4")
 placeholder_text = "Contraseña"
 secret = true
 
-[node name="CheckBox" type="CheckBox" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1873146424]
+[node name="MostrarPassword" type="CheckBox" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/ContenedorPassword" unique_id=626646895]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.007843138, 0.12156863, 0.0627451, 0.7019608)
+theme_override_colors/font_focus_color = Color(0.007843138, 0.12156863, 0.0627451, 0.7019608)
+theme_override_font_sizes/font_size = 14
+text = "Mostrar"
+
+[node name="RecordarSesionContainer" type="HBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1873146424]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Spacer" type="Control" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/RecordarSesionContainer" unique_id=1352395509]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CheckBox" type="CheckBox" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/RecordarSesionContainer" unique_id=1675416058]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.0060000014, 0.12, 0.06299999, 0.7019608)
+theme_override_font_sizes/font_size = 14
 text = "Recordar sesión"
 
 [node name="BotonLogin" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1073220705]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Iniciar Sesión"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=2125008366]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="BotonRegistrar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer" unique_id=1675416058]
-layout_mode = 2
-text = "Crear cuenta"
-flat = true
-
-[node name="Espaciador" type="Control" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer" unique_id=1352395509]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="BotonRecuperar" type="Button" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer" unique_id=626646895]
-layout_mode = 2
-text = "¿Olvidó su contraseña?"
-flat = true
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_5")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
+text = "INICIAR SESIÓN"
 
 [node name="MensajeError" type="Label" parent="CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos" unique_id=1103594243]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Error en las credenciales"
+theme_override_colors/font_color = Color(0.8, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Error en las credenciales. Intente nuevamente."
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -130,6 +250,10 @@ offset_left = 20.0
 offset_top = 10.0
 offset_right = -20.0
 offset_bottom = 30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 18
 text = "Verificando credenciales..."
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -144,91 +268,6 @@ offset_left = 40.0
 offset_top = 5.0
 offset_right = -40.0
 offset_bottom = 25.0
-
-[node name="DialogoRecuperar" type="AcceptDialog" parent="." unique_id=1830236712]
-title = "Recuperar Contraseña"
-theme = SubResource("Theme_5c7kh")
-dialog_text = "Ingrese su email para recibir un enlace de recuperación"
-dialog_hide_on_ok = false
-script = ExtResource("3_hg2v3")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRecuperar" unique_id=1927153325]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 50.0
-offset_right = -20.0
-offset_bottom = -20.0
-
-[node name="LabelEmail" type="Label" parent="DialogoRecuperar/VBoxContainer" unique_id=2078539214]
-layout_mode = 2
-text = "Email:"
-
-[node name="InputEmailRecuperar" type="LineEdit" parent="DialogoRecuperar/VBoxContainer" unique_id=144335073]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "ejemplo@email.com"
-
-[node name="BotonEnviarRecuperar" type="Button" parent="DialogoRecuperar/VBoxContainer" unique_id=1358613310]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Enviar enlace de recuperación"
-
-[node name="DialogoRegistro" type="AcceptDialog" parent="." unique_id=929398303]
-title = "Crear Nueva Cuenta"
-theme = SubResource("Theme_5c7kh")
-dialog_hide_on_ok = false
-
-[node name="ScrollContainer" type="ScrollContainer" parent="DialogoRegistro" unique_id=651487622]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 50.0
-offset_right = -20.0
-offset_bottom = -60.0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="DialogoRegistro/ScrollContainer" unique_id=915886157]
-custom_minimum_size = Vector2(400, 350)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="InputNombreRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=484016700]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Nombre completo"
-
-[node name="InputEmailRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=520149843]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Correo electrónico"
-
-[node name="InputUsuarioRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=62020196]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Nombre de usuario"
-
-[node name="InputPasswordRegistro" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=495503089]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Contraseña"
-secret = true
-
-[node name="InputConfirmarPassword" type="LineEdit" parent="DialogoRegistro/ScrollContainer/VBoxContainer" unique_id=132703313]
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Confirmar contraseña"
-secret = true
-
-[node name="BotonCrearCuenta" type="Button" parent="DialogoRegistro" unique_id=292408565]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -40.0
-offset_right = 100.0
-offset_bottom = -10.0
-text = "Crear cuenta"
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_3")

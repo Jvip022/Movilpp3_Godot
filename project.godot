@@ -24,6 +24,7 @@ config/icon="uid://b610nq8aowfu3"
 Bd="*res://scripts/BD.gd"
 Global="*res://scripts/Global.gd"
 AuthManager="*uid://ct2k2efd7itcw"
+User="*uid://b4vapgyth3auh"
 
 [display]
 
@@ -32,7 +33,7 @@ window/size/viewport_height=800
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/DatePicker/plugin.cfg", "res://addons/DateTimePicker/plugin.cfg")
+enabled=PackedStringArray("res://addons/DateTimePicker/plugin.cfg")
 
 [input_devices]
 

@@ -30,6 +30,11 @@ func _ready():
 	config_manager.name = "ConfigManager"  # Asignar nombre
 	add_child(config_manager)
 	
+	# Crear e inicializar ConfigManager
+	config_manager = ConfigManager.new()
+	config_manager.name = "ConfigManager"  # Asignar nombre
+	add_child(config_manager)
+	
 	# Inicializar la interfaz
 	ui_manager = get_node("InterfaceManager")
 	if ui_manager:
@@ -195,7 +200,7 @@ func debe_registrar_como_nc(datos: Dictionary) -> bool:
 	# Consultar configuración del sistema
 	return config_manager.get_registrar_todas_como_nc() if config_manager else false
 
-func registrar_no_conformidad_desde_queja(id_queja: int, datos_queja: Dictionary) -> int:
+func registrar_no_conformidad_desde_queja(id_queja: int, _datos_queja: Dictionary) -> int:
 	"""
 	Registra una no conformidad a partir de una queja.
 	Retorna el ID de la no conformidad creada.
@@ -210,7 +215,7 @@ func registrar_no_conformidad_desde_queja(id_queja: int, datos_queja: Dictionary
 	var codigo_expediente = generar_codigo_expediente_nc()
 	
 	# Determinar el responsable (por defecto, el usuario que recibió la queja)
-	var responsable_id = obtener_responsable_nc(datos_queja)
+	var responsable_id = obtener_responsable_nc()
 	
 	# Crear la No Conformidad
 	var nc_data = {
@@ -275,7 +280,7 @@ func prioridad_a_numero(prioridad: String) -> int:
 		_:
 			return 2
 
-func obtener_responsable_nc(datos_queja: Dictionary) -> int:
+func obtener_responsable_nc() -> int:
 	"""
 	Obtiene el ID del responsable para la NC.
 	Por defecto, busca el usuario con rol 'supervisor_calidad'
@@ -1271,11 +1276,39 @@ func normalizar_datos_para_bd(datos: Dictionary) -> Dictionary:
 	var campos_a_minusculas = ["tipo_reclamante", "canal_entrada", "recibido_por", "estado", "prioridad"]
 	for campo in campos_a_minusculas:
 		if datos_normalizados.has(campo):
-			datos_normalizados[campo] = str(datos_normalizados[campo]).to_lower()
+			var valor = str(datos_normalizados[campo]).strip_edges()
+			if valor == "":
+				# Asignar valor por defecto según el campo
+				match campo:
+					"canal_entrada":
+						datos_normalizados[campo] = "presencial"
+					"recibido_por":
+						datos_normalizados[campo] = "admin"
+					"estado":
+						datos_normalizados[campo] = "recibida"
+					"prioridad":
+						datos_normalizados[campo] = "media"
+					_:
+						datos_normalizados[campo] = valor
+			else:
+				datos_normalizados[campo] = valor.to_lower()
+	
+	# Validación específica para canal_entrada
+	if datos_normalizados.has("canal_entrada"):
+		var canal = str(datos_normalizados["canal_entrada"]).strip_edges().to_lower()
+		if canal == "" or canal == "sistema":
+			# Asignar un canal válido por defecto
+			datos_normalizados["canal_entrada"] = "presencial"
+		else:
+			datos_normalizados["canal_entrada"] = canal
 	
 	# Asegurar que el monto sea float
 	if datos_normalizados.has("monto_reclamado"):
-		datos_normalizados["monto_reclamado"] = float(datos_normalizados["monto_reclamado"])
+		var monto_str = str(datos_normalizados["monto_reclamado"])
+		if monto_str.is_valid_float():
+			datos_normalizados["monto_reclamado"] = float(monto_str)
+		else:
+			datos_normalizados["monto_reclamado"] = 0.0
 	
 	return datos_normalizados
 

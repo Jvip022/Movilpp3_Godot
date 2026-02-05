@@ -2,13 +2,12 @@ extends Control
 
 # Referencias a nodos
 @onready var input_usuario: LineEdit = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/InputUsuario
-@onready var input_password: LineEdit = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/InputPassword
-@onready var check_recordar: CheckBox = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/CheckBox
+@onready var input_password: LineEdit = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/ContenedorPassword/InputPassword
+@onready var check_recordar: CheckBox = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/RecordarSesionContainer/CheckBox
 @onready var boton_login: Button = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/BotonLogin
-@onready var boton_registrar: Button = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer/BotonRegistrar
-@onready var boton_recuperar: Button = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/HBoxContainer/BotonRecuperar
 @onready var mensaje_error: Label = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/MensajeError
 @onready var panel_cargando: Panel = $CenterContainer/PanelLogin/PanelCargando
+@onready var mostrar_password_checkbox: CheckBox = $CenterContainer/PanelLogin/VBoxContainer/ContenedorCampos/ContenedorPassword/MostrarPassword
 
 # Base de datos
 var db: SQLite
@@ -21,11 +20,11 @@ var config_file = "user://config.cfg"
 func _ready():
 	# Inicializar base de datos
 	db = SQLite.new()
-	
+		
 	# Conectar señales
+	mostrar_password_checkbox.toggled.connect(_on_mostrar_password_toggled)
 	boton_login.pressed.connect(_on_login_pressed)
-	boton_registrar.pressed.connect(_on_registrar_pressed)
-	boton_recuperar.pressed.connect(_on_recuperar_pressed)
+	
 	
 	# Enter para login
 	input_password.text_submitted.connect(_on_password_submitted)
@@ -35,6 +34,11 @@ func _ready():
 	
 	# Aplicar efectos visuales
 	aplicar_efectos_visuales()
+
+
+
+func _on_mostrar_password_toggled(button_pressed: bool):
+	input_password.secret = !button_pressed
 
 func _on_registrar_pressed():
 	mostrar_error("Funcionalidad de registro no disponible en esta versión")
@@ -240,8 +244,9 @@ func cargar_usuario_recordado():
 func aplicar_efectos_visuales():
 	# Configurar focus
 	boton_login.focus_mode = Control.FOCUS_ALL
-	boton_registrar.focus_mode = Control.FOCUS_ALL
-	boton_recuperar.focus_mode = Control.FOCUS_ALL
+	
+	# Solo configurar focus si los botones existen
+
 	
 	# Aplicar estilos adicionales si es necesario
 	mensaje_error.add_theme_color_override("font_color", Color("#ff4444"))

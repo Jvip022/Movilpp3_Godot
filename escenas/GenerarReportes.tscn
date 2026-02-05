@@ -1,8 +1,181 @@
 [gd_scene format=3 uid="uid://xq1wbsdi35hy"]
 
-[ext_resource type="Script" uid="uid://l66toq0dm38c" path="res://scripts/generar_reportes.gd" id="1"]
+[ext_resource type="Script" uid="uid://l66toq0dm38c" path="res://scripts/generar_reportes.gd" id="1_4k9x3"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_user_panel"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.23, 0.53, 0.95, 0.1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.23, 0.53, 0.95, 0.3)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sidebar"]
+content_margin_left = 15.0
+content_margin_top = 15.0
+content_margin_right = 15.0
+content_margin_bottom = 15.0
+bg_color = Color(0.96, 0.97, 0.98, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_bottom = 1
+border_color = Color(0.85, 0.88, 0.92, 1)
+corner_radius_top_left = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_inactive"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.92, 0.94, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tab_active"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 0.1)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.227451, 0.52549, 0.94902, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_input"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.78, 0.85, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_primary_hover"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.227451, 0.52549, 0.94902, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.156863, 0.415686, 0.8, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_success"]
+content_margin_left = 15.0
+content_margin_top = 12.0
+content_margin_right = 15.0
+content_margin_bottom = 12.0
+bg_color = Color(0.15, 0.55, 0.2, 0.1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.6, 0.2, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+content_margin_left = 20.0
+content_margin_top = 15.0
+content_margin_right = 20.0
+content_margin_bottom = 15.0
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.85, 0.88, 0.92, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_report_area"]
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.95, 0.96, 0.98, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.84, 0.88, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kpi"]
+content_margin_left = 15.0
+content_margin_top = 10.0
+content_margin_right = 15.0
+content_margin_bottom = 10.0
+bg_color = Color(0.188235, 0.439216, 0.803922, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12549, 0.34902, 0.67451, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
 content_margin_left = 30.0
 content_margin_top = 20.0
 content_margin_right = 30.0
@@ -18,38 +191,6 @@ corner_radius_top_right = 15
 corner_radius_bottom_right = 15
 corner_radius_bottom_left = 15
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
-content_margin_left = 20.0
-content_margin_top = 15.0
-content_margin_right = 20.0
-content_margin_bottom = 15.0
-bg_color = Color(0.188235, 0.439216, 0.803922, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.12549, 0.34902, 0.67451, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
-content_margin_left = 20.0
-content_margin_top = 15.0
-content_margin_right = 20.0
-content_margin_bottom = 15.0
-bg_color = Color(0.227451, 0.52549, 0.94902, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.156863, 0.415686, 0.8, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
 [node name="GenerarReportes" type="Control" unique_id=1809680600]
 layout_mode = 3
 anchors_preset = 15
@@ -57,9 +198,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1")
+script = ExtResource("1_4k9x3")
 
-[node name="Fondo" type="ColorRect" parent="." unique_id=1828202672]
+[node name="Fondo" type="ColorRect" parent="." unique_id=1914841495]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -68,150 +209,431 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.95, 0.96, 0.98, 1)
 
-[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=503335141]
+[node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=479570735]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 50.0
+offset_left = 20.0
 offset_top = 20.0
-offset_right = -50.0
+offset_right = -20.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TituloPanel" type="Panel" parent="ContenedorPrincipal" unique_id=1895096684]
+[node name="Header" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=1820374661]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_1")
+size_flags_horizontal = 3
 
-[node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=1822333748]
+[node name="LogoContainer" type="HBoxContainer" parent="ContenedorPrincipal/Header" unique_id=2043684932]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TituloContainer" type="VBoxContainer" parent="ContenedorPrincipal/Header/LogoContainer" unique_id=1766168853]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Titulo" type="Label" parent="ContenedorPrincipal/Header/LogoContainer/TituloContainer" unique_id=949955531]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
+text = "DASHBOARD DE REPORTES"
+
+[node name="Subtitulo" type="Label" parent="ContenedorPrincipal/Header/LogoContainer/TituloContainer" unique_id=949955532]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 16
+text = "Análisis empresarial y visualización de datos de calidad"
+
+[node name="UserInfoPanel" type="Panel" parent="ContenedorPrincipal/Header" unique_id=1766168854]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_user_panel")
+
+[node name="UserInfoContainer" type="VBoxContainer" parent="ContenedorPrincipal/Header/UserInfoPanel" unique_id=1766168855]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -197.0
+offset_top = 10.0
+offset_right = -63.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UserName" type="Label" parent="ContenedorPrincipal/Header/UserInfoPanel/UserInfoContainer" unique_id=1766168856]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Usuario: Invitado"
+horizontal_alignment = 2
+
+[node name="UserRole" type="Label" parent="ContenedorPrincipal/Header/UserInfoPanel/UserInfoContainer" unique_id=1766168857]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "Rol: No autenticado"
+horizontal_alignment = 2
+
+[node name="Separator" type="HSeparator" parent="ContenedorPrincipal" unique_id=2046554644]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DashboardLayout" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=503335141]
+custom_minimum_size = Vector2(0, 600)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Sidebar" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout" unique_id=817986815]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelReportes" type="Panel" parent="ContenedorPrincipal/DashboardLayout/Sidebar" unique_id=1191378571]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_sidebar")
+
+[node name="ContenidoSidebar" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes" unique_id=1895096684]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = 10.0
+offset_top = 9.0
 offset_right = -20.0
-offset_bottom = -10.0
+offset_bottom = 521.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-text = "GENERAR REPORTES"
-horizontal_alignment = 1
+grow_vertical = 2
 
-[node name="CategoriasContainer" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=817986815]
-custom_minimum_size = Vector2(0, 300)
+[node name="TituloSeccion" type="Label" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar" unique_id=1822333748]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 20
+text = "TIPO DE REPORTE"
+
+[node name="TabsReportes" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar" unique_id=320699503]
 layout_mode = 2
 
-[node name="LabelCategorias" type="Label" parent="ContenedorPrincipal/CategoriasContainer" unique_id=1191378571]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 18
-text = "Seleccione categoría de reporte:"
-
-[node name="BtnNoConformidades" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=320699503]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📈 Estadísticas de No Conformidades"
-
-[node name="BtnSatisfaccion" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=1942552211]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "😊 Satisfacción del Cliente"
-
-[node name="BtnObjetivosCalidad" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=103532931]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "🎯 Objetivos de Calidad"
-
-[node name="BtnEstadoNC" type="Button" parent="ContenedorPrincipal/CategoriasContainer" unique_id=975846664]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "⚠️ Estado de No Conformidades"
-
-[node name="FiltrosContainer" type="VBoxContainer" parent="ContenedorPrincipal" unique_id=1303840960]
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2
-
-[node name="LabelFiltros" type="Label" parent="ContenedorPrincipal/FiltrosContainer" unique_id=305140409]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 18
-text = "Filtros de reporte:"
-
-[node name="GridFiltros" type="GridContainer" parent="ContenedorPrincipal/FiltrosContainer" unique_id=218355752]
-layout_mode = 2
-columns = 2
-
-[node name="LabelFechaInicio" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=214675570]
+[node name="TabNoConformidades" type="Button" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/TabsReportes" unique_id=1942552211]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 14
-text = "Fecha inicio:"
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_inactive")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/focus = SubResource("StyleBoxFlat_tab_active")
+text = "📈 Estadísticas NC"
 
-[node name="InputFechaInicio" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=2048908374]
-layout_mode = 2
-placeholder_text = "DD/MM/AAAA"
-
-[node name="LabelFechaFin" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1373422843]
+[node name="TabSatisfaccion" type="Button" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/TabsReportes" unique_id=103532931]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 14
-text = "Fecha fin:"
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_inactive")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/focus = SubResource("StyleBoxFlat_tab_active")
+text = "😊 Satisfacción Cliente"
 
-[node name="InputFechaFin" type="LineEdit" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1008916645]
-layout_mode = 2
-placeholder_text = "DD/MM/AAAA"
-
-[node name="LabelSucursal" type="Label" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=193500616]
+[node name="TabObjetivos" type="Button" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/TabsReportes" unique_id=975846664]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_inactive")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/focus = SubResource("StyleBoxFlat_tab_active")
+text = "🎯 Objetivos Calidad"
+
+[node name="TabEstadoNC" type="Button" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/TabsReportes" unique_id=1303840960]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_tab_inactive")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/hover = SubResource("StyleBoxFlat_tab_active")
+theme_override_styles/focus = SubResource("StyleBoxFlat_tab_active")
+text = "⚠️ Estado NC"
+
+[node name="SeparatorSidebar" type="HSeparator" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar" unique_id=218355752]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TituloFiltros" type="Label" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar" unique_id=305140409]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12549, 0.290196, 0.533333, 1)
+theme_override_font_sizes/font_size = 20
+text = "FILTROS"
+
+[node name="FormFiltros" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar" unique_id=214675570]
+layout_mode = 2
+
+[node name="FilaFechaInicio" type="HBoxContainer" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros" unique_id=2048908374]
+layout_mode = 2
+
+[node name="LabelFechaInicio" type="Label" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros/FilaFechaInicio" unique_id=1373422843]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "Desde:"
+vertical_alignment = 1
+
+[node name="InputFechaInicio" type="LineEdit" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros/FilaFechaInicio" unique_id=1008916645]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0.21, 0.21, 0.21, 0.6)
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+theme_override_styles/focus = SubResource("StyleBoxFlat_input")
+placeholder_text = "DD/MM/AAAA"
+expand_to_text_length = true
+
+[node name="FilaFechaFin" type="HBoxContainer" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros" unique_id=1885596517]
+layout_mode = 2
+
+[node name="LabelFechaFin" type="Label" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros/FilaFechaFin" unique_id=193500616]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "Hasta:"
+vertical_alignment = 1
+
+[node name="InputFechaFin" type="LineEdit" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros/FilaFechaFin" unique_id=1414554495]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_placeholder_color = Color(0, 0, 0, 0.6)
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+theme_override_styles/focus = SubResource("StyleBoxFlat_input")
+placeholder_text = "DD/MM/AAAA"
+expand_to_text_length = true
+
+[node name="FilaSucursal" type="HBoxContainer" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros" unique_id=930859288]
+layout_mode = 2
+
+[node name="LabelSucursal" type="Label" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros/FilaSucursal" unique_id=40002101]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 14
 text = "Sucursal:"
+vertical_alignment = 1
 
-[node name="SelectSucursal" type="OptionButton" parent="ContenedorPrincipal/FiltrosContainer/GridFiltros" unique_id=1885596517]
+[node name="SelectSucursal" type="OptionButton" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/FormFiltros/FilaSucursal" unique_id=1828202672]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 0.8352941)
+theme_override_styles/normal = SubResource("StyleBoxFlat_input")
+theme_override_styles/hover = SubResource("StyleBoxFlat_input")
+theme_override_styles/focus = SubResource("StyleBoxFlat_input")
+
+[node name="AccionesSidebar" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar" unique_id=2122104084]
 layout_mode = 2
 
-[node name="BtnGenerar" type="Button" parent="ContenedorPrincipal" unique_id=1414554495]
+[node name="BtnGenerar" type="Button" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/AccionesSidebar" unique_id=2122104085]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "GENERAR VISTA PREVIA"
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_primary")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_primary_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_primary_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_btn_primary_hover")
+text = "GENERAR REPORTE"
 
-[node name="BtnExportar" type="Button" parent="ContenedorPrincipal" unique_id=930859288]
+[node name="BtnExportar" type="Button" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/AccionesSidebar" unique_id=1087012529]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.6, 0.2, 1)
+theme_override_colors/font_color = Color(0.1, 0.5, 0.1, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
-text = "📥 EXPORTAR REPORTE"
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_success")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_primary_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_primary_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_btn_primary_hover")
+text = "📥 EXPORTAR COMO PDF"
 
-[node name="BtnVolverMenu" type="Button" parent="ContenedorPrincipal" unique_id=40002101]
+[node name="BtnVolverMenu" type="Button" parent="ContenedorPrincipal/DashboardLayout/Sidebar/PanelReportes/ContenidoSidebar/AccionesSidebar" unique_id=1385797966]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
 theme_override_font_sizes/font_size = 14
-text = "🏠 VOLVER AL MENÚ PRINCIPAL"
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_primary")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_primary_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_primary_hover")
+theme_override_styles/focus = SubResource("StyleBoxFlat_btn_primary_hover")
+text = "← VOLVER AL MENÚ"
+
+[node name="AreaPrincipal" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout" unique_id=1385797967]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CabeceraReporte" type="Panel" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal" unique_id=1385797968]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="ContenidoCabecera" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/CabeceraReporte" unique_id=1385797969]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 25.0
+offset_top = -37.5
+offset_right = -25.0
+offset_bottom = -14.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SubtituloReporte" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/CabeceraReporte/ContenidoCabecera" unique_id=1766168859]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "Seleccione un tipo de reporte para comenzar"
+horizontal_alignment = 1
+
+[node name="AreaVisualizacion" type="Panel" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal" unique_id=1766168860]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_report_area")
+
+[node name="MensajePlaceholder" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/AreaVisualizacion" unique_id=1766168861]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -308.0
+offset_top = 41.0
+offset_right = 308.0
+offset_bottom = 131.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 20
+text = "📊
+Los datos del reporte se mostrarán aquí
+Seleccione un tipo de reporte y haga clic en 'GENERAR REPORTE'"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelKPIs" type="HBoxContainer" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal" unique_id=1766168862]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="KPI1" type="Panel" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs" unique_id=1766168863]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_kpi")
+
+[node name="ContenidoKPI1" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI1" unique_id=1766168864]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TituloKPI1" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI1/ContenidoKPI1" unique_id=1766168865]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "NC ABIERTAS"
+horizontal_alignment = 1
+
+[node name="ValorKPI1" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI1/ContenidoKPI1" unique_id=1766168866]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "0"
+horizontal_alignment = 1
+
+[node name="KPI2" type="Panel" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs" unique_id=1766168867]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_kpi")
+
+[node name="ContenidoKPI2" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI2" unique_id=1766168868]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TituloKPI2" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI2/ContenidoKPI2" unique_id=1766168869]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "SATISFACCIÓN"
+horizontal_alignment = 1
+
+[node name="ValorKPI2" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI2/ContenidoKPI2" unique_id=1766168870]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "0%"
+horizontal_alignment = 1
+
+[node name="KPI3" type="Panel" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs" unique_id=1766168871]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_kpi")
+
+[node name="ContenidoKPI3" type="VBoxContainer" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI3" unique_id=1766168872]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TituloKPI3" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI3/ContenidoKPI3" unique_id=1766168873]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "OBJ. CUMPLIDOS"
+horizontal_alignment = 1
+
+[node name="ValorKPI3" type="Label" parent="ContenedorPrincipal/DashboardLayout/AreaPrincipal/PanelKPIs/KPI3/ContenidoKPI3" unique_id=1766168874]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+text = "0%"
+horizontal_alignment = 1
+
+[node name="Footer" type="Panel" parent="ContenedorPrincipal" unique_id=2046554645]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="FooterText" type="Label" parent="ContenedorPrincipal/Footer" unique_id=2046554646]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "Dashboard de Reportes v2.0 | Sistema de Gestión de Calidad © 2024 Havanatur Ecuador"
+horizontal_alignment = 1
+vertical_alignment = 1

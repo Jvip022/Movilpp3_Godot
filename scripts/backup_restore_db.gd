@@ -526,7 +526,7 @@ func _on_volver():
 		get_node("/root/SceneManager").change_scene_to("menu_principal")
 	else:
 		# Fallback si SceneManager no está disponible
-		get_tree().change_scene_to_file("res://scenes/menu_principal.tscn")
+		get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
 
 func update_status(message: String, is_error: bool = false):
 	status_message.text = message

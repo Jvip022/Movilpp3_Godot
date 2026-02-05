@@ -1,4 +1,4 @@
-# cambiar_password.gd
+# cambiar_password.gd (versión corregida)
 extends Control
 
 @onready var current_password = $Panel/MarginContainer/VBoxContainer/CurrentPasswordContainer/CurrentPassword
@@ -9,18 +9,30 @@ extends Control
 @onready var status_message = $Panel/MarginContainer/VBoxContainer/StatusMessage
 @onready var success_dialog = $SuccessDialog
 @onready var error_dialog = $ErrorDialog
-@onready var btn_cancelar = $Panel/MarginContainer/VBoxContainer/ActionButtons/BtnCancelar  # Añadido referencia directa
+@onready var btn_cancelar = $Panel/MarginContainer/VBoxContainer/ActionButtons/BtnCancelar
 
+# Referencia a la base de datos
+var bd: BD
 var current_user_id = 0
+var current_username = ""
 var password_min_length = 8
 
 func _ready():
 	print("Inicializando escena Cambiar Password...")
 	
+	# Obtener referencia a la base de datos
+	bd = get_node("res//data/quejas.db")
+	if not bd:
+		print("ERROR: No se encontró el nodo BD en la raíz")
+		bd = get_node("/root/SceneManager/BD")  # Intentar otra ruta común
+		if not bd:
+			push_error("CRÍTICO: No se puede acceder a la base de datos")
+			return
+	print("✅ Base de datos conectada")
+	
 	# Asegurarse de que los nodos existen
 	if not btn_cancelar:
 		print("ERROR: BtnCancelar no encontrado en la ruta esperada")
-		# Buscar el botón en toda la escena
 		btn_cancelar = find_child("BtnCancelar", true, false)
 		if btn_cancelar:
 			print("BtnCancelar encontrado por búsqueda")
@@ -28,7 +40,7 @@ func _ready():
 			print("ERROR: BtnCancelar no existe en la escena")
 			return
 	
-	# Conectar señales con verificación
+	# Conectar señales
 	if $Panel/MarginContainer/VBoxContainer/ActionButtons/BtnCambiar:
 		$Panel/MarginContainer/VBoxContainer/ActionButtons/BtnCambiar.button_up.connect(_on_cambiar_pressed)
 		print("BtnCambiar conectado")
@@ -36,7 +48,6 @@ func _ready():
 		print("ERROR: BtnCambiar no encontrado")
 	
 	if btn_cancelar:
-		# Usar pressed en lugar de button_up para mayor compatibilidad
 		btn_cancelar.pressed.connect(_on_cancelar_pressed)
 		print("BtnCancelar conectado exitosamente")
 	
@@ -47,8 +58,21 @@ func _ready():
 	if confirm_password:
 		confirm_password.text_changed.connect(_on_confirm_password_changed)
 	
-	# Obtener ID del usuario actual
+	# Obtener datos del usuario actual
 	current_user_id = get_current_user_id()
+	current_username = get_current_username()
+	
+	print("Usuario actual: ID=", current_user_id, ", Username=", current_username)
+
+func get_current_user_id() -> int:
+	# Esta función debe obtener el ID del usuario actualmente autenticado
+	# Por ahora, devolveremos 1 (admin) como ejemplo
+	return 1
+
+func get_current_username() -> String:
+	# Obtener el nombre de usuario actual
+	# Por ahora, devolveremos "admin" como ejemplo
+	return "admin"
 
 func _on_new_password_changed(new_text):
 	update_password_strength(new_text)
@@ -99,7 +123,6 @@ func validate_passwords():
 	# Validar que las contraseñas coincidan
 	if new_pass != "" and confirm_pass != "":
 		if new_pass != confirm_pass:
-			# Crear estilo de error dinámicamente
 			var error_style = StyleBoxFlat.new()
 			error_style.bg_color = Color(1, 0.9, 0.9, 1)
 			error_style.border_color = Color(1, 0.5, 0.5, 1)
@@ -117,7 +140,6 @@ func validate_passwords():
 			status_message.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2, 1))
 			return false
 		else:
-			# Restaurar estilo normal
 			var normal_style = StyleBoxFlat.new()
 			normal_style.bg_color = Color(1, 1, 1, 1)
 			normal_style.border_color = Color(0.7, 0.7, 0.7, 1)
@@ -172,6 +194,10 @@ func _on_cambiar_pressed():
 	
 	# Cambiar contraseña
 	if change_password(new_password.text):
+		# Registrar en auditoría
+		if bd:
+			bd.registrar_auditoria(current_user_id, "CAMBIO_PASSWORD", "cambiar_password", "Usuario cambió su contraseña")
+		
 		success_dialog.dialog_text = "Contraseña cambiada exitosamente"
 		success_dialog.popup_centered()
 		status_message.text = "Contraseña actualizada correctamente"
@@ -185,7 +211,7 @@ func _on_cambiar_pressed():
 func _on_cancelar_pressed():
 	print("Botón Cancelar presionado - Regresando al menú principal...")
 	
-	# Método 1: Usar SceneManager (recomendado si está configurado)
+	# Método 1: Usar SceneManager
 	if has_node("/root/SceneManager"):
 		print("Usando SceneManager para regresar al menú...")
 		get_node("/root/SceneManager").change_scene_to("menu_principal")
@@ -194,32 +220,77 @@ func _on_cancelar_pressed():
 	# Método 2: Cambiar escena directamente
 	var ruta_menu = "res://scenes/menu_principal.tscn"
 	
-	# Verificar si la escena existe
 	if ResourceLoader.exists(ruta_menu):
-		print("Cambiando a: " + ruta_menu)  # CORRECCIÓN: Usar concatenación
+		print("Cambiando a: ", ruta_menu)
 		get_tree().change_scene_to_file(ruta_menu)
 	else:
-		# Intentar con otra ruta común
 		var ruta_alternativa = "res://escenas/menu_principal.tscn"
 		if ResourceLoader.exists(ruta_alternativa):
-			print("Cambiando a ruta alternativa: " + ruta_alternativa)  # CORRECCIÓN: Usar concatenación
+			print("Cambiando a ruta alternativa: ", ruta_alternativa)
 			get_tree().change_scene_to_file(ruta_alternativa)
 		else:
 			print("ERROR: No se encontró la escena del menú principal")
 			show_error("No se pudo regresar al menú principal.\nContacte al administrador.")
 
-func get_current_user_id() -> int:
-	# Aquí deberías obtener el ID del usuario actual desde tu sistema de autenticación
-	return 1  # ID por defecto
+# VERIFICAR CONTRASEÑA ACTUAL CON LA BASE DE DATOS
+func verify_current_password(password: String) -> bool:
+	if not bd:
+		show_error("Error de conexión a la base de datos")
+		return false
+	
+	# Buscar usuario en ambas tablas (antigua y nueva)
+	
+	# 1. Primero en tabla nueva (usuarios_nueva)
+	var sql_nueva = "SELECT password_hash FROM usuarios_nueva WHERE id = ? OR username = ?"
+	var resultado_nueva = bd.select_query(sql_nueva, [current_user_id, current_username])
+	
+	if resultado_nueva and resultado_nueva.size() > 0:
+		var hash_almacenado = resultado_nueva[0].get("password_hash", "")
+		# Comparación simple (en producción debería ser con hash)
+		return hash_almacenado == password
+	
+	# 2. Si no existe en tabla nueva, buscar en tabla antigua (usuarios)
+	var sql_antigua = "SELECT password_hash FROM usuarios WHERE id = ? OR username = ?"
+	var resultado_antigua = bd.select_query(sql_antigua, [current_user_id, current_username])
+	
+	if resultado_antigua and resultado_antigua.size() > 0:
+		var hash_almacenado = resultado_antigua[0].get("password_hash", "")
+		# Comparación simple (en producción debería ser con hash)
+		return hash_almacenado == password
+	
+	return false
 
-func verify_current_password(_password: String) -> bool:
-	# Aquí iría la lógica para verificar la contraseña actual con la base de datos
-	return true  # Simulación
+# CAMBIAR CONTRASEÑA EN LA BASE DE DATOS
+func change_password(new_password_text: String) -> bool:
+	if not bd:
+		show_error("Error de conexión a la base de datos")
+		return false
+	
+	# Encriptar la contraseña (en producción usar un método seguro como bcrypt)
+	# Por ahora, guardaremos en texto plano (solo para desarrollo)
+	var password_hash = new_password_text  # En producción: hash_password(new_password_text)
+	
+	# Actualizar en ambas tablas para consistencia
+	
+	# 1. Actualizar tabla nueva
+	var update_nueva = "UPDATE usuarios_nueva SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? OR username = ?"
+	var success_nueva = bd.query(update_nueva, [password_hash, current_user_id, current_username])
+	
+	# 2. Actualizar tabla antigua
+	var update_antigua = "UPDATE usuarios SET password_hash = ?, fecha_modificacion = CURRENT_TIMESTAMP WHERE id = ? OR username = ?"
+	var success_antigua = bd.query(update_antigua, [password_hash, current_user_id, current_username])
+	
+	# También actualizar el campo requiere_cambio_password si existe
+	var update_requiere = "UPDATE usuarios SET requiere_cambio_password = 0 WHERE id = ?"
+	bd.query(update_requiere, [current_user_id])
+	
+	return success_nueva or success_antigua  # Éxito si al menos una se actualizó
 
-func change_password(_new_password_text: String) -> bool:
-	# Aquí iría la lógica para actualizar la contraseña en la base de datos
-	print("Contraseña cambiada para usuario ID: ", current_user_id)
-	return true  # Simulación
+# Función auxiliar para hashear contraseñas (implementar en producción)
+func hash_password(password: String) -> String:
+	# Implementar hashing seguro (bcrypt, PBKDF2, etc.)
+	# Por ahora, devolver SHA256 como ejemplo
+	return password.sha256_text()
 
 func show_error(message: String):
 	error_dialog.dialog_text = message

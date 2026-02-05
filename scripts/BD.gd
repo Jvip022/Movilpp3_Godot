@@ -1,78 +1,195 @@
 extends Node
 class_name BD
 
-var db = SQLite.new()
-var database_path = "res://data/quejas.db"
+var db: SQLite
+var database_path := "res://data/quejas.db"
+
+# =========================
+# CICLO DE VIDA
+# =========================
 func _ready():
-	print("🔧 Inicializando base de datos...")
+	print("🔧 Inicializando Base de Datos...")
 	
-	# Verificar si SQLite está disponible
 	if not ClassDB.class_exists("SQLite"):
-		push_error("❌ Clase SQLite no encontrada. Asegúrate de tener el addon SQLite instalado.")
+		push_error("❌ El plugin SQLite no está disponible")
 		return
 	
-	# Crear directorio de datos si no existe
+	_preparar_directorio()
+	_abrir_bd()
+	_habilitar_fk()
+	
+	if not crear_tablas_base():
+		push_error("❌ Error creando tablas base")
+		return
+	
+	if not crear_tablas_dominio():
+		push_error("❌ Error creando tablas de dominio")
+		return
+	
+	# Crear tablas adicionales del sistema antiguo
+	if not crear_tablas_quejas():
+		push_error("❌ Error creando tablas de quejas")
+		return
+	
+	if not crear_tablas_calidad():
+		push_error("❌ Error creando tablas de calidad")
+		return
+	
+	if not crear_tablas_no_conformidades():
+		push_error("❌ Error creando tablas de no conformidades")
+		return
+	
+	inicializar_roles_y_permisos()
+	inicializar_usuario_admin()
+	
+	print("✅ Base de datos lista y operativa")
+	
+	# Pruebas de conexión
+	test_conexion()
+	call_deferred("inspeccionar_bd")
+
+# =========================
+# INICIALIZACIÓN
+# =========================
+func _preparar_directorio():
 	var dir = DirAccess.open("res://")
-	if dir == null:
-		push_error("No se pudo abrir el directorio res://")
-		return
-	
 	if not dir.dir_exists("res://data"):
-		print("📁 Creando directorio 'data'...")
-		var error = dir.make_dir("res://data")
-		if error != OK:
-			push_error("No se pudo crear el directorio data: " + str(error))
-			return
-	
-	# Abrir conexión a la base de datos
+		if dir.make_dir("res://data") != OK:
+			push_error("No se pudo crear el directorio data")
+
+func _abrir_bd():
 	db = SQLite.new()
 	db.path = database_path
 	
 	print("🔓 Abriendo base de datos en: " + database_path)
-	if db.open_db() != true:
+	if not db.open_db():
 		push_error("❌ No se pudo abrir la base de datos: " + database_path)
-		
 		# Intentar crear una base de datos vacía
 		print("🆕 Intentando crear nueva base de datos...")
-		# Simplemente intentar abrir de nuevo
-		if db.open_db() != true:
+		if not db.open_db():
 			push_error("❌ Fatal: No se pudo crear/abrir la base de datos")
-			return
-		else:
-			print("✅ Nueva base de datos creada")
-	
-	print("✅ Base de datos abierta correctamente")
-	
-	# Crear tablas
-	if not crear_tablas_quejas():
-		push_error("❌ Error crítico al crear tablas de quejas")
-		return
-	
-	if not crear_tablas_calidad():
-		push_error("❌ Error crítico al crear tablas de calidad")
-		return
-	
-	# CREAR TABLAS DE NO CONFORMIDADES (NUEVO)
-	if not crear_tablas_no_conformidades():
-		push_error("❌ Error crítico al crear tablas de no conformidades")
-		return
-	
-	# Inicializar usuario admin si no existe
-	inicializar_usuario_admin()
-	
-	# Verificar estructura
-	verificar_estructura()
-	
-	print("🚀 Base de datos inicializada correctamente")
-	
-	# Prueba simple de conexión
-	test_conexion()
-	call_deferred("inspeccionar_bd")
-	
-func crear_tablas_quejas():
+	else:
+		print("✅ Base de datos abierta correctamente")
+
+func _habilitar_fk():
+	query("PRAGMA foreign_keys = ON;")
+
+# =========================
+# CREACIÓN DE TABLAS - NUEVA ESTRUCTURA
+# =========================
+func crear_tablas_base() -> bool:
+	return (
+		_crear_tabla_roles()
+		and _crear_tabla_permisos()
+		and _crear_tabla_rol_permiso()
+		and _crear_tabla_usuarios_nueva()
+		and _crear_tabla_auditoria()
+	)
+
+func crear_tablas_dominio() -> bool:
+	return (
+		_crear_tabla_expedientes()
+		and _crear_tabla_incidencias()
+	)
+
+# ---------- SEGURIDAD (Nueva estructura) ----------
+func _crear_tabla_roles() -> bool:
+	return query("""
+		CREATE TABLE IF NOT EXISTS roles (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			nombre TEXT UNIQUE NOT NULL,
+			descripcion TEXT
+		)
+	""")
+
+func _crear_tabla_permisos() -> bool:
+	return query("""
+		CREATE TABLE IF NOT EXISTS permisos (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			nombre TEXT UNIQUE NOT NULL,
+			descripcion TEXT
+		)
+	""")
+
+func _crear_tabla_rol_permiso() -> bool:
+	return query("""
+		CREATE TABLE IF NOT EXISTS rol_permiso (
+			rol_id INTEGER NOT NULL,
+			permiso_id INTEGER NOT NULL,
+			PRIMARY KEY (rol_id, permiso_id),
+			FOREIGN KEY (rol_id) REFERENCES roles(id) ON DELETE CASCADE,
+			FOREIGN KEY (permiso_id) REFERENCES permisos(id) ON DELETE CASCADE
+		)
+	""")
+
+func _crear_tabla_usuarios_nueva() -> bool:
+	# Tabla de usuarios simplificada para la nueva estructura
+	return query("""
+		CREATE TABLE IF NOT EXISTS usuarios_nueva (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			username TEXT UNIQUE NOT NULL,
+			password_hash TEXT NOT NULL,
+			nombre TEXT,
+			email TEXT,
+			rol_id INTEGER NOT NULL,
+			activo INTEGER DEFAULT 1,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME,
+			FOREIGN KEY (rol_id) REFERENCES roles(id)
+		)
+	""")
+
+func _crear_tabla_auditoria() -> bool:
+	return query("""
+		CREATE TABLE IF NOT EXISTS auditoria (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			user_id INTEGER,
+			accion TEXT NOT NULL,
+			escena TEXT,
+			detalles TEXT,
+			fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (user_id) REFERENCES usuarios_nueva(id)
+		)
+	""")
+
+# ---------- DOMINIO (Nueva estructura) ----------
+func _crear_tabla_expedientes() -> bool:
+	return query("""
+		CREATE TABLE IF NOT EXISTS expedientes (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			titulo TEXT,
+			descripcion TEXT,
+			estado TEXT,
+			user_id INTEGER,
+			gestor_id INTEGER,
+			fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+			fecha_actualizacion DATETIME,
+			FOREIGN KEY (user_id) REFERENCES usuarios_nueva(id),
+			FOREIGN KEY (gestor_id) REFERENCES usuarios_nueva(id)
+		)
+	""")
+
+func _crear_tabla_incidencias() -> bool:
+	return query("""
+		CREATE TABLE IF NOT EXISTS incidencias_nueva (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			expediente_id INTEGER NOT NULL,
+			descripcion TEXT NOT NULL,
+			creada_por INTEGER,
+			estado TEXT,
+			fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (expediente_id) REFERENCES expedientes(id) ON DELETE CASCADE,
+			FOREIGN KEY (creada_por) REFERENCES usuarios_nueva(id)
+		)
+	""")
+
+# =========================
+# CREACIÓN DE TABLAS - ESTRUCTURA ANTIGUA (MANTENIDA)
+# =========================
+func crear_tablas_quejas() -> bool:
 	print("=== CREANDO TABLAS DE LA BASE DE DATOS ===")
 	
-	# Tabla de USUARIOS para autenticación (PRIMERO)
+	# Tabla de USUARIOS para autenticación (estructura antigua)
 	print("Creando tabla 'usuarios'...")
 	var sql_usuarios = """
 		CREATE TABLE IF NOT EXISTS usuarios (
@@ -115,7 +232,7 @@ func crear_tablas_quejas():
 	
 	# Tabla de HISTORIAL de actividad de usuarios
 	print("Creando tabla 'historial_usuarios'...")
-	var sql_historial = """
+	if not query("""
 		CREATE TABLE IF NOT EXISTS historial_usuarios (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			usuario_id INTEGER NOT NULL,
@@ -126,15 +243,15 @@ func crear_tablas_quejas():
 			user_agent TEXT,
 			detalles TEXT
 		)
-	"""
-	
-	if not query(sql_historial):
+	"""):
 		push_error("ERROR: No se pudo crear la tabla 'historial_usuarios'")
 		return false
 	
 	# Tabla principal de QUEJAS y RECLAMACIONES
-	print("Creando tabla 'quejas_reclamaciones'...")
-	var sql_quejas = """
+	print("Verificando y recreando tabla 'quejas_reclamaciones'...")
+	query("DROP TABLE IF EXISTS quejas_reclamaciones")
+	
+	if not query("""
 		CREATE TABLE IF NOT EXISTS quejas_reclamaciones (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			numero_caso TEXT UNIQUE,
@@ -190,13 +307,11 @@ func crear_tablas_quejas():
 			tiempo_respuesta_horas INTEGER,
 			tags TEXT
 		)
-	"""
-	
-	if not query(sql_quejas):
+	"""):
 		push_error("ERROR: No se pudo crear la tabla 'quejas_reclamaciones'")
 		return false
 	
-	# Tablas adicionales (simplificadas para evitar errores)
+	# Tablas adicionales
 	var tablas_adicionales = [
 		["seguimiento_comunicacion", """
 			CREATE TABLE IF NOT EXISTS seguimiento_comunicacion (
@@ -238,39 +353,17 @@ func crear_tablas_quejas():
 			push_error("ERROR: No se pudo crear la tabla '%s'" % tabla[0])
 			return false
 	
-	print("✅ Todas las tablas creadas correctamente")
+	print("✅ Todas las tablas de quejas creadas correctamente")
 	return true
-	
-	
-func crear_tablas_calidad():
+
+func crear_tablas_calidad() -> bool:
 	print("=== CREANDO TABLAS DEL SISTEMA DE CALIDAD ===")
 	
-	# Tabla de USUARIOS
-	print("Creando tabla 'usuarios'...")
-	var sql_usuarios = """
-		CREATE TABLE IF NOT EXISTS usuarios (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			username TEXT UNIQUE NOT NULL,
-			password_hash TEXT NOT NULL,
-			nombre_completo TEXT NOT NULL,
-			email TEXT UNIQUE NOT NULL,
-			telefono TEXT,
-			rol TEXT NOT NULL,
-			sucursal TEXT,
-			estado TEXT DEFAULT 'activo',
-			fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-			ultimo_login DATETIME,
-			permisos TEXT DEFAULT '[]'
-		)
-	"""
-	
-	if not query(sql_usuarios):
-		push_error("ERROR: No se pudo crear la tabla 'usuarios'")
-		return false
+	# Nota: La tabla usuarios ya existe, no la volvemos a crear
 	
 	# Tabla de CLIENTES (simula Oracle DB)
 	print("Creando tabla 'clientes'...")
-	var sql_clientes = """
+	if not query("""
 		CREATE TABLE IF NOT EXISTS clientes (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			codigo_cliente TEXT UNIQUE NOT NULL,
@@ -282,16 +375,14 @@ func crear_tablas_calidad():
 			tipo_cliente TEXT,
 			fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
-	"""
-	
-	if not query(sql_clientes):
+	"""):
 		push_error("ERROR: No se pudo crear la tabla 'clientes'")
 		return false
 	
 	# Tabla de INCIDENCIAS
-	print("Creando tabla 'incidencias'...")
-	var sql_incidencias = """
-		CREATE TABLE IF NOT EXISTS incidencias (
+	print("Creando tabla 'incidencias_calidad'...")
+	if not query("""
+		CREATE TABLE IF NOT EXISTS incidencias_calidad (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			codigo_incidencia TEXT UNIQUE NOT NULL,
 			cliente_id INTEGER NOT NULL,
@@ -306,38 +397,31 @@ func crear_tablas_calidad():
 			requiere_investigacion BOOLEAN DEFAULT 1,
 			estado TEXT DEFAULT 'abierta',
 			supervisor_id INTEGER NOT NULL,
-			observaciones TEXT,
-			FOREIGN KEY (cliente_id) REFERENCES clientes(id),
-			FOREIGN KEY (supervisor_id) REFERENCES usuarios(id)
+			observaciones TEXT
 		)
-	"""
-	
-	if not query(sql_incidencias):
-		push_error("ERROR: No se pudo crear la tabla 'incidencias'")
+	"""):
+		push_error("ERROR: No se pudo crear la tabla 'incidencias_calidad'")
 		return false
 	
 	# Tabla de TRAZAS
-	print("Creando tabla 'trazas'...")
-	var sql_trazas = """
-		CREATE TABLE IF NOT EXISTS trazas (
+	print("Creando tabla 'trazas_calidad'...")
+	if not query("""
+		CREATE TABLE IF NOT EXISTS trazas_calidad (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			usuario_id INTEGER,
 			fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
 			accion TEXT NOT NULL,
 			modulo TEXT NOT NULL,
 			detalles TEXT,
-			ip_address TEXT,
-			FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+			ip_address TEXT
 		)
-	"""
-	
-	if not query(sql_trazas):
-		push_error("ERROR: No se pudo crear la tabla 'trazas'")
+	"""):
+		push_error("ERROR: No se pudo crear la tabla 'trazas_calidad'")
 		return false
 	
 	# Tabla de BACKUPS
 	print("Creando tabla 'backups'...")
-	var sql_backups = """
+	if not query("""
 		CREATE TABLE IF NOT EXISTS backups (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			nombre_archivo TEXT UNIQUE NOT NULL,
@@ -346,23 +430,97 @@ func crear_tablas_calidad():
 			fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
 			usuario_id INTEGER,
 			tipo TEXT DEFAULT 'manual',
-			estado TEXT DEFAULT 'completado',
-			FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+			estado TEXT DEFAULT 'completado'
 		)
-	"""
-	
-	if not query(sql_backups):
+	"""):
 		push_error("ERROR: No se pudo crear la tabla 'backups'")
 		return false
 	
-	print("✅ Todas las tablas creadas correctamente")
+	print("✅ Todas las tablas de calidad creadas correctamente")
 	
-	# Insertar datos de prueba si las tablas están vacías
-	insertar_datos_prueba()
+	# Insertar datos de prueba
+	_insertar_datos_prueba_calidad()
 	
 	return true
 
-func insertar_datos_prueba():
+func crear_tablas_no_conformidades() -> bool:
+	"""Crea las tablas específicas para No Conformidades (NC)"""
+	print("=== CREANDO TABLAS DE NO CONFORMIDADES ===")
+	
+	# Tabla principal de NO CONFORMIDADES
+	print("Creando tabla 'no_conformidades'...")
+	if not query("""
+	CREATE TABLE IF NOT EXISTS no_conformidades (
+		id_nc INTEGER PRIMARY KEY AUTOINCREMENT,
+		codigo_expediente TEXT UNIQUE NOT NULL,
+		tipo_nc TEXT NOT NULL, -- 'Incidencia Diaria', 'Auditoría', 'Queja'
+		estado TEXT NOT NULL DEFAULT 'pendiente', -- 'pendiente', 'analizado', 'cerrada', 'expediente_cerrado'
+		descripcion TEXT NOT NULL,
+		fecha_ocurrencia DATE,
+		fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+		sucursal TEXT,
+		producto_servicio TEXT,
+		cliente_id INTEGER,
+		responsable_id INTEGER,
+		prioridad INTEGER DEFAULT 3, -- 1: Alta, 2: Media, 3: Baja
+		expediente_cerrado BOOLEAN DEFAULT 0,
+		fecha_cierre DATETIME,
+		usuario_cierre INTEGER,
+		creado_por INTEGER,
+		fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+		modificado_por INTEGER,
+		fecha_modificacion DATETIME
+	)
+	"""):
+		push_error("ERROR: No se pudo crear la tabla 'no_conformidades'")
+		return false
+	
+	# Tabla de DOCUMENTOS para NC
+	print("Creando tabla 'documentos_nc'...")
+	if not query("""
+	CREATE TABLE IF NOT EXISTS documentos_nc (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		id_nc INTEGER NOT NULL,
+		nombre_archivo TEXT NOT NULL,
+		ruta_archivo TEXT NOT NULL,
+		tipo_archivo TEXT,
+		tamanio_bytes INTEGER,
+		fecha_carga DATETIME DEFAULT CURRENT_TIMESTAMP,
+		usuario_carga INTEGER,
+		descripcion TEXT,
+		verificado BOOLEAN DEFAULT 0
+	)
+	"""):
+		push_error("ERROR: No se pudo crear la tabla 'documentos_nc'")
+		return false
+	
+	# Tabla de TRAZAS para NC
+	print("Creando tabla 'trazas_nc'...")
+	if not query("""
+	CREATE TABLE IF NOT EXISTS trazas_nc (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		id_nc INTEGER NOT NULL,
+		usuario_id INTEGER NOT NULL,
+		fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+		accion TEXT NOT NULL,
+		detalles TEXT,
+		ip_address TEXT
+	)
+	"""):
+		push_error("ERROR: No se pudo crear la tabla 'trazas_nc'")
+		return false
+	
+	print("✅ Tablas de NC creadas correctamente")
+	
+	# Insertar datos de prueba
+	_insertar_datos_prueba_nc()
+	
+	return true
+
+# =========================
+# DATOS INICIALES Y PRUEBA
+# =========================
+func _insertar_datos_prueba_calidad():
 	# Insertar clientes de prueba
 	var clientes_count = count("clientes")
 	if clientes_count == 0:
@@ -389,97 +547,8 @@ func insertar_datos_prueba():
 		
 		for cliente in clientes_prueba:
 			insert("clientes", cliente)
-			
-func crear_tablas_no_conformidades():
-	"""Crea las tablas específicas para No Conformidades (NC)"""
-	print("=== CREANDO TABLAS DE NO CONFORMIDADES ===")
-	
-	# Tabla principal de NO CONFORMIDADES
-	print("Creando tabla 'no_conformidades'...")
-	var sql_nc = """
-	CREATE TABLE IF NOT EXISTS no_conformidades (
-		id_nc INTEGER PRIMARY KEY AUTOINCREMENT,
-		codigo_expediente TEXT UNIQUE NOT NULL,
-		tipo_nc TEXT NOT NULL, -- 'Incidencia Diaria', 'Auditoría', 'Queja'
-		estado TEXT NOT NULL DEFAULT 'pendiente', -- 'pendiente', 'analizado', 'cerrada', 'expediente_cerrado'
-		descripcion TEXT NOT NULL,
-		fecha_ocurrencia DATE,
-		fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-		sucursal TEXT,
-		producto_servicio TEXT,
-		cliente_id INTEGER,
-		responsable_id INTEGER,
-		prioridad INTEGER DEFAULT 3, -- 1: Alta, 2: Media, 3: Baja
-		expediente_cerrado BOOLEAN DEFAULT 0,
-		fecha_cierre DATETIME,
-		usuario_cierre INTEGER,
-		creado_por INTEGER,
-		fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-		modificado_por INTEGER,
-		fecha_modificacion DATETIME,
-		FOREIGN KEY (cliente_id) REFERENCES clientes(id),
-		FOREIGN KEY (responsable_id) REFERENCES usuarios(id),
-		FOREIGN KEY (creado_por) REFERENCES usuarios(id),
-		FOREIGN KEY (modificado_por) REFERENCES usuarios(id),
-		FOREIGN KEY (usuario_cierre) REFERENCES usuarios(id)
-	)
-	"""
-	
-	if not query(sql_nc):
-		push_error("ERROR: No se pudo crear la tabla 'no_conformidades'")
-		return false
-	
-	# Tabla de DOCUMENTOS para NC
-	print("Creando tabla 'documentos_nc'...")
-	var sql_docs = """
-	CREATE TABLE IF NOT EXISTS documentos_nc (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		id_nc INTEGER NOT NULL,
-		nombre_archivo TEXT NOT NULL,
-		ruta_archivo TEXT NOT NULL,
-		tipo_archivo TEXT,
-		tamanio_bytes INTEGER,
-		fecha_carga DATETIME DEFAULT CURRENT_TIMESTAMP,
-		usuario_carga INTEGER,
-		descripcion TEXT,
-		verificado BOOLEAN DEFAULT 0,
-		FOREIGN KEY (id_nc) REFERENCES no_conformidades(id_nc),
-		FOREIGN KEY (usuario_carga) REFERENCES usuarios(id)
-	)
-	"""
-	
-	if not query(sql_docs):
-		push_error("ERROR: No se pudo crear la tabla 'documentos_nc'")
-		return false
-	
-	# Tabla de TRAZAS para NC
-	print("Creando tabla 'trazas_nc'...")
-	var sql_trazas = """
-	CREATE TABLE IF NOT EXISTS trazas_nc (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		id_nc INTEGER NOT NULL,
-		usuario_id INTEGER NOT NULL,
-		fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
-		accion TEXT NOT NULL,
-		detalles TEXT,
-		ip_address TEXT,
-		FOREIGN KEY (id_nc) REFERENCES no_conformidades(id_nc),
-		FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
-	)
-	"""
-	
-	if not query(sql_trazas):
-		push_error("ERROR: No se pudo crear la tabla 'trazas_nc'")
-		return false
-	
-	print("✅ Tablas de NC creadas correctamente")
-	
-	# Insertar datos de prueba si están vacías
-	insertar_datos_prueba_nc()
-	
-	return true
 
-func insertar_datos_prueba_nc():
+func _insertar_datos_prueba_nc():
 	"""Inserta datos de prueba en las tablas de NC"""
 	print("=== INSERTANDO DATOS DE PRUEBA DE NC ===")
 	
@@ -561,94 +630,78 @@ func insertar_datos_prueba_nc():
 			print("⚠️ No hay usuarios o clientes para crear NC de prueba")
 	else:
 		print("✅ Ya existen datos en la tabla 'no_conformidades' (total: ", count_nc, ")")
-	
+
+func inicializar_roles_y_permisos():
+	var roles = [
+		["ADMIN", "Acceso total"],
+		["GESTOR", "Gestión de expedientes"],
+		["USUARIO", "Acceso limitado"]
+	]
+
+	for r in roles:
+		query("INSERT OR IGNORE INTO roles (nombre, descripcion) VALUES (?, ?)", r)
+
+	var permisos = [
+		"VER_TODO",
+		"GESTIONAR_USUARIOS",
+		"CREAR_EXPEDIENTE",
+		"PROCESAR_EXPEDIENTE",
+		"VER_PROPIOS"
+	]
+
+	for p in permisos:
+		query("INSERT OR IGNORE INTO permisos (nombre) VALUES (?)", [p])
+
+	# ADMIN = todos los permisos
+	var admin_id = _get_id("roles", "nombre", "ADMIN")
+	var perm_ids = _get_ids("permisos")
+
+	for pid in perm_ids:
+		query(
+			"INSERT OR IGNORE INTO rol_permiso (rol_id, permiso_id) VALUES (?, ?)",
+			[admin_id, pid]
+		)
+
 func inicializar_usuario_admin():
-	print("=== VERIFICANDO USUARIO ADMIN ===")
+	# Verificar en ambas tablas de usuarios
+	var existe_nuevo = _scalar("SELECT COUNT(*) FROM usuarios_nueva WHERE username = 'admin'")
+	var existe_antiguo = _scalar("SELECT COUNT(*) FROM usuarios WHERE username = 'admin'")
 	
-	# Verificar si ya existe un usuario admin
-	var result = select_query("SELECT COUNT(*) as count FROM usuarios WHERE username = 'admin'")
-	
-	if result != null and result.size() > 0:
-		var row = result[0]
-		if row.has("count") and int(row["count"]) == 0:
-			print("⚠️ No existe usuario admin, creando...")
-			# Crear usuario administrador por defecto
-			var admin_data = {
-				"username": "admin",
-				"password_hash": "admin123",  # EN PRODUCCIÓN DEBES ENCRIPTAR ESTA CONTRASEÑA
-				"email": "admin@sistema.com",
-				"nombre_completo": "Administrador del Sistema",
-				"rol": "admin",
-				"permisos": "[\"todos_permisos\"]",
-				"cargo": "Administrador",
-				"departamento": "TI",
-				"estado_empleado": "activo"
-			}
-			
-			var user_id = insert("usuarios", admin_data)
-			if user_id > 0:
-				print("✅ Usuario admin creado por defecto con ID: ", user_id)
-			else:
-				push_error("❌ No se pudo crear el usuario admin")
-		else:
-			print("✅ Usuario admin ya existe")
-	else:
-		print("⚠️ No se pudo verificar la existencia del usuario admin")
+	if existe_antiguo == 0:
+		print("⚠️ No existe usuario admin en tabla antigua, creando...")
+		# Crear usuario administrador por defecto en tabla antigua
+		var admin_data = {
+			"username": "admin",
+			"password_hash": "admin123",
+			"email": "admin@sistema.com",
+			"nombre_completo": "Administrador del Sistema",
+			"rol": "admin",
+			"permisos": "[\"todos_permisos\"]",
+			"cargo": "Administrador",
+			"departamento": "TI",
+			"estado_empleado": "activo"
+		}
 		
-func obtener_queja_por_id(id_queja: int) -> Dictionary:
-	"""
-	Obtiene una queja por su ID.
-	"""
-	print("DEBUG: Ejecutando query para id: ", id_queja)
-	
-	# ERROR: Bd.query retorna boolean, no array
-	# var result = Bd.query("SELECT * FROM quejas_reclamaciones WHERE id = ?", [id_queja])
-	
-	# CORRECCIÓN: Usar select_query que retorna array
-	var result = select_query("SELECT * FROM quejas_reclamaciones WHERE id = ?", [id_queja])
-	
-	print("DEBUG - Tipo de result: ", typeof(result))
-	print("DEBUG - Valor de result: ", result)
-	
-	if result and typeof(result) == TYPE_ARRAY and result.size() > 0:
-		print("DEBUG - Primer elemento tipo: ", typeof(result[0]))
-		return result[0]
-	
-	# Si result es booleano (por usar query en lugar de select_query)
-	if typeof(result) == TYPE_BOOL:
-		print("DEBUG - Result es booleano, no array. Valor: ", result)
-	
-	print("DEBUG - Retornando diccionario vacío")
-	return {}
-
-func verificar_estructura():
-	print("\n=== DIAGNÓSTICO DE BASE DE DATOS ===")
-	
-	# Verificar si la base de datos está abierta
-	if db == null:
-		print("❌ Base de datos no inicializada")
-		return
-	
-	print("📊 Ruta de base de datos: " + database_path)
-	
-	# Verificar tablas existentes
-	var tablas = select_query("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-	if tablas != null and tablas.size() > 0:
-		print("📋 Tablas encontradas (" + str(tablas.size()) + "):")
-		for tabla in tablas:
-			print("   - " + tabla["name"])
+		var user_id = insert("usuarios", admin_data)
+		if user_id > 0:
+			print("✅ Usuario admin creado en tabla antigua con ID: ", user_id)
+		else:
+			push_error("❌ No se pudo crear el usuario admin en tabla antigua")
 	else:
-		print("⚠️ No se encontraron tablas en la base de datos")
+		print("✅ Usuario admin ya existe en tabla antigua")
 	
-	# Verificar usuarios
-	var usuarios = select_query("SELECT COUNT(*) as total FROM usuarios")
-	if usuarios != null and usuarios.size() > 0:
-		print("👥 Usuarios en sistema: " + str(usuarios[0]["total"]))
-	
-	print("=== FIN DIAGNÓSTICO ===\n")
-	
-	
+	if existe_nuevo == 0:
+		print("⚠️ No existe usuario admin en tabla nueva, creando...")
+		var rol_admin = _get_id("roles", "nombre", "ADMIN")
+		query("""
+			INSERT INTO usuarios_nueva (username, password_hash, nombre, rol_id)
+			VALUES ('admin', 'admin123', 'Administrador', ?)
+		""", [rol_admin])
+		print("👑 Usuario admin creado en tabla nueva")
 
+# =========================
+# FUNCIONES DE CONSULTA (del código antiguo)
+# =========================
 func query(sql: String, params = []) -> bool:
 	"""
 	Ejecuta una consulta SQL.
@@ -664,19 +717,15 @@ func query(sql: String, params = []) -> bool:
 	
 	var success = false
 	
-	# Usar la sintaxis correcta de replace (sin el tercer argumento)
 	if params and params.size() > 0:
-		# Diferentes addons usan diferentes métodos
 		if db.has_method("query_with_bindings"):
 			success = db.query_with_bindings(sql, params)
 		elif db.has_method("query_with_args"):
 			success = db.query_with_args(sql, params)
 		else:
-			# Si no tiene métodos con parámetros, construir la query manualmente
 			var formatted_sql = sql
 			for i in range(params.size()):
 				var param = str(params[i]).replace("'", "''")
-				# Reemplazar solo el primer "?" encontrado
 				var pos = formatted_sql.find("?")
 				if pos != -1:
 					formatted_sql = formatted_sql.substr(0, pos) + "'" + param + "'" + formatted_sql.substr(pos + 1)
@@ -685,28 +734,62 @@ func query(sql: String, params = []) -> bool:
 		success = db.query(sql)
 		
 	if not success:
-		# Intentar diferentes métodos para obtener el mensaje de error
 		var error_msg = "Error desconocido"
-		
-		# Verificar propiedades, no llamar como funciones
 		if "last_error" in db:
 			error_msg = db.last_error
 		elif "error" in db:
 			error_msg = db.error
-		elif "error_message" in db:  # Esta es una propiedad, no una función
+		elif "error_message" in db:
 			error_msg = db.error_message
-		elif db.has_method("get_error_message"):  # Este sí podría ser un método
+		elif db.has_method("get_error_message"):
 			error_msg = db.get_error_message()
 		
 		push_error("❌ Error SQL: " + str(error_msg))
 		push_error("   Consulta: " + sql)
 			
 	return success
+
+func select_query(sql: String, params = []) -> Array:
+	"""
+	Ejecuta una consulta SELECT y retorna los resultados como array.
+	Si hay error, retorna array vacío.
+	"""
+	if db == null:
+		push_error("Base de datos no inicializada")
+		return []
 	
-func obtener_nombres_columnas() -> Array:
-	"""
-	Intenta obtener los nombres de las columnas.
-	"""
+	var success = query(sql, params)
+	if not success:
+		print("❌ Error en consulta SELECT: " + sql)
+		return []
+	
+	var results = []
+	
+	# Método 1: Si el addon tiene fetch_array()
+	if db.has_method("fetch_array"):
+		var row = db.fetch_array()
+		while row != null and row.size() > 0:
+			var dict = {}
+			var column_names = _obtener_nombres_columnas()
+			for i in range(min(row.size(), column_names.size())):
+				dict[column_names[i]] = row[i]
+			results.append(dict)
+			row = db.fetch_array()
+	
+	# Método 2: Si el addon tiene rows property
+	elif "rows" in db and typeof(db.rows) == TYPE_ARRAY:
+		results = db.rows
+	
+	# Método 3: Si el addon tiene query_result property
+	elif "query_result" in db and typeof(db.query_result) == TYPE_ARRAY:
+		results = db.query_result
+	
+	else:
+		results = _metodo_alternativo_obtener_resultados()
+	
+	return results
+
+func _obtener_nombres_columnas() -> Array:
 	if db.has_method("get_columns"):
 		return db.get_columns()
 	elif db.has_method("column_names"):
@@ -714,18 +797,12 @@ func obtener_nombres_columnas() -> Array:
 	else:
 		return []
 
-
-func metodo_alternativo_obtener_resultados() -> Array:
-	"""
-	Método alternativo para obtener resultados.
-	"""
+func _metodo_alternativo_obtener_resultados() -> Array:
 	var results = []
 	
-	# Método 1: Si el addon tiene fetch_array()
 	if db.has_method("fetch_array"):
 		var row = db.fetch_array()
 		while row != null and row.size() > 0:
-			# Convertir array a diccionario
 			var dict = {}
 			var column_names = []
 			if db.has_method("get_column_names"):
@@ -738,18 +815,15 @@ func metodo_alternativo_obtener_resultados() -> Array:
 			results.append(dict)
 			row = db.fetch_array()
 	
-	# Método 2: Si el addon tiene fetch_row()
 	elif db.has_method("fetch_row"):
 		var row = db.fetch_row()
 		while row != null:
 			results.append(row)
 			row = db.fetch_row()
 	
-	# Método 3: Si el addon tiene rows property
 	elif "rows" in db and db.rows != null:
 		results = db.rows
 	
-	# Método 4: Si el addon tiene query_result property
 	elif "query_result" in db and db.query_result != null:
 		results = db.query_result
 	
@@ -781,7 +855,7 @@ func insert(table: String, data: Dictionary) -> int:
 	
 	for key in data.keys():
 		keys.append(key)
-		values.append(str(data[key]))  # Convertir todos a string
+		values.append(str(data[key]))
 		placeholders.append("?")
 	
 	var sql = "INSERT INTO %s (%s) VALUES (%s)" % [
@@ -794,13 +868,11 @@ func insert(table: String, data: Dictionary) -> int:
 	print("📝 Valores: ", values)
 	
 	if query(sql, values):
-		# Obtener el último ID insertado
 		if db.has_method("last_insert_rowid"):
 			var id = db.last_insert_rowid
 			print("✅ Insertado en " + table + " con ID: " + str(id))
 			return id
 		else:
-			# Intentar obtener el ID con una consulta SELECT
 			var result = select_query("SELECT last_insert_rowid() as id")
 			if result and result.size() > 0:
 				return result[0]["id"]
@@ -816,7 +888,6 @@ func update(table: String, data: Dictionary, where: String, where_params = []) -
 		sets.append("%s = ?" % key)
 		values.append(str(data[key]))
 	
-	# Agregar parámetros WHERE
 	if where_params is Array:
 		for param in where_params:
 			values.append(str(param))
@@ -833,17 +904,35 @@ func delete(table: String, where: String, params = []) -> bool:
 	print("📝 Ejecutando DELETE: ", sql)
 	return query(sql, params)
 
-func close():
-	if db:
-		db.close_db()
+# =========================
+# FUNCIONES UTILITARIAS
+# =========================
+func obtener_queja_por_id(id_queja: int) -> Dictionary:
+	"""
+	Obtiene una queja por su ID.
+	"""
+	print("DEBUG: Ejecutando query para id: ", id_queja)
+	
+	var result = select_query("SELECT * FROM quejas_reclamaciones WHERE id = ?", [id_queja])
+	
+	print("DEBUG - Tipo de result: ", typeof(result))
+	print("DEBUG - Valor de result: ", result)
+	
+	if result and typeof(result) == TYPE_ARRAY and result.size() > 0:
+		print("DEBUG - Primer elemento tipo: ", typeof(result[0]))
+		return result[0]
+	
+	if typeof(result) == TYPE_BOOL:
+		print("DEBUG - Result es booleano, no array. Valor: ", result)
+	
+	print("DEBUG - Retornando diccionario vacío")
+	return {}
 
-# Función para verificar si una tabla existe
 func table_exists(table_name: String) -> bool:
 	var sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
 	var result = select_query(sql, [table_name])
 	return result and result.size() > 0
 
-# Función para obtener información de la base de datos
 func get_database_info() -> Dictionary:
 	var info = {
 		"path": database_path,
@@ -856,18 +945,9 @@ func get_database_info() -> Dictionary:
 	
 	return info
 
-# Función para obtener la estructura de una tabla
 func get_table_structure(table_name: String) -> Array:
 	return select_query("PRAGMA table_info(%s)" % table_name)
 
-# Función para ejecutar consultas en lote
-func execute_batch(sql_commands: Array) -> bool:
-	for sql in sql_commands:
-		if not query(sql):
-			return false
-	return true
-
-# Función para contar registros en una tabla
 func count(table: String, where: String = "", params = []) -> int:
 	var sql = "SELECT COUNT(*) as count FROM %s" % table
 	if where:
@@ -877,50 +957,108 @@ func count(table: String, where: String = "", params = []) -> int:
 	if result and result.size() > 0:
 		return int(result[0]["count"])
 	return 0
+
+func _scalar(sql: String) -> int:
+	var result = select_query(sql)
+	if result and result.size() > 0:
+		return int(result[0].values()[0])
+	return 0
+
+func _get_id(tabla: String, campo: String, valor) -> int:
+	var result = select_query("SELECT id FROM %s WHERE %s = ?" % [tabla, campo], [valor])
+	if result and result.size() > 0:
+		return int(result[0]["id"])
+	return 0
+
+func _get_ids(tabla: String) -> Array:
+	var result = select_query("SELECT id FROM %s" % tabla)
+	var ids := []
+	for r in result:
+		ids.append(r["id"])
+	return ids
+
+# =========================
+# AUDITORÍA Y DIAGNÓSTICO
+# =========================
+func registrar_auditoria(user_id: int, accion: String, escena := "", detalles := ""):
+	query("""
+		INSERT INTO auditoria (user_id, accion, escena, detalles)
+		VALUES (?, ?, ?, ?)
+	""", [user_id, accion, escena, detalles])
+
+func verificar_estructura():
+	print("\n=== DIAGNÓSTICO DE BASE DE DATOS ===")
 	
-func select_query(sql: String, params = []) -> Array:
-	"""
-	Ejecuta una consulta SELECT y retorna los resultados como array.
-	Si hay error, retorna array vacío.
-	"""
 	if db == null:
-		push_error("Base de datos no inicializada")
-		return []
+		print("❌ Base de datos no inicializada")
+		return
 	
-	var success = query(sql, params)
-	if not success:
-		print("❌ Error en consulta SELECT: " + sql)
-		return []
+	print("📊 Ruta de base de datos: " + database_path)
 	
-	# Declarar la variable results aquí, al inicio de la función
-	var results = []
-	
-	# Método 1: Si el addon tiene fetch_array()
-	if db.has_method("fetch_array"):
-		var row = db.fetch_array()
-		while row != null and row.size() > 0:
-			# Convertir array a diccionario
-			var dict = {}
-			var column_names = obtener_nombres_columnas()
-			for i in range(min(row.size(), column_names.size())):
-				dict[column_names[i]] = row[i]
-			results.append(dict)
-			row = db.fetch_array()
-	
-	# Método 2: Si el addon tiene rows property
-	elif "rows" in db and typeof(db.rows) == TYPE_ARRAY:
-		results = db.rows
-	
-	# Método 3: Si el addon tiene query_result property
-	elif "query_result" in db and typeof(db.query_result) == TYPE_ARRAY:
-		results = db.query_result
-	
+	var tablas = select_query("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+	if tablas != null and tablas.size() > 0:
+		print("📋 Tablas encontradas (" + str(tablas.size()) + "):")
+		for tabla in tablas:
+			print("   - " + tabla["name"])
 	else:
-		# Intentar método alternativo
-		print("⚠️ No se pudo obtener resultados, usando método alternativo")
-		results = metodo_alternativo_obtener_resultados()
+		print("⚠️ No se encontraron tablas en la base de datos")
 	
-	return results
+	var usuarios = select_query("SELECT COUNT(*) as total FROM usuarios")
+	if usuarios != null and usuarios.size() > 0:
+		print("👥 Usuarios en sistema (tabla antigua): " + str(usuarios[0]["total"]))
+	
+	var usuarios_nueva = select_query("SELECT COUNT(*) as total FROM usuarios_nueva")
+	if usuarios_nueva != null and usuarios_nueva.size() > 0:
+		print("👥 Usuarios en sistema (tabla nueva): " + str(usuarios_nueva[0]["total"]))
+	
+	print("=== FIN DIAGNÓSTICO ===\n")
+
+func test_conexion():
+	print("\n🧪 TEST DE CONEXIÓN A BD")
+	
+	var test_sql = "SELECT 1 as test_value"
+	var result = select_query(test_sql)
+	
+	if result != null and result.size() > 0:
+		print("✅ Test de conexión exitoso")
+		print("   Resultado: " + str(result[0]))
+	else:
+		print("❌ Test de conexión falló")
+	
+	var tablas = select_query("SELECT name FROM sqlite_master WHERE type='table'")
+	if tablas != null:
+		print("📋 Tablas en BD: " + str(tablas.size()))
+
+func inspeccionar_bd():
+	print("=== INSPECCIÓN DE BD ===")
+	
+	print("Tipo de self: ", typeof(self))
+	
+	print("\nPropiedades de self (BD):")
+	for propiedad in get_property_list():
+		if propiedad.name not in ["script", "Script Variables", "Node"]:
+			print("  - ", propiedad.name, " (", typeof(get(propiedad.name)), ")")
+	
+	print("\n=== PRUEBAS DE OPERACIONES ===")
+	
+	print("\nProbando select_query...")
+	var resultado_select = select_query("SELECT 1 as test")
+	print("  Resultado: ", resultado_select)
+	print("  Tipo: ", typeof(resultado_select))
+	
+	print("\nVerificando tabla 'quejas_reclamaciones'...")
+	var existe = table_exists("quejas_reclamaciones")
+	print("  Existe: ", existe)
+	
+	if resultado_select != null and typeof(resultado_select) == TYPE_ARRAY:
+		print("\nEstructura de array resultante:")
+		print("  Tamaño: ", resultado_select.size())
+		if resultado_select.size() > 0:
+			print("  Primer elemento tipo: ", typeof(resultado_select[0]))
+			if typeof(resultado_select[0]) == TYPE_DICTIONARY:
+				print("  Keys del primer elemento: ", resultado_select[0].keys())
+	
+	print("\n=== FIN DE INSPECCIÓN ===")
 
 func debug_query(sql: String, params = []):
 	print("\n🔍 DEBUG QUERY:")
@@ -944,111 +1082,30 @@ func debug_query(sql: String, params = []):
 	print("---\n")
 	return success
 
-func test_conexion():
-	print("\n🧪 TEST DE CONEXIÓN A BD")
-	
-	# Verificar si podemos ejecutar una consulta simple
-	var test_sql = "SELECT 1 as test_value"
-	var result = select_query(test_sql)
-	
-	if result != null and result.size() > 0:
-		print("✅ Test de conexión exitoso")
-		print("   Resultado: " + str(result[0]))
-	else:
-		print("❌ Test de conexión falló")
-	
-	# Verificar tablas de nuevo
-	var tablas = select_query("SELECT name FROM sqlite_master WHERE type='table'")
-	if tablas != null:
-		print("📋 Tablas en BD: " + str(tablas.size()))
-		for tabla in tablas:
-			print("   - " + tabla["name"])
-			
-func inspeccionar_bd():
-	print("=== INSPECCIÓN DE BD ===")
-	
-	# 1. Verificar si self es un objeto válido
-	print("Tipo de self: ", typeof(self))
-	
-	# 2. Verificar propiedades disponibles en self
-	print("\nPropiedades de self (BD):")
-	for propiedad in get_property_list():
-		if propiedad.name not in ["script", "Script Variables", "Node"]:
-			print("  - ", propiedad.name, " (", typeof(get(propiedad.name)), ")")
-	
-	# 3. Verificar métodos disponibles en self
-	print("\nMétodos de self (BD):")
-	var metodos = get_method_list()
-	for metodo in metodos:
-		if metodo.name.find("_") != 0:  # Excluir métodos privados
-			print("  - ", metodo.name)
-			
-			# Mostrar parámetros si los tiene
-			if metodo.args and metodo.args.size() > 0:
-				print("    Parámetros: ", metodo.args)
-	
-	# 4. Verificar db específicamente
-	print("\nPropiedades de db:")
-	if db != null:
-		print("  Tipo de db: ", typeof(db))
-		
-		# Intentar obtener métodos del objeto db
-		if db.has_method("get_method_list"):
-			var metodos_db = db.get_method_list()
-			print("  Métodos disponibles en db:")
-			for metodo_db in metodos_db:
-				if metodo_db.name.find("_") != 0:
-					print("    - ", metodo_db.name)
-		else:
-			# Si no tiene get_method_list, mostrar algunas propiedades conocidas
-			print("  db es un objeto de tipo: ", db)
-			# Intentar algunas propiedades comunes
-			for prop in ["path", "open", "last_error", "error"]:
-				if db.get(prop) != null:
-					print("    - ", prop, ": ", db.get(prop))
-	
-	# 5. Probar algunas operaciones comunes
-	print("\n=== PRUEBAS DE OPERACIONES ===")
-	
-	# Probar select_query
-	print("\nProbando select_query...")
-	var resultado_select = select_query("SELECT 1 as test")
-	print("  Resultado: ", resultado_select)
-	print("  Tipo: ", typeof(resultado_select))
-	
-	# Probar table_exists
-	print("\nVerificando tabla 'quejas_reclamaciones'...")
-	var existe = table_exists("quejas_reclamaciones")
-	print("  Existe: ", existe)
-	
-	# 6. Inspeccionar estructura de respuesta
-	if resultado_select != null and typeof(resultado_select) == TYPE_ARRAY:
-		print("\nEstructura de array resultante:")
-		print("  Tamaño: ", resultado_select.size())
-		if resultado_select.size() > 0:
-			print("  Primer elemento tipo: ", typeof(resultado_select[0]))
-			if typeof(resultado_select[0]) == TYPE_DICTIONARY:
-				print("  Keys del primer elemento: ", resultado_select[0].keys())
-	
-	print("\n=== FIN DE INSPECCIÓN ===")
-	
+func close():
+	if db:
+		db.close_db()
+		print("🔒 Base de datos cerrada")
+
+# =========================
+# MÉTODOS DE PRUEBA
+# =========================
 func probar_consultas():
 	print("\n=== PRUEBA DE CONSULTAS DIFERENTES ===")
 	
-	# Probar diferentes tipos de consultas
 	var consultas = [
 		"SELECT * FROM quejas_reclamaciones LIMIT 1",
 		"SELECT COUNT(*) as total FROM quejas_reclamaciones",
 		"SELECT name FROM sqlite_master WHERE type='table'",
-        "PRAGMA table_info(quejas_reclamaciones)"
+		"PRAGMA table_info(quejas_reclamaciones)"
 	]
 	
 	for consulta in consultas:
-		try_query(consulta)
+		_try_query(consulta)
 		
-func try_query(sql: String):
+func _try_query(sql: String):
 	print("\nConsulta: ", sql)
-	var result = Bd.select_query(sql)
+	var result = select_query(sql)
 	print("  Resultado tipo: ", typeof(result))
 	
 	if typeof(result) == TYPE_ARRAY:
@@ -1056,7 +1113,7 @@ func try_query(sql: String):
 		if result.size() > 0:
 			if typeof(result[0]) == TYPE_DICTIONARY:
 				print("  Keys: ", result[0].keys())
-				if result[0].size() < 10:  # No imprimir demasiado
+				if result[0].size() < 10:
 					print("  Valores: ", result[0])
 			else:
 				print("  Primer valor: ", result[0])
@@ -1065,7 +1122,6 @@ func try_query(sql: String):
 	else:
 		print("  Nulo")
 
-# Función para verificar funciones específicas
 func verificar_funciones_bd():
 	print("\n=== VERIFICACIÓN DE FUNCIONES ESPECÍFICAS ===")
 	
@@ -1078,12 +1134,11 @@ func verificar_funciones_bd():
 		"table_exists",
 		"get_database_info",
 		"get_table_structure",
-		"create_table",
-		"drop_table"
+		"count"
 	]
 	
 	for funcion in funciones_a_verificar:
-		if Bd.has_method(funcion):
+		if has_method(funcion):
 			print("✓ ", funcion, " - DISPONIBLE")
 		else:
 			print("✗ ", funcion, " - NO DISPONIBLE")
