@@ -29,7 +29,7 @@ content_margin_left = 20.0
 content_margin_top = 10.0
 content_margin_right = 20.0
 content_margin_bottom = 10.0
-bg_color = Color(0.96, 0.97, 0.98, 1)
+bg_color = Color(0.83300006, 0.90650004, 0.98, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
@@ -187,7 +187,7 @@ bg_color = Color(0.96, 0.97, 0.98, 1)
 border_width_top = 2
 border_color = Color(0.9, 0.92, 0.94, 1)
 
-[node name="GestorQuejas2" type="Control" unique_id=1421529623]
+[node name="GestorQuejas" type="Control" unique_id=1421529623]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -388,15 +388,13 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_stat_card")
 
 [node name="TotalQuejasContent" type="VBoxContainer" parent="LayoutPrincipal/MainContent/Sidebar/StatsPanel/TotalQuejas" unique_id=1237141918]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = -1
+anchor_right = 1.029
 offset_left = 10.0
-offset_top = 41.5
-offset_right = -10.0
-offset_bottom = 104.5
+offset_top = 100.5
+offset_right = -18.120026
+offset_bottom = 163.5
 grow_horizontal = 2
-grow_vertical = 2
 theme_override_constants/separation = 4
 
 [node name="TotalQuejasLabel" type="Label" parent="LayoutPrincipal/MainContent/Sidebar/StatsPanel/TotalQuejas/TotalQuejasContent" unique_id=511418616]
@@ -424,9 +422,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 10.0
-offset_top = -21.5
+offset_top = -2.5
 offset_right = -10.0
-offset_bottom = 41.5
+offset_bottom = 60.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 4
@@ -457,10 +455,10 @@ anchors_preset = -1
 anchor_left = 0.009000001
 anchor_right = 1.0
 anchor_bottom = 0.86200005
-offset_left = 37.156
-offset_top = -38.5
-offset_right = -71.0
-offset_bottom = 150.336
+offset_left = 42.156
+offset_top = -33.5
+offset_right = -66.0
+offset_bottom = 155.336
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 25
@@ -475,6 +473,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 24
 text = "Nueva Queja o Reclamo"
+horizontal_alignment = 1
 
 [node name="FormSubtitle" type="Label" parent="LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormHeader" unique_id=2142767379]
 layout_mode = 2
@@ -625,14 +624,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 15
 alignment = 2
-
-[node name="CancelButton" type="Button" parent="LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormActions" unique_id=20]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_secondary_btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_secondary_btn_hover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_secondary_btn_hover")
-text = "Cancelar"
 
 [node name="SubmitButton" type="Button" parent="LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormActions" unique_id=21]
 layout_mode = 2
@@ -821,33 +812,35 @@ text = "💾 Guardar Configuración"
 [node name="Footer" type="Panel" parent="LayoutPrincipal" unique_id=305069291]
 custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_footer")
 
 [node name="FooterContent" type="HBoxContainer" parent="LayoutPrincipal/Footer" unique_id=554237778]
-z_index = -1
 layout_mode = 1
 anchors_preset = -1
-anchor_right = 0.75000006
-anchor_bottom = 0.771
-offset_left = 40.0
+anchor_right = 0.76000005
+anchor_bottom = 1.0
+offset_left = 15.999939
 offset_top = 10.0
-offset_right = -24.000122
-offset_bottom = 8.029999
+offset_right = 649.99994
+offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="FooterInfo" type="Label" parent="LayoutPrincipal/Footer/FooterContent" unique_id=987654321]
-z_index = 1
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
 theme_override_font_sizes/font_size = 12
-text = "Gestor de Quejas v3.0 | Sistema de Gestión de Calidad © 2024 Havanatur Ecuador"
+text = "Gestor de Quejas v3.0 | Sistema de Gestión de Calidad © 2024 Havanatur "
 
 [node name="BackButton" type="Button" parent="LayoutPrincipal/Footer/FooterContent" unique_id=1373258980]
-z_index = 1
 layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.5049333, 0.504, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0.37, 1, 0.97900003, 1)
+theme_override_colors/font_disabled_color = Color(0.865833, 0.87926626, 0.86462617, 0.5019608)
+theme_override_colors/icon_normal_color = Color(4.109645, 4.109645, 4.109645, 1)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_secondary_btn")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_secondary_btn_hover")

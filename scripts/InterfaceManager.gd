@@ -6,16 +6,17 @@ signal queja_registrada(datos: Dictionary)
 signal configuracion_guardada(config: Dictionary)
 signal cancelar_pressed()
 
-# Referencias a nodos (se llenarán en _ready)
+# Referencias a nodos - ajustadas a la estructura de la escena proporcionada
 var btn_registrar: Button
 var btn_cancelar: Button
 var btn_guardar_config: Button
-var lista_quejas: Tree
-var lbl_total: Label
-var lbl_pendientes: Label
-var txt_buscar: LineEdit
+var btn_back_menu: Button
+var btn_registro_nav: Button
+var btn_seguimiento_nav: Button
+var btn_analiticas_nav: Button
+var btn_configuracion_nav: Button
 
-# Referencias a los campos del formulario
+# Campos del formulario
 var opt_tipo_caso: OptionButton
 var txt_nombres: LineEdit
 var txt_identificacion: LineEdit
@@ -23,109 +24,117 @@ var txt_telefono: LineEdit
 var txt_email: LineEdit
 var txt_asunto: LineEdit
 var txt_descripcion: TextEdit
-var spin_monto: SpinBox
+var txt_monto: LineEdit
 var opt_prioridad: OptionButton
 
-# Referencias a campos de configuración
+# Campos de configuración
 var chk_notificaciones: CheckBox
 var spin_intervalo: SpinBox
 
+# Pestañas
+var registro_tab: VBoxContainer
+var seguimiento_tab: VBoxContainer
+var analiticas_tab: VBoxContainer
+var configuracion_tab: VBoxContainer
+
+# Estadísticas
+var lbl_total_quejas: Label
+var lbl_pendientes_valor: Label
+
+# Elementos de seguimiento
+var txt_buscar: LineEdit
+var opt_status_filter: OptionButton
+
 func _ready():
-	# Inicializar referencias
-	btn_registrar = get_node_or_null("MainPanel/MainTabContainer/Registro/BtnRegistrar")
-	btn_cancelar = get_node_or_null("MainPanel/MainTabContainer/Registro/BtnCancelar")
-	btn_guardar_config = get_node_or_null("MainPanel/MainTabContainer/Configuracion/BtnGuardar")
-	lista_quejas = get_node_or_null("MainPanel/MainTabContainer/Seguimiento/ListaQuejas")
-	lbl_total = get_node_or_null("MainPanel/MainTabContainer/Analiticas/StatsGrid/StatTotal/LblTotal")
-	lbl_pendientes = get_node_or_null("MainPanel/MainTabContainer/Analiticas/StatsGrid/StatPendientes/LblPendientes")
-	txt_buscar = get_node_or_null("MainPanel/MainTabContainer/Seguimiento/FiltrosPanel/TxtBuscar")
+	# Inicializar referencias a los nodos de la escena
+	inicializar_referencias_nodos()
 	
-	# Inicializar referencias del formulario
-	opt_tipo_caso = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/OptTipoCaso")
-	txt_nombres = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/TxtNombres")
-	txt_identificacion = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/TxtIdentificacion")
-	txt_telefono = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/TxtTelefono")
-	txt_email = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/TxtEmail")
-	txt_asunto = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/TxtAsunto")
-	txt_descripcion = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/TxtDescripcion")
-	spin_monto = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/SpinMonto")
-	opt_prioridad = get_node_or_null("MainPanel/MainTabContainer/Registro/FormContainer/FormGrid/OptPrioridad")
-	
-	# Inicializar referencias de configuración
-	chk_notificaciones = get_node_or_null("MainPanel/MainTabContainer/Configuracion/ConfigGrid/ChkNotificaciones")
-	spin_intervalo = get_node_or_null("MainPanel/MainTabContainer/Configuracion/ConfigGrid/SpinIntervalo")
+	# Configurar navegación entre pestañas
+	configurar_navegacion()
 	
 	# Inicializar OptionButtons con valores por defecto
 	inicializar_option_buttons()
 	
+	# Cargar configuración inicial
+	cargar_configuracion()
+	
 	# Conectar señales
+	conectar_senales()
+
+func inicializar_referencias_nodos():
+	# Botones de navegación en sidebar
+	btn_registro_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnRegistro")
+	btn_seguimiento_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnSeguimiento")
+	btn_analiticas_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnAnaliticas")
+	btn_configuracion_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnConfiguracion")
+	
+	# Pestañas
+	registro_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab")
+	seguimiento_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab")
+	analiticas_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/AnaliticasTab")
+	configuracion_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab")
+	
+	# Botones de acción
+	btn_registrar = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormActions/SubmitButton")
+	btn_back_menu = get_node_or_null("LayoutPrincipal/Footer/FooterContent/BackButton")
+	btn_guardar_config = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab/ConfigActions/SaveConfigButton")
+	
+	# Campos del formulario
+	opt_tipo_caso = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/CaseTypeDropdown")
+	txt_nombres = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/NameInput")
+	txt_identificacion = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/IDInput")
+	txt_telefono = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/PhoneInput")
+	txt_email = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/EmailInput")
+	txt_asunto = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/SubjectInput")
+	txt_descripcion = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/DescriptionInput")
+	txt_monto = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/AmountInput")
+	opt_prioridad = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/PriorityDropdown")
+	
+	# Campos de configuración
+	chk_notificaciones = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab/ConfigContent/NotificationsToggle")
+	spin_intervalo = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab/ConfigContent/IntervalInput")
+	
+	# Estadísticas en sidebar
+	lbl_total_quejas = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/StatsPanel/TotalQuejas/TotalQuejasContent/TotalQuejasValue")
+	lbl_pendientes_valor = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/StatsPanel/Pendientes/PendientesContent/PendientesValue")
+	
+	# Elementos de seguimiento
+	txt_buscar = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/Filters/SearchInput")
+	opt_status_filter = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/Filters/StatusFilter")
+
+func configurar_navegacion():
+	# Conectar botones de navegación
+	if btn_registro_nav:
+		btn_registro_nav.pressed.connect(func(): mostrar_pestana("registro"))
+	
+	if btn_seguimiento_nav:
+		btn_seguimiento_nav.pressed.connect(func(): mostrar_pestana("seguimiento"))
+	
+	if btn_analiticas_nav:
+		btn_analiticas_nav.pressed.connect(func(): mostrar_pestana("analiticas"))
+	
+	if btn_configuracion_nav:
+		btn_configuracion_nav.pressed.connect(func(): mostrar_pestana("configuracion"))
+
+func conectar_senales():
+	# Conectar botones de acción
 	if btn_registrar:
 		btn_registrar.pressed.connect(_on_btn_registrar_pressed)
 	
-	if btn_cancelar:
-		btn_cancelar.pressed.connect(_on_btn_cancelar_pressed)
+	if btn_back_menu:
+		btn_back_menu.pressed.connect(_on_btn_back_menu_pressed)
 	
 	if btn_guardar_config:
 		btn_guardar_config.pressed.connect(_on_btn_guardar_config_pressed)
-	
-	# NUEVO: Conectar señal del botón regresar
-	var btn_regresar = get_node_or_null("BtnRegresar")
-	if btn_regresar:
-		btn_regresar.pressed.connect(_on_btn_regresar_pressed)
-	
-	# Cargar configuración inicial
-	cargar_configuracion()
 
-# ===== NUEVA FUNCIÓN: Normalizar valores para la base de datos =====
-func normalizar_valores_db(datos: Dictionary) -> Dictionary:
-	var datos_normalizados = datos.duplicate(true)
-	
-	# Mapear tipo_caso a valores permitidos por la BD
-	var mapa_tipo_caso = {
-		"Queja": "queja",
-		"Reclamo": "reclamacion",  # Cambiar "Reclamo" a "reclamacion"
-		"Reclamación": "reclamacion",  # Para consistencia
-		"Sugerencia": "sugerencia",
-		"Consulta": "sugerencia",  # Mapear "Consulta" a "sugerencia" o podrías cambiarlo a otro valor
-		"Felicitación": "felicitacion",
-		"Felicitacion": "felicitacion"
-	}
-	
-	if datos.has("tipo_caso"):
-		var tipo_ui = datos["tipo_caso"]
-		if mapa_tipo_caso.has(tipo_ui):
-			datos_normalizados["tipo_caso"] = mapa_tipo_caso[tipo_ui]
-		else:
-			# Valor por defecto si no está en el mapa
-			datos_normalizados["tipo_caso"] = "queja"
-	
-	# Asegurar que otros campos estén en minúsculas si es necesario
-	if datos.has("tipo_reclamante"):
-		datos_normalizados["tipo_reclamante"] = datos["tipo_reclamante"].to_lower()
-	
-	if datos.has("canal_entrada"):
-		datos_normalizados["canal_entrada"] = datos["canal_entrada"].to_lower()
-	
-	if datos.has("recibido_por"):
-		datos_normalizados["recibido_por"] = datos["recibido_por"].to_lower()
-	
-	if datos.has("estado"):
-		datos_normalizados["estado"] = datos["estado"].to_lower()
-	
-	if datos.has("prioridad"):
-		datos_normalizados["prioridad"] = datos["prioridad"].to_lower()
-	
-	return datos_normalizados
-
-# Inicializar los OptionButtons con valores por defecto
 func inicializar_option_buttons():
-	# Inicializar tipos de caso - usar valores que se puedan mapear a la BD
+	# Inicializar tipos de caso
 	if opt_tipo_caso and opt_tipo_caso.get_item_count() == 0:
 		opt_tipo_caso.add_item("Queja")
-		opt_tipo_caso.add_item("Reclamo")  # Se mapeará a "reclamacion"
+		opt_tipo_caso.add_item("Reclamo")
 		opt_tipo_caso.add_item("Sugerencia")
 		opt_tipo_caso.add_item("Felicitación")
-		opt_tipo_caso.selected = 0  # Seleccionar el primer elemento por defecto
+		opt_tipo_caso.selected = 0
 	
 	# Inicializar prioridades
 	if opt_prioridad and opt_prioridad.get_item_count() == 0:
@@ -133,62 +142,104 @@ func inicializar_option_buttons():
 		opt_prioridad.add_item("Media")
 		opt_prioridad.add_item("Alta")
 		opt_prioridad.add_item("Urgente")
-		opt_prioridad.selected = 1  # Seleccionar "Media" por defecto
+		opt_prioridad.selected = 1
 	
-	# Inicializar OptionButton de estado en filtros (si existe)
-	var opt_estado = get_node_or_null("MainPanel/MainTabContainer/Seguimiento/FiltrosPanel/OptEstado")
-	if opt_estado and opt_estado.get_item_count() == 0:
-		opt_estado.add_item("Todos")
-		opt_estado.add_item("Pendiente")
-		opt_estado.add_item("En Proceso")
-		opt_estado.add_item("Resuelto")
-		opt_estado.add_item("Cerrado")
-		opt_estado.selected = 0
+	# Inicializar filtro de estado en seguimiento
+	if opt_status_filter and opt_status_filter.get_item_count() == 0:
+		opt_status_filter.add_item("Todos")
+		opt_status_filter.add_item("Pendiente")
+		opt_status_filter.add_item("En proceso")
+		opt_status_filter.add_item("Resuelto")
+		opt_status_filter.add_item("Cerrado")
+		opt_status_filter.selected = 0
 
-# ===== FUNCIONES AUXILIARES =====
-
-func mostrar_mensaje_error(mensaje: String):
-	print("❌ Error: ", mensaje)
-	# Aquí podrías mostrar un label rojo con el mensaje de error
-
-func mostrar_mensaje_exito(mensaje: String):
-	print("✅ ", mensaje)
-	# Aquí podrías mostrar un mensaje en la interfaz
-
-func validar_formulario(datos: Dictionary) -> bool:
-	# Validar campos obligatorios
-	if datos.get("nombres", "").strip_edges() == "":
-		mostrar_mensaje_error("El campo Nombres es obligatorio")
-		return false
+func mostrar_pestana(nombre_pestana: String):
+	# Ocultar todas las pestañas
+	if registro_tab:
+		registro_tab.visible = false
+	if seguimiento_tab:
+		seguimiento_tab.visible = false
+	if analiticas_tab:
+		analiticas_tab.visible = false
+	if configuracion_tab:
+		configuracion_tab.visible = false
 	
-	if datos.get("asunto", "").strip_edges() == "":
-		mostrar_mensaje_error("El campo Asunto es obligatorio")
-		return false
+	# Mostrar la pestaña seleccionada
+	match nombre_pestana:
+		"registro":
+			if registro_tab:
+				registro_tab.visible = true
+				actualizar_opciones_formulario()
+		
+		"seguimiento":
+			if seguimiento_tab:
+				seguimiento_tab.visible = true
+				actualizar_lista_quejas()
+		
+		"analiticas":
+			if analiticas_tab:
+				analiticas_tab.visible = true
+				actualizar_estadisticas()
+		
+		"configuracion":
+			if configuracion_tab:
+				configuracion_tab.visible = true
+				cargar_configuracion_en_ui()
+
+# ===== FUNCIONES DEL FORMULARIO =====
+
+func _on_btn_registrar_pressed():
+	print("Botón Registrar presionado")
 	
-	# Validar email si se proporcionó con una expresión regular básica
-	var email = datos.get("email", "")
-	if email != "":
-		# Expresión regular simple para validar email
-		var regex = RegEx.new()
-		# Patrón básico para email
-		regex.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-		var result = regex.search(email)
-		if result == null:
-			mostrar_mensaje_error("El email no es válido. Use formato: usuario@dominio.com")
-			return false
+	# Obtener y validar datos del formulario
+	var datos_formulario = obtener_datos_formulario()
 	
-	return true
+	if validar_formulario(datos_formulario):
+		# Normalizar valores para la base de datos
+		var datos_normalizados = normalizar_valores_db(datos_formulario)
+		
+		print("Datos normalizados para BD:")
+		for key in datos_normalizados:
+			print("  %s: %s" % [key, datos_normalizados[key]])
+		
+		# Emitir señal con datos normalizados del formulario
+		emit_signal("queja_registrada", datos_normalizados)
+		
+		# Limpiar formulario después de registrar
+		limpiar_formulario()
+		
+		# Mostrar mensaje de éxito
+		mostrar_mensaje_exito("Queja registrada exitosamente")
+		
+		# Actualizar estadísticas
+		actualizar_estadisticas()
+	else:
+		mostrar_mensaje_error("No se pudo registrar la queja. Verifique los datos.")
+
+func _on_btn_back_menu_pressed():
+	print("Botón Volver al Menú presionado")
+	emit_signal("cancelar_pressed")
+
+func _on_btn_guardar_config_pressed():
+	print("Botón Guardar Configuración presionado")
+	
+	var config = obtener_datos_configuracion()
+	
+	# Validar configuración
+	if validar_configuracion(config):
+		emit_signal("configuracion_guardada", config)
+		mostrar_mensaje_exito("Configuración guardada correctamente")
+	else:
+		mostrar_mensaje_error("Error en la configuración")
 
 func obtener_datos_formulario() -> Dictionary:
 	var datos = {}
 	
-	# Obtener tipo de caso - verificar que haya selección válida
+	# Obtener tipo de caso
 	if opt_tipo_caso and opt_tipo_caso.selected >= 0:
 		datos["tipo_caso"] = opt_tipo_caso.get_item_text(opt_tipo_caso.selected)
-	else:
-		datos["tipo_caso"] = ""
 	
-	# Obtener otros campos
+	# Obtener datos del cliente
 	if txt_nombres:
 		datos["nombres"] = txt_nombres.text.strip_edges()
 	
@@ -201,175 +252,154 @@ func obtener_datos_formulario() -> Dictionary:
 	if txt_email:
 		datos["email"] = txt_email.text.strip_edges()
 	
+	# Obtener asunto y descripción
 	if txt_asunto:
 		datos["asunto"] = txt_asunto.text.strip_edges()
 	
 	if txt_descripcion:
 		datos["descripcion_detallada"] = txt_descripcion.text.strip_edges()
 	
-	if spin_monto:
-		datos["monto_reclamado"] = spin_monto.value
+	# Obtener monto
+	if txt_monto:
+		var monto_texto = txt_monto.text.strip_edges()
+		if monto_texto.is_valid_float():
+			datos["monto_reclamado"] = float(monto_texto)
+		else:
+			datos["monto_reclamado"] = 0.0
 	
-	# Obtener prioridad - verificar que haya selección válida
+	# Obtener prioridad
 	if opt_prioridad and opt_prioridad.selected >= 0:
 		datos["prioridad"] = opt_prioridad.get_item_text(opt_prioridad.selected)
-	else:
-		datos["prioridad"] = ""
 	
 	# Datos adicionales por defecto
 	datos["tipo_reclamante"] = "cliente"
 	datos["canal_entrada"] = "sistema"
 	datos["recibido_por"] = "usuario"
 	datos["fecha_registro"] = Time.get_datetime_string_from_system()
-	datos["estado"] = "Pendiente"
+	datos["estado"] = "pendiente"
 	
 	return datos
 
-# ===== FUNCIÓN LIMPIAR FORMULARIO =====
+func normalizar_valores_db(datos: Dictionary) -> Dictionary:
+	var datos_normalizados = datos.duplicate(true)
+	
+	# Mapear tipo_caso a valores permitidos por la BD
+	var mapa_tipo_caso = {
+		"Queja": "queja",
+		"Reclamo": "reclamacion",
+		"Reclamación": "reclamacion",
+		"Sugerencia": "sugerencia",
+		"Felicitación": "felicitacion",
+		"Felicitacion": "felicitacion"
+	}
+	
+	if datos.has("tipo_caso"):
+		var tipo_ui = datos["tipo_caso"]
+		if mapa_tipo_caso.has(tipo_ui):
+			datos_normalizados["tipo_caso"] = mapa_tipo_caso[tipo_ui]
+		else:
+			datos_normalizados["tipo_caso"] = "queja"
+	
+	# Convertir a minúsculas para consistencia
+	var campos_a_minusculas = ["tipo_reclamante", "canal_entrada", "recibido_por", "estado", "prioridad"]
+	for campo in campos_a_minusculas:
+		if datos.has(campo):
+			datos_normalizados[campo] = str(datos[campo]).to_lower()
+	
+	return datos_normalizados
+
+func validar_formulario(datos: Dictionary) -> bool:
+	# Validar campos obligatorios
+	if datos.get("nombres", "").strip_edges() == "":
+		mostrar_mensaje_error("El campo Nombre Completo es obligatorio")
+		return false
+	
+	if datos.get("asunto", "").strip_edges() == "":
+		mostrar_mensaje_error("El campo Asunto es obligatorio")
+		return false
+	
+	# Validar identificación
+	var identificacion = datos.get("identificacion", "").strip_edges()
+	if identificacion == "":
+		mostrar_mensaje_error("El campo Identificación es obligatorio")
+		return false
+	
+	# Validar email si se proporcionó
+	var email = datos.get("email", "").strip_edges()
+	if email != "":
+		# Expresión regular básica para validar email
+		if not email.contains("@") or not email.contains("."):
+			mostrar_mensaje_error("El email no es válido. Use formato: usuario@dominio.com")
+			return false
+	
+	return true
 
 func limpiar_formulario():
 	print("Limpiando formulario...")
 	
-	# Restablecer OptionButtons a sus valores por defecto
-	if opt_tipo_caso and opt_tipo_caso.get_item_count() > 0:
+	# Restablecer OptionButtons a valores por defecto
+	if opt_tipo_caso:
 		opt_tipo_caso.selected = 0
 	
-	if opt_prioridad and opt_prioridad.get_item_count() > 0:
+	if opt_prioridad:
 		opt_prioridad.selected = 1  # Media por defecto
 	
-	# Limpiar LineEdits
-	if txt_nombres:
-		txt_nombres.text = ""
-	
-	if txt_identificacion:
-		txt_identificacion.text = ""
-	
-	if txt_telefono:
-		txt_telefono.text = ""
-	
-	if txt_email:
-		txt_email.text = ""
-	
-	if txt_asunto:
-		txt_asunto.text = ""
-	
-	# Limpiar TextEdit
-	if txt_descripcion:
-		txt_descripcion.text = ""
-	
-	# Restablecer SpinBox a 0
-	if spin_monto:
-		spin_monto.value = 0.0
+	# Limpiar campos de texto
+	var campos_texto = [txt_nombres, txt_identificacion, txt_telefono, txt_email, txt_asunto, txt_descripcion, txt_monto]
+	for campo in campos_texto:
+		if campo:
+			campo.text = ""
 	
 	print("✅ Formulario limpiado correctamente")
 
-# ===== FUNCIONES DE MANEJO DE FORMULARIO =====
+func actualizar_opciones_formulario():
+	# Esta función puede usarse para cargar opciones dinámicas en el formulario
+	pass
 
-func formulario_tiene_datos() -> bool:
-	var tiene_datos = false
-	
-	# Verificar si algún campo tiene datos
-	if txt_nombres and txt_nombres.text.strip_edges() != "":
-		tiene_datos = true
-	elif txt_identificacion and txt_identificacion.text.strip_edges() != "":
-		tiene_datos = true
-	elif txt_asunto and txt_asunto.text.strip_edges() != "":
-		tiene_datos = true
-	elif txt_descripcion and txt_descripcion.text.strip_edges() != "":
-		tiene_datos = true
-	elif spin_monto and spin_monto.value > 0:
-		tiene_datos = true
-	elif opt_tipo_caso and opt_tipo_caso.selected > 0:
-		tiene_datos = true
-	elif opt_prioridad and opt_prioridad.selected != 1:  # Si no es "Media" (valor por defecto)
-		tiene_datos = true
-	
-	return tiene_datos
+# ===== FUNCIONES DE SEGUIMIENTO =====
 
-func mostrar_dialogo_confirmacion():
-	print("⚠️  Hay datos en el formulario. ¿Seguro que desea cancelar?")
+func actualizar_lista_quejas(filtro: String = ""):
+	print("Actualizando lista de quejas...")
 	
-	# En una implementación real, aquí mostrarías un diálogo de confirmación
-	# Por ahora, simplemente emitimos la señal después de un mensaje de consola
-	emit_signal("cancelar_pressed")
+	# Esta función debería cargar las quejas desde la base de datos
+	# Por ahora, solo mostramos un mensaje
+	mostrar_mensaje_info("Lista de quejas actualizada")
+	
+	# Si hay un campo de búsqueda, usar el filtro
+	if txt_buscar and filtro != "":
+		txt_buscar.text = filtro
 
-func cargar_datos_en_formulario(datos: Dictionary):
-	if not datos:
-		return
-	
-	# Cargar tipo de caso
-	if opt_tipo_caso and datos.has("tipo_caso"):
-		var tipo_caso = str(datos["tipo_caso"])
-		# Buscar el índice del tipo de caso
-		for i in range(opt_tipo_caso.get_item_count()):
-			if opt_tipo_caso.get_item_text(i) == tipo_caso:
-				opt_tipo_caso.selected = i
-				break
-	
-	# Cargar otros campos
-	if txt_nombres and datos.has("nombres"):
-		txt_nombres.text = str(datos["nombres"])
-	
-	if txt_identificacion and datos.has("identificacion"):
-		txt_identificacion.text = str(datos["identificacion"])
-	
-	if txt_telefono and datos.has("telefono"):
-		txt_telefono.text = str(datos["telefono"])
-	
-	if txt_email and datos.has("email"):
-		txt_email.text = str(datos["email"])
-	
-	if txt_asunto and datos.has("asunto"):
-		txt_asunto.text = str(datos["asunto"])
-	
-	if txt_descripcion and datos.has("descripcion_detallada"):
-		txt_descripcion.text = str(datos["descripcion_detallada"])
-	
-	if spin_monto and datos.has("monto_reclamado"):
-		spin_monto.value = float(datos["monto_reclamado"])
-	
-	# Cargar prioridad
-	if opt_prioridad and datos.has("prioridad"):
-		var prioridad = str(datos["prioridad"])
-		# Buscar el índice de la prioridad
-		for i in range(opt_prioridad.get_item_count()):
-			if opt_prioridad.get_item_text(i) == prioridad:
-				opt_prioridad.selected = i
-				break
+# ===== FUNCIONES DE ESTADÍSTICAS =====
 
-func obtener_valor_campo(nombre_campo: String):
-	match nombre_campo:
-		"tipo_caso":
-			if opt_tipo_caso and opt_tipo_caso.selected >= 0:
-				return opt_tipo_caso.get_item_text(opt_tipo_caso.selected)
-		"nombres":
-			if txt_nombres:
-				return txt_nombres.text
-		"identificacion":
-			if txt_identificacion:
-				return txt_identificacion.text
-		"telefono":
-			if txt_telefono:
-				return txt_telefono.text
-		"email":
-			if txt_email:
-				return txt_email.text
-		"asunto":
-			if txt_asunto:
-				return txt_asunto.text
-		"descripcion":
-			if txt_descripcion:
-				return txt_descripcion.text
-		"monto":
-			if spin_monto:
-				return spin_monto.value
-		"prioridad":
-			if opt_prioridad and opt_prioridad.selected >= 0:
-				return opt_prioridad.get_item_text(opt_prioridad.selected)
+func actualizar_estadisticas():
+	print("Actualizando estadísticas...")
 	
-	return ""
+	# Esta función debería cargar estadísticas reales desde la base de datos
+	# Por ahora, actualizamos con valores de prueba
+	
+	if lbl_total_quejas:
+		# Simular conteo de quejas
+		lbl_total_quejas.text = "15"
+	
+	if lbl_pendientes_valor:
+		# Simular quejas pendientes
+		lbl_pendientes_valor.text = "3"
+	
+	mostrar_mensaje_info("Estadísticas actualizadas")
 
 # ===== FUNCIONES DE CONFIGURACIÓN =====
+
+func cargar_configuracion_en_ui():
+	print("Cargando configuración en la UI...")
+	
+	# Esta función debería cargar la configuración desde el ConfigManager
+	# Por ahora, establecemos valores por defecto
+	
+	if chk_notificaciones:
+		chk_notificaciones.button_pressed = true
+	
+	if spin_intervalo:
+		spin_intervalo.value = 30.0
 
 func obtener_datos_configuracion() -> Dictionary:
 	var config = {}
@@ -380,14 +410,17 @@ func obtener_datos_configuracion() -> Dictionary:
 	if spin_intervalo:
 		config["intervalo_actualizacion"] = int(spin_intervalo.value)
 	
-	# Puedes agregar más campos de configuración aquí
-	
 	return config
 
 func validar_configuracion(config: Dictionary) -> bool:
-	# Validaciones básicas
+	# Validar intervalo mínimo
 	if config.get("intervalo_actualizacion", 0) < 1:
 		mostrar_mensaje_error("El intervalo debe ser al menos 1 minuto")
+		return false
+	
+	# Validar intervalo máximo
+	if config.get("intervalo_actualizacion", 0) > 120:
+		mostrar_mensaje_error("El intervalo no puede exceder 120 minutos")
 		return false
 	
 	return true
@@ -395,14 +428,13 @@ func validar_configuracion(config: Dictionary) -> bool:
 func cargar_configuracion():
 	print("Cargando configuración...")
 	
-	# Aquí deberías cargar la configuración desde un archivo o base de datos
-	# Por ahora, cargamos valores por defecto
+	# Valores por defecto
 	var config_default = {
 		"notificaciones": true,
 		"intervalo_actualizacion": 30
 	}
 	
-	# Aplicar valores por defecto a la interfaz
+	# Aplicar a la UI
 	aplicar_configuracion_ui(config_default)
 
 func aplicar_configuracion_ui(config: Dictionary):
@@ -412,193 +444,71 @@ func aplicar_configuracion_ui(config: Dictionary):
 	if spin_intervalo and config.has("intervalo_actualizacion"):
 		spin_intervalo.value = float(config["intervalo_actualizacion"])
 
-# ===== FUNCIONES DE SEÑALES =====
+# ===== FUNCIONES AUXILIARES =====
 
-func _on_btn_registrar_pressed():
-	print("Botón Registrar presionado")
-	
-	# Obtener y validar datos del formulario
-	var datos_formulario = obtener_datos_formulario()
-	
-	if validar_formulario(datos_formulario):
-		# Normalizar valores para la base de datos
-		var datos_normalizados = normalizar_valores_db(datos_formulario)
-		
-		# Mostrar datos en consola para depuración
-		print("Datos normalizados para BD:")
-		for key in datos_normalizados:
-			print("  %s: %s" % [key, datos_normalizados[key]])
-		
-		# Emitir señal con datos normalizados del formulario
-		emit_signal("queja_registrada", datos_normalizados)
-		
-		# Limpiar formulario después de registrar
-		limpiar_formulario()
-		
-		mostrar_mensaje_exito("Queja registrada exitosamente")
-	else:
-		mostrar_mensaje_error("No se pudo registrar la queja. Verifique los datos.")
+func mostrar_mensaje_error(mensaje: String):
+	print("❌ Error: ", mensaje)
+	# Aquí podrías implementar un sistema de notificaciones en la UI
 
-func _on_btn_cancelar_pressed():
-	print("Botón Cancelar presionado")
-	
-	# Verificar si hay datos en el formulario
-	if formulario_tiene_datos():
-		mostrar_dialogo_confirmacion()
-	else:
-		emit_signal("cancelar_pressed")
+func mostrar_mensaje_exito(mensaje: String):
+	print("✅ Éxito: ", mensaje)
+	# Aquí podrías implementar un sistema de notificaciones en la UI
 
-func _on_btn_guardar_config_pressed():
-	print("Guardando configuración...")
-	
-	var config = obtener_datos_configuracion()
-	
-	# Validar configuración
-	if validar_configuracion(config):
-		emit_signal("configuracion_guardada", config)
-		mostrar_mensaje_exito("Configuración guardada correctamente")
-	else:
-		mostrar_mensaje_error("Error en la configuración")
+func mostrar_mensaje_info(mensaje: String):
+	print("ℹ️ Info: ", mensaje)
 
-# ===== FUNCIÓN PARA EL BOTÓN REGRESAR =====
-func _on_btn_regresar_pressed():
-	print("Botón Regresar presionado")
-	emit_signal("cancelar_pressed")
+# ===== FUNCIONES PÚBLICAS PARA GESTOR_QUEJAS.GD =====
 
-# ===== NUEVA FUNCIÓN: Cargar quejas de prueba para previsualización =====
+func actualizar_estadisticas_sidebar():
+	# Actualizar las estadísticas en la barra lateral
+	actualizar_estadisticas()
+
+func actualizar_lista_no_conformidades():
+	print("Actualizando lista de No Conformidades...")
+	# Implementar cuando se agregue la pestaña de No Conformidades
+
+# ===== FUNCIONES DE INICIALIZACIÓN EXTERNA =====
+
+func conectar_senales_externas(gestor_quejas):
+	# Conectar las señales del InterfaceManager al GestorQuejas
+	queja_registrada.connect(gestor_quejas._on_queja_registrada_ui)
+	configuracion_guardada.connect(gestor_quejas._on_configuracion_guardada_ui)
+	cancelar_pressed.connect(gestor_quejas._on_cancelar_pressed_ui)
+
+# ===== FUNCIONES PARA CARGA DE DATOS DE PRUEBA =====
+
 func cargar_datos_prueba_ui():
 	print("Cargando datos de prueba para previsualización...")
 	
-	# Lista de quejas de prueba
-	var quejas_prueba = [
-		{
-			"tipo_caso": "Queja",
-			"nombres": "Juan Pérez",
-			"identificacion": "1701234567",
-			"telefono": "+593991234567",
-			"email": "juan.perez@email.com",
-			"asunto": "Producto defectuoso",
-			"descripcion_detallada": "El producto recibido presenta fallas en el funcionamiento desde el primer día de uso.",
-			"monto_reclamado": 150.0,
-			"prioridad": "Alta",
-			"estado": "Pendiente"
-		},
-		{
-			"tipo_caso": "Reclamo",
-			"nombres": "María González",
-			"identificacion": "1754321098",
-			"telefono": "+593987654321",
-			"email": "maria.gonzalez@email.com",
-			"asunto": "Mala atención al cliente",
-			"descripcion_detallada": "El personal de atención al cliente fue grosero y no resolvió mi problema.",
-			"monto_reclamado": 0.0,
-			"prioridad": "Media",
-			"estado": "En Proceso"
-		},
-		{
-			"tipo_caso": "Sugerencia",
-			"nombres": "Carlos Rodríguez",
-			"identificacion": "1711122233",
-			"telefono": "+593998877665",
-			"email": "carlos.rodriguez@email.com",
-			"asunto": "Mejora en proceso de compra",
-			"descripcion_detallada": "Sugiero agregar más métodos de pago y reducir los pasos en el proceso de checkout.",
-			"monto_reclamado": 0.0,
-			"prioridad": "Baja",
-			"estado": "Resuelto"
-		},
-		{
-			"tipo_caso": "Felicitación",
-			"nombres": "Ana López",
-			"identificacion": "1723344556",
-			"telefono": "+593996655443",
-			"email": "ana.lopez@email.com",
-			"asunto": "Excelente servicio post-venta",
-			"descripcion_detallada": "Quiero felicitar al equipo de servicio post-venta por su rápida respuesta y solución efectiva.",
-			"monto_reclamado": 0.0,
-			"prioridad": "Baja",
-			"estado": "Cerrado"
-		},
-		{
-			"tipo_caso": "Queja",
-			"nombres": "Pedro Martínez",
-			"identificacion": "1733445566",
-			"telefono": "+593994433221",
-			"email": "pedro.martinez@email.com",
-			"asunto": "Retraso en la entrega",
-			"descripcion_detallada": "Mi pedido tiene un retraso de 5 días hábiles sin ninguna explicación por parte de la empresa.",
-			"monto_reclamado": 75.5,
-			"prioridad": "Urgente",
-			"estado": "Pendiente"
-		}
-	]
+	# Cargar algunos datos de ejemplo en el formulario
+	if txt_nombres:
+		txt_nombres.text = "Juan Pérez"
 	
-	# Actualizar la lista de quejas con los datos de prueba
-	if lista_quejas:
-		lista_quejas.clear()
-		
-		lista_quejas.set_column_title(0, "ID")
-		lista_quejas.set_column_title(1, "Cliente")
-		lista_quejas.set_column_title(2, "Asunto")
-		lista_quejas.set_column_title(3, "Tipo")
-		lista_quejas.set_column_title(4, "Prioridad")
-		lista_quejas.set_column_title(5, "Estado")
-		
-		# Crear items para cada queja de prueba
-		var id = 1
-		for queja in quejas_prueba:
-			var item = lista_quejas.create_item()
-			item.set_text(0, str(id))
-			item.set_text(1, queja["nombres"])
-			item.set_text(2, queja["asunto"])
-			item.set_text(3, queja["tipo_caso"])
-			item.set_text(4, queja["prioridad"])
-			item.set_text(5, queja["estado"])
-			
-			# Opcional: agregar metadatos para referencia
-			item.set_metadata(0, queja)
-			
-			id += 1
+	if txt_identificacion:
+		txt_identificacion.text = "1234567890"
 	
-	# Actualizar estadísticas
-	actualizar_estadisticas_prueba(len(quejas_prueba))
+	if txt_telefono:
+		txt_telefono.text = "+593991234567"
 	
-	mostrar_mensaje_exito("Datos de prueba cargados exitosamente")
+	if txt_email:
+		txt_email.text = "juan.perez@email.com"
+	
+	if txt_asunto:
+		txt_asunto.text = "Producto defectuoso"
+	
+	if txt_descripcion:
+		txt_descripcion.text = "El producto recibido presenta fallas en el funcionamiento desde el primer día de uso."
+	
+	if txt_monto:
+		txt_monto.text = "150.00"
+	
+	# Actualizar estadísticas de prueba
+	actualizar_estadisticas_prueba()
 
-# ===== NUEVA FUNCIÓN: Actualizar estadísticas con datos de prueba =====
-func actualizar_estadisticas_prueba(total_quejas: int):
-	print("Actualizando estadísticas con datos de prueba")
+func actualizar_estadisticas_prueba():
+	# Datos de prueba para estadísticas
+	if lbl_total_quejas:
+		lbl_total_quejas.text = "25"
 	
-	if lbl_total:
-		lbl_total.text = "Total Quejas: %d" % total_quejas
-	
-	if lbl_pendientes:
-		# Simular que 2 de 5 están pendientes (40%)
-		var pendientes = int(total_quejas * 0.4)
-		lbl_pendientes.text = "Pendientes: %d" % pendientes
-
-# ===== FUNCIONES PÚBLICAS =====
-
-func actualizar_lista_quejas(filtro: String = ""):
-	print("Actualizando lista de quejas con filtro: ", filtro)
-	
-	# Si no hay filtro, mostrar todos los datos
-	if filtro == "":
-		# Si queremos cargar datos de prueba automáticamente cuando no hay filtro
-		cargar_datos_prueba_ui()
-	elif lista_quejas:
-		lista_quejas.clear()
-		var _root = lista_quejas.create_item()  # Variable con _ para indicar que no se usa
-		
-		lista_quejas.set_column_title(0, "ID")
-		lista_quejas.set_column_title(1, "Cliente")
-		lista_quejas.set_column_title(2, "Asunto")
-		lista_quejas.set_column_title(3, "Tipo")
-		lista_quejas.set_column_title(4, "Prioridad")
-		lista_quejas.set_column_title(5, "Estado")
-
-func actualizar_estadisticas():
-	print("Actualizando estadísticas")
-	
-	# Si no hay datos reales, cargar estadísticas de prueba
-	cargar_datos_prueba_ui()
+	if lbl_pendientes_valor:
+		lbl_pendientes_valor.text = "5"

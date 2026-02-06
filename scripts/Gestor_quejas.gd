@@ -1,15 +1,58 @@
 extends Node
 
 var bd = Bd.db
-var ui_manager: InterfaceManager = null
-var config_manager: ConfigManager = null
+var config_manager: Node = null  # Cambiado a Node
+
+# Señales del InterfaceManager
+signal queja_registrada(datos: Dictionary)
+signal configuracion_guardada(config: Dictionary)
+signal cancelar_pressed()
+
+# Referencias a nodos de la UI - ajustadas a la estructura de la escena proporcionada
+var btn_registrar: Button
+var btn_cancelar: Button
+var btn_guardar_config: Button
+var btn_back_menu: Button
+var btn_registro_nav: Button
+var btn_seguimiento_nav: Button
+var btn_analiticas_nav: Button
+var btn_configuracion_nav: Button
+
+# Campos del formulario
+var opt_tipo_caso: OptionButton
+var txt_nombres: LineEdit
+var txt_identificacion: LineEdit
+var txt_telefono: LineEdit
+var txt_email: LineEdit
+var txt_asunto: LineEdit
+var txt_descripcion: TextEdit
+var txt_monto: LineEdit
+var opt_prioridad: OptionButton
+
+# Campos de configuración
+var chk_notificaciones: CheckBox
+var spin_intervalo: SpinBox
+
+# Pestañas
+var registro_tab: VBoxContainer
+var seguimiento_tab: VBoxContainer
+var analiticas_tab: VBoxContainer
+var configuracion_tab: VBoxContainer
+
+# Estadísticas
+var lbl_total_quejas: Label
+var lbl_pendientes_valor: Label
+
+# Elementos de seguimiento
+var txt_buscar: LineEdit
+var opt_status_filter: OptionButton
 
 # FUNCIÓN AUXILIAR PARA MANEJAR CONSULTAS DE FORMA SEGURA
 func query_safe(query: String, args: Array = []) -> Array:
 	"""
-	Ejecuta una consulta SQL de forma segura, manejando errores.
-	Retorna siempre un Array, incluso si hay errores.
-	"""
+    Ejecuta una consulta SQL de forma segura, manejando errores.
+    Retorna siempre un Array, incluso si hay errores.
+    """
 	var result = Bd.select_query(query, args)
 
 	if not result or typeof(result) != TYPE_ARRAY:
@@ -18,6 +61,18 @@ func query_safe(query: String, args: Array = []) -> Array:
 	return result
 
 func _ready():
+	# Inicializar referencias a los nodos de la interfaz
+	inicializar_referencias_nodos()
+	
+	# Configurar navegación entre pestañas
+	configurar_navegacion()
+	
+	# Inicializar OptionButtons con valores por defecto
+	inicializar_option_buttons()
+	
+	# Conectar señales de UI
+	conectar_senales_ui()
+	
 	# Verificar si hay datos en la BD y cargar datos de prueba si está vacía
 	var resultado = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones")
 	if resultado and resultado.size() > 0:
@@ -25,29 +80,38 @@ func _ready():
 		if total == 0:
 			print("Base de datos vacía. Cargando datos de prueba...")
 			cargar_datos_prueba_db()
-	# Crear e inicializar ConfigManager
-	config_manager = ConfigManager.new()
-	config_manager.name = "ConfigManager"  # Asignar nombre
-	add_child(config_manager)
 	
-	# Crear e inicializar ConfigManager
-	config_manager = ConfigManager.new()
-	config_manager.name = "ConfigManager"  # Asignar nombre
-	add_child(config_manager)
+	# Crear e inicializar ConfigManager - SOLO UNA VEZ
+	if ClassDB.class_exists("ConfigManager"):
+		print("ConfigManager ya existe globalmente")
+		config_manager = Node.new()
+		config_manager.name = "ConfigManager"
+		add_child(config_manager)
+	else:
+		config_manager = Node.new()
+		config_manager.name = "ConfigManager"
+		add_child(config_manager)
+		config_manager.set_script(preload("res://scripts/ConfigManager.gd"))
 	
-	# Inicializar la interfaz
-	ui_manager = get_node("InterfaceManager")
-	if ui_manager:
-		inicializar_interfaz()
+	# Cargar configuración inicial
+	cargar_configuracion()
 	
 	# Conectar el timer
-	var timer = get_node("AutoUpdateTimer")
+	var timer = get_node_or_null("AutoUpdateTimer")
 	if timer:
 		timer.timeout.connect(_on_timer_timeout)
-		timer.wait_time = config_manager.get_intervalo_actualizacion()
+		if config_manager and config_manager.has_method("get_intervalo_actualizacion"):
+			timer.wait_time = config_manager.get_intervalo_actualizacion()
+		else:
+			timer.wait_time = 30.0
+		print("✅ Timer configurado")
 	
 	# Cargar datos iniciales
 	cargar_datos_iniciales()
+	
+	# Mostrar pestaña de registro por defecto
+	mostrar_pestana("registro")
+	
 	var db_info = Bd.get_database_info()
 	print("📊 Tablas en la base de datos: ", db_info["tables"])
 	if "quejas_reclamaciones" in db_info["tables"]:
@@ -57,66 +121,386 @@ func _ready():
 	else:
 		print("❌ Tabla quejas_reclamaciones NO existe")
 
-func inicializar_interfaz():
-	# Conectar señales del InterfaceManager
-	ui_manager.queja_registrada.connect(_on_queja_registrada_ui)
-	ui_manager.configuracion_guardada.connect(_on_configuracion_guardada_ui)
-	ui_manager.cancelar_pressed.connect(_on_cancelar_pressed_ui)
+# ===== FUNCIONES DE INICIALIZACIÓN DE INTERFAZ =====
+
+func inicializar_referencias_nodos():
+	print("Inicializando referencias de nodos de interfaz...")
 	
-	# Configurar pestañas
-	var tab_container = ui_manager.get_node("MainPanel/MainTabContainer")
-	if tab_container:
-		tab_container.tab_changed.connect(_on_tab_changed)
+	# Botones de navegación en sidebar
+	btn_registro_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnRegistro")
+	btn_seguimiento_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnSeguimiento")
+	btn_analiticas_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnAnaliticas")
+	btn_configuracion_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnConfiguracion")
 	
-	# Cargar configuración en la UI
-	cargar_configuracion_en_ui()
+	# Pestañas
+	registro_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab")
+	seguimiento_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab")
+	analiticas_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/AnaliticasTab")
+	configuracion_tab = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab")
 	
+	# Botones de acción
+	btn_registrar = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormActions/SubmitButton")
+	btn_back_menu = get_node_or_null("LayoutPrincipal/Footer/FooterContent/BackButton")
+	btn_guardar_config = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab/ConfigActions/SaveConfigButton")
+	
+	# Campos del formulario
+	opt_tipo_caso = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/CaseTypeDropdown")
+	txt_nombres = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/NameInput")
+	txt_identificacion = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/IDInput")
+	txt_telefono = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/PhoneInput")
+	txt_email = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/EmailInput")
+	txt_asunto = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/SubjectInput")
+	txt_descripcion = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/DescriptionInput")
+	txt_monto = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/AmountInput")
+	opt_prioridad = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/PriorityDropdown")
+	
+	# Campos de configuración
+	chk_notificaciones = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab/ConfigContent/NotificationsToggle")
+	spin_intervalo = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab/ConfigContent/IntervalInput")
+	
+	# Estadísticas en sidebar
+	lbl_total_quejas = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/StatsPanel/TotalQuejas/TotalQuejasContent/TotalQuejasValue")
+	lbl_pendientes_valor = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/StatsPanel/Pendientes/PendientesContent/PendientesValue")
+	
+	# Elementos de seguimiento
+	txt_buscar = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/Filters/SearchInput")
+	opt_status_filter = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/Filters/StatusFilter")
+	
+	print("✅ Referencias de interfaz inicializadas")
+
+func configurar_navegacion():
+	print("Configurando navegación entre pestañas...")
+	
+	# Conectar botones de navegación
+	if btn_registro_nav:
+		btn_registro_nav.pressed.connect(func(): mostrar_pestana("registro"))
+	
+	if btn_seguimiento_nav:
+		btn_seguimiento_nav.pressed.connect(func(): mostrar_pestana("seguimiento"))
+	
+	if btn_analiticas_nav:
+		btn_analiticas_nav.pressed.connect(func(): mostrar_pestana("analiticas"))
+	
+	if btn_configuracion_nav:
+		btn_configuracion_nav.pressed.connect(func(): mostrar_pestana("configuracion"))
+	
+	print("✅ Navegación configurada")
+
+func inicializar_option_buttons():
+	print("Inicializando OptionButtons...")
+	
+	# Inicializar tipos de caso
+	if opt_tipo_caso and opt_tipo_caso.get_item_count() == 0:
+		opt_tipo_caso.add_item("Queja")
+		opt_tipo_caso.add_item("Reclamo")
+		opt_tipo_caso.add_item("Sugerencia")
+		opt_tipo_caso.add_item("Felicitación")
+		opt_tipo_caso.selected = 0
+	
+	# Inicializar prioridades
+	if opt_prioridad and opt_prioridad.get_item_count() == 0:
+		opt_prioridad.add_item("Baja")
+		opt_prioridad.add_item("Media")
+		opt_prioridad.add_item("Alta")
+		opt_prioridad.add_item("Urgente")
+		opt_prioridad.selected = 1
+	
+	# Inicializar filtro de estado en seguimiento
+	if opt_status_filter and opt_status_filter.get_item_count() == 0:
+		opt_status_filter.add_item("Todos")
+		opt_status_filter.add_item("Pendiente")
+		opt_status_filter.add_item("En proceso")
+		opt_status_filter.add_item("Resuelto")
+		opt_status_filter.add_item("Cerrado")
+		opt_status_filter.selected = 0
+	
+	print("✅ OptionButtons inicializados")
+
+func conectar_senales_ui():
+	print("Conectando señales de UI...")
+	
+	# Conectar botones de acción
+	if btn_registrar:
+		btn_registrar.pressed.connect(_on_btn_registrar_pressed)
+	
+	if btn_back_menu:
+		btn_back_menu.pressed.connect(_on_btn_back_menu_pressed)
+	
+	if btn_guardar_config:
+		btn_guardar_config.pressed.connect(_on_btn_guardar_config_pressed)
+	
+	print("✅ Señales de UI conectadas")
+
+func mostrar_pestana(nombre_pestana: String):
+	print("Mostrando pestaña: ", nombre_pestana)
+	
+	# Ocultar todas las pestañas
+	if registro_tab:
+		registro_tab.visible = false
+	if seguimiento_tab:
+		seguimiento_tab.visible = false
+	if analiticas_tab:
+		analiticas_tab.visible = false
+	if configuracion_tab:
+		configuracion_tab.visible = false
+	
+	# Mostrar la pestaña seleccionada
+	match nombre_pestana:
+		"registro":
+			if registro_tab:
+				registro_tab.visible = true
+				actualizar_opciones_formulario()
+		
+		"seguimiento":
+			if seguimiento_tab:
+				seguimiento_tab.visible = true
+				actualizar_lista_quejas()
+		
+		"analiticas":
+			if analiticas_tab:
+				analiticas_tab.visible = true
+				actualizar_estadisticas()
+		
+		"configuracion":
+			if configuracion_tab:
+				configuracion_tab.visible = true
+				cargar_configuracion_en_ui()
+
+# ===== FUNCIONES DEL FORMULARIO DE UI =====
+
+func _on_btn_registrar_pressed():
+	print("Botón Registrar presionado")
+	
+	# Obtener y validar datos del formulario
+	var datos_formulario = obtener_datos_formulario()
+	
+	if validar_formulario(datos_formulario):
+		# Normalizar valores para la base de datos
+		var datos_normalizados = normalizar_valores_db(datos_formulario)
+		
+		print("Datos normalizados para BD:")
+		for key in datos_normalizados:
+			print("  %s: %s" % [key, datos_normalizados[key]])
+		
+		# Agregar datos adicionales de configuración
+		if config_manager and config_manager.has_method("get_prioridad_por_defecto"):
+			datos_normalizados["prioridad"] = datos_normalizados.get("prioridad", config_manager.get_prioridad_por_defecto())
+		else:
+			datos_normalizados["prioridad"] = datos_normalizados.get("prioridad", "media")
+		
+		datos_normalizados["fecha_limite_respuesta"] = calcular_fecha_limite_con_config()
+		
+		# Registrar la queja
+		var id_queja = registrar_queja_completa(datos_normalizados)
+		
+		if id_queja != -1:
+			print("Queja registrada desde UI con ID: ", id_queja)
+			
+			# Registrar como No Conformidad si corresponde
+			if debe_registrar_como_nc(datos_normalizados):
+				var id_nc = registrar_no_conformidad_desde_queja(id_queja, datos_normalizados)
+				if id_nc != -1:
+					print("📄 Queja registrada también como No Conformidad")
+					# Actualizar la queja con referencia a la NC
+					Bd.update("quejas_reclamaciones", {"no_conformidad_id": id_nc}, "id = ?", [id_queja])
+			
+			# Limpiar formulario después de registrar
+			limpiar_formulario()
+			
+			# Mostrar mensaje de éxito
+			mostrar_mensaje_exito("Queja registrada exitosamente")
+			
+			# Actualizar estadísticas
+			actualizar_estadisticas()
+		else:
+			mostrar_mensaje_error("No se pudo registrar la queja en la base de datos")
+	else:
+		mostrar_mensaje_error("No se pudo registrar la queja. Verifique los datos.")
+
+func _on_btn_back_menu_pressed():
+	print("Botón Volver al Menú presionado")
+	emit_signal("cancelar_pressed")
+	
+	# Limpiar formulario antes de salir
+	limpiar_formulario()
+	
+	# Cambiar a la escena del menú principal
+	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
+
+func _on_btn_guardar_config_pressed():
+	print("Botón Guardar Configuración presionado")
+	
+	var config = obtener_datos_configuracion()
+	
+	# Validar configuración
+	if validar_configuracion(config):
+		emit_signal("configuracion_guardada", config)
+		
+		# Guardar en ConfigManager si tiene los métodos
+		if config_manager:
+			if config_manager.has_method("set_notificaciones"):
+				config_manager.set_notificaciones(config.get("notificaciones", true))
+			if config_manager.has_method("set_intervalo_actualizacion"):
+				config_manager.set_intervalo_actualizacion(config.get("intervalo_actualizacion", 30))
+		
+		# Actualizar el timer
+		var timer = get_node_or_null("AutoUpdateTimer")
+		if timer and config_manager and config_manager.has_method("get_intervalo_actualizacion"):
+			timer.wait_time = config_manager.get_intervalo_actualizacion()
+		
+		mostrar_mensaje_exito("Configuración guardada correctamente")
+	else:
+		mostrar_mensaje_error("Error en la configuración")
+
+func obtener_datos_formulario() -> Dictionary:
+	var datos = {}
+	
+	# Obtener tipo de caso
+	if opt_tipo_caso and opt_tipo_caso.selected >= 0:
+		datos["tipo_caso"] = opt_tipo_caso.get_item_text(opt_tipo_caso.selected)
+	
+	# Obtener datos del cliente
+	if txt_nombres:
+		datos["nombres"] = txt_nombres.text.strip_edges()
+	
+	if txt_identificacion:
+		datos["identificacion"] = txt_identificacion.text.strip_edges()
+	
+	if txt_telefono:
+		datos["telefono"] = txt_telefono.text.strip_edges()
+	
+	if txt_email:
+		datos["email"] = txt_email.text.strip_edges()
+	
+	# Obtener asunto y descripción
+	if txt_asunto:
+		datos["asunto"] = txt_asunto.text.strip_edges()
+	
+	if txt_descripcion:
+		datos["descripcion_detallada"] = txt_descripcion.text.strip_edges()
+	
+	# Obtener monto
+	if txt_monto:
+		var monto_texto = txt_monto.text.strip_edges()
+		if monto_texto.is_valid_float():
+			datos["monto_reclamado"] = float(monto_texto)
+		else:
+			datos["monto_reclamado"] = 0.0
+	
+	# Obtener prioridad
+	if opt_prioridad and opt_prioridad.selected >= 0:
+		datos["prioridad"] = opt_prioridad.get_item_text(opt_prioridad.selected)
+	
+	# Datos adicionales por defecto
+	datos["tipo_reclamante"] = "cliente"
+	datos["canal_entrada"] = "sistema"
+	datos["recibido_por"] = "usuario"
+	datos["fecha_registro"] = Time.get_datetime_string_from_system()
+	datos["estado"] = "pendiente"
+	
+	return datos
+
+func normalizar_valores_db(datos: Dictionary) -> Dictionary:
+	var datos_normalizados = datos.duplicate(true)
+	
+	# Mapear tipo_caso a valores permitidos por la BD
+	var mapa_tipo_caso = {
+		"Queja": "queja",
+		"Reclamo": "reclamacion",
+		"Reclamación": "reclamacion",
+		"Sugerencia": "sugerencia",
+		"Felicitación": "felicitacion",
+		"Felicitacion": "felicitacion"
+	}
+	
+	if datos.has("tipo_caso"):
+		var tipo_ui = datos["tipo_caso"]
+		if mapa_tipo_caso.has(tipo_ui):
+			datos_normalizados["tipo_caso"] = mapa_tipo_caso[tipo_ui]
+		else:
+			datos_normalizados["tipo_caso"] = "queja"
+	
+	# Convertir a minúsculas para consistencia
+	var campos_a_minusculas = ["tipo_reclamante", "canal_entrada", "recibido_por", "estado", "prioridad"]
+	for campo in campos_a_minusculas:
+		if datos.has(campo):
+			datos_normalizados[campo] = str(datos[campo]).to_lower()
+	
+	return datos_normalizados
+
+func validar_formulario(datos: Dictionary) -> bool:
+	# Validar campos obligatorios
+	if datos.get("nombres", "").strip_edges() == "":
+		mostrar_mensaje_error("El campo Nombre Completo es obligatorio")
+		return false
+	
+	if datos.get("asunto", "").strip_edges() == "":
+		mostrar_mensaje_error("El campo Asunto es obligatorio")
+		return false
+	
+	# Validar identificación
+	var identificacion = datos.get("identificacion", "").strip_edges()
+	if identificacion == "":
+		mostrar_mensaje_error("El campo Identificación es obligatorio")
+		return false
+	
+	# Validar email si se proporcionó
+	var email = datos.get("email", "").strip_edges()
+	if email != "":
+		# Expresión regular básica para validar email
+		if not email.contains("@") or not email.contains("."):
+			mostrar_mensaje_error("El email no es válido. Use formato: usuario@dominio.com")
+			return false
+	
+	return true
+
+func limpiar_formulario():
+	print("Limpiando formulario...")
+	
+	# Restablecer OptionButtons a valores por defecto
+	if opt_tipo_caso:
+		opt_tipo_caso.selected = 0
+	
+	if opt_prioridad:
+		opt_prioridad.selected = 1  # Media por defecto
+	
+	# Limpiar campos de texto
+	var campos_texto = [txt_nombres, txt_identificacion, txt_telefono, txt_email, txt_asunto, txt_descripcion, txt_monto]
+	for campo in campos_texto:
+		if campo:
+			campo.text = ""
+	
+	print("✅ Formulario limpiado correctamente")
+
+func actualizar_opciones_formulario():
+	# Esta función puede usarse para cargar opciones dinámicas en el formulario
+	pass
+
+# ===== FUNCIONES DE MANEJO DE SEÑALES =====
+
 func _on_queja_registrada_ui(datos: Dictionary):
-	# Agregar datos adicionales de configuración
-	datos["prioridad"] = datos.get("prioridad", config_manager.get_prioridad_por_defecto())
-	datos["fecha_limite_respuesta"] = calcular_fecha_limite_con_config()
-	
-	# Registrar la queja
-	var id_queja = registrar_queja_completa(datos)
-	
-	if id_queja != -1:
-		print("Queja registrada desde UI con ID: ", id_queja)
-		
-		# ===== NUEVO: REGISTRAR COMO NO CONFORMIDAD SI CORRESPONDE =====
-		if debe_registrar_como_nc(datos):
-			var id_nc = registrar_no_conformidad_desde_queja(id_queja, datos)
-			if id_nc != -1:
-				print("📄 Queja registrada también como No Conformidad #", datos.get("numero_caso", ""))
-				# Actualizar la queja con referencia a la NC
-				Bd.update("quejas_reclamaciones", {"no_conformidad_id": id_nc}, "id = ?", [id_queja])
-		
-		# Actualizar la interfaz
-		ui_manager.actualizar_lista_quejas()
-		ui_manager.actualizar_estadisticas()
+	# Esta función ya no es necesaria ya que el registro se maneja en _on_btn_registrar_pressed
+	pass
 
 func _on_configuracion_guardada_ui(config: Dictionary):
-	# Guardar en ConfigManager
-	config_manager.set_notificaciones(config.get("notificaciones", true))
-	config_manager.set_intervalo_actualizacion(config.get("intervalo_actualizacion", 30))
-	
-	# Actualizar el timer
-	var timer = get_node("AutoUpdateTimer")
-	if timer:
-		timer.wait_time = config_manager.get_intervalo_actualizacion()
+	# Esta función ya no es necesaria ya que la configuración se maneja en _on_btn_guardar_config_pressed
+	pass
 
-func cargar_configuracion_en_ui():
-	# Cargar configuración desde ConfigManager a la UI
-	if ui_manager:
-		# Esto debería hacerse a través de métodos específicos en InterfaceManager
-		pass
+func _on_cancelar_pressed_ui():
+	# Esta función ya no es necesaria ya que se maneja en _on_btn_back_menu_pressed
+	pass
 
 func _on_timer_timeout():
 	# Usar configuración para determinar qué actualizar
-	if config_manager.get_notificaciones():
+	if config_manager and config_manager.has_method("get_notificaciones") and config_manager.get_notificaciones():
 		actualizar_notificaciones()
 	
-	actualizar_lista_quejas()
+	# Actualizar interfaz
 	actualizar_estadisticas()
+	
+	# Si estamos en la pestaña de seguimiento, actualizar lista
+	if seguimiento_tab and seguimiento_tab.visible:
+		actualizar_lista_quejas()
 
 func _on_tab_changed(tab_index):
 	match tab_index:
@@ -124,59 +508,196 @@ func _on_tab_changed(tab_index):
 			pass  # No necesita actualización
 		1:  # Seguimiento
 			actualizar_lista_quejas()
-		2:  # Análticas
+		2:  # Analíticas
 			actualizar_estadisticas()
 		3:  # Configuración
-			cargar_configuracion()
-		4:  # NUEVO: No Conformidades
+			cargar_configuracion_en_ui()
+		4:  # No Conformidades
 			actualizar_lista_no_conformidades()
 
-func actualizar_lista_quejas():
-	# Lógica para actualizar la lista de quejas
+# ===== FUNCIONES DE SEGUIMIENTO =====
+
+func actualizar_lista_quejas(filtro: String = ""):
 	print("Actualizando lista de quejas...")
-	if ui_manager:
-		ui_manager.actualizar_lista_quejas()
 	
+	# Esta función debería cargar las quejas desde la base de datos
+	# Por ahora, solo mostramos un mensaje
+	mostrar_mensaje_info("Lista de quejas actualizada")
+	
+	# Si hay un campo de búsqueda, usar el filtro
+	if txt_buscar and filtro != "":
+		txt_buscar.text = filtro
+
 func actualizar_notificaciones():
 	# Lógica para actualizar notificaciones
 	print("Actualizando notificaciones...")
 
+# ===== FUNCIONES DE ESTADÍSTICAS =====
+
 func actualizar_estadisticas():
-	# Lógica para actualizar estadísticas
 	print("Actualizando estadísticas...")
-	if ui_manager:
-		ui_manager.actualizar_estadisticas()
+	
+	# Esta función debería cargar estadísticas reales desde la base de datos
+	# Por ahora, actualizamos con valores de prueba
+	
+	if lbl_total_quejas:
+		# Obtener conteo real desde la base de datos
+		var result = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones")
+		if result and result.size() > 0:
+			var total = result[0].get("total", 0)
+			lbl_total_quejas.text = str(total)
+		else:
+			lbl_total_quejas.text = "0"
+	
+	if lbl_pendientes_valor:
+		# Obtener conteo de pendientes
+		var result = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones WHERE estado = 'pendiente'")
+		if result and result.size() > 0:
+			var total = result[0].get("total", 0)
+			lbl_pendientes_valor.text = str(total)
+		else:
+			lbl_pendientes_valor.text = "0"
+	
+	mostrar_mensaje_info("Estadísticas actualizadas")
 
 func actualizar_lista_no_conformidades():
 	# Lógica para actualizar lista de No Conformidades
 	print("Actualizando lista de No Conformidades...")
-	if ui_manager:
-		ui_manager.actualizar_lista_no_conformidades()
 
-func cargar_pestana_registro():
-	# Lógica para cargar datos en pestaña de registro
-	print("Cargando pestaña de registro...")
+# ===== FUNCIONES DE CONFIGURACIÓN =====
 
-func cargar_pestana_seguimiento():
-	# Lógica para cargar datos en pestaña de seguimiento
-	print("Cargando pestaña de seguimiento...")
+func cargar_configuracion_en_ui():
+	print("Cargando configuración en la UI...")
+	
+	# Esta función debería cargar la configuración desde el ConfigManager
+	# Por ahora, establecemos valores por defecto
+	
+	if chk_notificaciones:
+		if config_manager and config_manager.has_method("get_notificaciones"):
+			chk_notificaciones.button_pressed = config_manager.get_notificaciones()
+		else:
+			chk_notificaciones.button_pressed = true
+	
+	if spin_intervalo:
+		if config_manager and config_manager.has_method("get_intervalo_actualizacion"):
+			spin_intervalo.value = float(config_manager.get_intervalo_actualizacion())
+		else:
+			spin_intervalo.value = 30.0
+
+func obtener_datos_configuracion() -> Dictionary:
+	var config = {}
+	
+	if chk_notificaciones:
+		config["notificaciones"] = chk_notificaciones.button_pressed
+	
+	if spin_intervalo:
+		config["intervalo_actualizacion"] = int(spin_intervalo.value)
+	
+	return config
+
+func validar_configuracion(config: Dictionary) -> bool:
+	# Validar intervalo mínimo
+	if config.get("intervalo_actualizacion", 0) < 1:
+		mostrar_mensaje_error("El intervalo debe ser al menos 1 minuto")
+		return false
+	
+	# Validar intervalo máximo
+	if config.get("intervalo_actualizacion", 0) > 120:
+		mostrar_mensaje_error("El intervalo no puede exceder 120 minutos")
+		return false
+	
+	return true
 
 func cargar_configuracion():
-	# Lógica para cargar configuración
 	print("Cargando configuración...")
+	
+	# Valores por defecto
+	var config_default = {
+		"notificaciones": true,
+		"intervalo_actualizacion": 30
+	}
+	
+	# Aplicar a la UI
+	aplicar_configuracion_ui(config_default)
+
+func aplicar_configuracion_ui(config: Dictionary):
+	if chk_notificaciones and config.has("notificaciones"):
+		chk_notificaciones.button_pressed = config["notificaciones"]
+	
+	if spin_intervalo and config.has("intervalo_actualizacion"):
+		spin_intervalo.value = float(config["intervalo_actualizacion"])
+
+# ===== FUNCIONES AUXILIARES DE UI =====
+
+func mostrar_mensaje_error(mensaje: String):
+	print("❌ Error: ", mensaje)
+	# Aquí podrías implementar un sistema de notificaciones en la UI
+
+func mostrar_mensaje_exito(mensaje: String):
+	print("✅ Éxito: ", mensaje)
+	# Aquí podrías implementar un sistema de notificaciones en la UI
+
+func mostrar_mensaje_info(mensaje: String):
+	print("ℹ️ Info: ", mensaje)
+
+# ===== FUNCIONES PARA CARGA DE DATOS DE PRUEBA EN UI =====
+
+func cargar_datos_prueba_ui():
+	print("Cargando datos de prueba para previsualización...")
+	
+	# Cargar algunos datos de ejemplo en el formulario
+	if txt_nombres:
+		txt_nombres.text = "Juan Pérez"
+	
+	if txt_identificacion:
+		txt_identificacion.text = "1234567890"
+	
+	if txt_telefono:
+		txt_telefono.text = "+593991234567"
+	
+	if txt_email:
+		txt_email.text = "juan.perez@email.com"
+	
+	if txt_asunto:
+		txt_asunto.text = "Producto defectuoso"
+	
+	if txt_descripcion:
+		txt_descripcion.text = "El producto recibido presenta fallas en el funcionamiento desde el primer día de uso."
+	
+	if txt_monto:
+		txt_monto.text = "150.00"
+	
+	# Actualizar estadísticas de prueba
+	actualizar_estadisticas_prueba()
+
+func actualizar_estadisticas_prueba():
+	# Datos de prueba para estadísticas
+	if lbl_total_quejas:
+		lbl_total_quejas.text = "25"
+	
+	if lbl_pendientes_valor:
+		lbl_pendientes_valor.text = "5"
+
+# ===== FUNCIONES DE INICIALIZACIÓN =====
+
+func inicializar_interfaz():
+	print("Inicializando interfaz...")
+	
+	# Esta función ya se maneja en _ready
+	pass
 
 func cargar_datos_iniciales():
 	# Cargar datos necesarios al iniciar
 	print("Cargando datos iniciales del sistema...")
 
 # ============================================================
-# FUNCIONES DE NO CONFORMIDADES
+# FUNCIONES DE NO CONFORMIDADES (MANTENIDAS DEL SCRIPT ORIGINAL)
 # ============================================================
 
 func debe_registrar_como_nc(datos: Dictionary) -> bool:
 	"""
-	Determina si una queja debe registrarse como no conformidad.
-	"""
+    Determina si una queja debe registrarse como no conformidad.
+    """
 	var tipo_caso = datos.get("tipo_caso", "")
 	var categoria = datos.get("categoria", "")
 	var monto = float(datos.get("monto_reclamado", 0))
@@ -197,14 +718,17 @@ func debe_registrar_como_nc(datos: Dictionary) -> bool:
 	if prioridad in ["alta", "urgente"]:
 		return true
 	
-	# Consultar configuración del sistema
-	return config_manager.get_registrar_todas_como_nc() if config_manager else false
+	# Consultar configuración del sistema si está disponible
+	if config_manager and config_manager.has_method("get_registrar_todas_como_nc"):
+		return config_manager.get_registrar_todas_como_nc()
+	
+	return false
 
 func registrar_no_conformidad_desde_queja(id_queja: int, _datos_queja: Dictionary) -> int:
 	"""
-	Registra una no conformidad a partir de una queja.
-	Retorna el ID de la no conformidad creada.
-	"""
+    Registra una no conformidad a partir de una queja.
+    Retorna el ID de la no conformidad creada.
+    """
 	# Obtener la queja completa
 	var queja = obtener_queja_por_id(id_queja)
 	if not queja:
@@ -249,9 +773,9 @@ func registrar_no_conformidad_desde_queja(id_queja: int, _datos_queja: Dictionar
 
 func generar_codigo_expediente_nc() -> String:
 	"""
-	Genera un código único para el expediente de NC.
-	Formato: EXP-YYYY-NNNNN
-	"""
+    Genera un código único para el expediente de NC.
+    Formato: EXP-YYYY-NNNNN
+    """
 	var year = Time.get_datetime_string_from_system().substr(0, 4)
 	
 	var result = query_safe(
@@ -268,8 +792,8 @@ func generar_codigo_expediente_nc() -> String:
 
 func prioridad_a_numero(prioridad: String) -> int:
 	"""
-	Convierte prioridad de texto a número (1-3)
-	"""
+    Convierte prioridad de texto a número (1-3)
+    """
 	match prioridad:
 		"urgente", "alta":
 			return 1
@@ -286,7 +810,7 @@ func obtener_responsable_nc() -> int:
 	Por defecto, busca el usuario con rol 'supervisor_calidad'
 	"""
 	var result = query_safe(
-		"SELECT id FROM usuarios WHERE rol LIKE '%calidad%' OR cargo LIKE '%calidad%' LIMIT 1"
+        "SELECT id FROM usuarios WHERE rol LIKE '%calidad%' OR cargo LIKE '%calidad%' LIMIT 1"
 	)
 	
 	if result.size() > 0:
@@ -319,11 +843,11 @@ func notificar_nueva_nc(id_nc: int, prioridad: int):
 		return
 	
 	var mensaje = """
-	🚨 NUEVA NO CONFORMIDAD DETECTADA
-	Código: %s
-	Tipo: %s
-	Prioridad: %d
-	Descripción: %s
+    🚨 NUEVA NO CONFORMIDAD DETECTADA
+    Código: %s
+    Tipo: %s
+    Prioridad: %d
+    Descripción: %s
 	""" % [
 		nc["codigo_expediente"],
 		nc["tipo_nc"],
@@ -351,19 +875,19 @@ func obtener_no_conformidades_pendientes() -> Array:
 	Obtiene todas las no conformidades pendientes.
 	"""
 	var query_str = """
-	SELECT nc.*, u.nombre_completo as responsable_nombre
-	FROM no_conformidades nc
-	LEFT JOIN usuarios u ON nc.responsable_id = u.id
-	WHERE nc.estado IN ('pendiente', 'analizado')
-	ORDER BY 
-		CASE nc.prioridad
-			WHEN 1 THEN 1
-			WHEN 2 THEN 2
-			WHEN 3 THEN 3
-			ELSE 4
-		END,
-		nc.fecha_registro DESC
-	"""
+    SELECT nc.*, u.nombre_completo as responsable_nombre
+    FROM no_conformidades nc
+    LEFT JOIN usuarios u ON nc.responsable_id = u.id
+    WHERE nc.estado IN ('pendiente', 'analizado')
+    ORDER BY 
+        CASE nc.prioridad
+            WHEN 1 THEN 1
+            WHEN 2 THEN 2
+            WHEN 3 THEN 3
+            ELSE 4
+        END,
+        nc.fecha_registro DESC
+    """
 	
 	return query_safe(query_str)
 
@@ -387,112 +911,8 @@ func cerrar_no_conformidad(id_nc: int, responsable: String, datos: Dictionary):
 	print("✅ No conformidad cerrada: ", id_nc)
 
 # ============================================================
-# FUNCIONES PRINCIPALES DE GESTIÓN DE QUEJAS
+# FUNCIONES PRINCIPALES DE GESTIÓN DE QUEJAS (MANTENIDAS)
 # ============================================================
-
-func ejecutar_flujo_queja_completo():
-	# === ETAPA 1: RECEPCIÓN Y REGISTRO ===
-	var id_queja = registrar_queja_completa({
-		"tipo_caso": "reclamacion",
-		"tipo_reclamante": "cliente",
-		"nombres": "María González",
-		"identificacion": "12345678",
-		"telefono": "+593991234567",
-		"email": "maria.g@email.com",
-		
-		"asunto": "Producto defectuoso recibido",
-		"descripcion_detallada": "El televisor LG modelo 2024 presenta rayas en la pantalla desde el primer encendido. Comprado el 15/01/2024.",
-		"producto_servicio": "Televisor LG 55' OLED",
-		"numero_factura": "FAC-001-2024",
-		"fecha_incidente": "2024-01-16",
-		
-		"categoria": "calidad_producto",
-		"subcategoria": "defecto_fabricacion",
-		"monto_reclamado": 899.99,
-		"tipo_compensacion": "reemplazo",
-		
-		"canal_entrada": "email",
-		"recibido_por": "operador_juan",
-		"prioridad": "alta",
-		"fecha_limite_respuesta": "2024-01-23"  # 7 días según ley
-	})
-	
-	if id_queja == -1:
-		push_error("No se pudo registrar la queja")
-		return
-	
-	# ===== NUEVO: REGISTRAR COMO NO CONFORMIDAD =====
-	var id_nc = -1
-	if debe_registrar_como_nc({
-		"tipo_caso": "reclamacion",
-		"categoria": "calidad_producto",
-		"monto_reclamado": 899.99,
-		"prioridad": "alta"
-	}):
-		id_nc = registrar_no_conformidad_desde_queja(id_queja, {
-			"numero_caso": "Q-2024-001",
-			"asunto": "Producto defectuoso recibido",
-			"fecha_incidente": "2024-01-16",
-			"producto_servicio": "Televisor LG 55' OLED",
-			"prioridad": "alta"
-		})
-		if id_nc != -1:
-			print("📄 Queja registrada también como No Conformidad")
-	
-	# === ETAPA 2: VALIDACIÓN Y ASIGNACIÓN ===
-	validar_documentacion(id_queja)
-	asignar_queja(id_queja, "supervisor_calidad", 2)  # Nivel 2: Supervisor
-	
-	# === ETAPA 3: INVESTIGACIÓN TÉCNICA ===
-	var _resultado_investigacion = investigar_queja(id_queja, {
-		"responsable_interno": "almacen_central",
-		"hechos_constatados": "Producto con defecto de fábrica confirmado. No hay daños por transporte.",
-		"pruebas": ["foto_pantalla.jpg", "reporte_tecnico.pdf"]
-	})
-	
-	# === ETAPA 4: NEGOCIACIÓN CON CLIENTE ===
-	registrar_contacto_cliente(id_queja, {
-		"medio_contacto": "llamada",
-		"tipo_contacto": "propuesta",
-		"resumen": "Se ofreció reemplazo inmediato o devolución total",
-		"estado_animo": "frustrado",
-		"acuerdos": "Cliente acepta reemplazo, solicita instalación incluida",
-		"proxima_accion": "Enviar producto nuevo",
-		"fecha_proximo_contacto": "2024-01-18"
-	})
-	
-	# === ETAPA 5: RESOLUCIÓN Y COMPENSACIÓN ===
-	var _id_compensacion = aprobar_compensacion(id_queja, {
-		"tipo_compensacion": "producto_reemplazo",
-		"descripcion": "Televisor LG 55' OLED nuevo + instalación gratuita",
-		"monto": 899.99,
-		"aprobado_por": "gerente_calidad",
-		"nivel_aprobacion": 3
-	})
-	
-	# === ETAPE 6: SEGUIMIENTO POST-RESOLUCIÓN ===
-	realizar_encuesta_satisfaccion(id_queja, {
-		"satisfaccion_cliente": 4,  # 4/5 estrellas
-		"comentarios_finales": "Solución aceptable, pero tardó 5 días",
-		"recomendaria": true
-	})
-	
-	# === ETAPA 7: CIERRE Y ANÁLISIS ===
-	cerrar_queja(id_queja, "supervisor_calidad", {
-		"decision": "aceptada_total",
-		"lecciones_aprendidas": "Mejorar inspección en almacén",
-		"acciones_preventivas": ["Auditar lote completo", "Capacitar personal de almacén"]
-	})
-	
-	# Generar reporte para análisis de tendencias
-	actualizar_analisis_tendencias(id_queja)
-	
-	# ===== NUEVO: CERRAR LA NO CONFORMIDAD ASOCIADA =====
-	if id_nc != -1:
-		cerrar_no_conformidad(id_nc, "supervisor_calidad", {
-			"resultado": "Queja resuelta satisfactoriamente",
-			"acciones_correctivas": ["Auditar lote completo", "Capacitar personal de almacén"]
-		})
 
 func registrar_queja_completa(datos: Dictionary):
 	# Normalizar datos antes de enviar a la BD
@@ -639,11 +1059,11 @@ func aprobar_compensacion(queja_id: int, datos_compensacion: Dictionary) -> int:
 	
 	# Actualizar estado de la queja
 	bd.query_with_args(
-		"""UPDATE quejas_reclamaciones SET
-			estado = 'resuelta',
-			decision = 'aceptada_total',
-			compensacion_otorgada = ?,
-			descripcion_compensacion = ?
+        """UPDATE quejas_reclamaciones SET
+            estado = 'resuelta',
+            decision = 'aceptada_total',
+            compensacion_otorgada = ?,
+            descripcion_compensacion = ?
 		WHERE id = ?""",
 		[monto, compensacion["descripcion"], queja_id]
 	)
@@ -705,8 +1125,11 @@ func calcular_fecha_limite(dias: int = 7) -> String:
 
 # FUNCIÓN CORREGIDA: NUEVO NOMBRE PARA EVITAR CONFLICTO
 func calcular_fecha_limite_con_config(dias: int = -1) -> String:
-	if dias == -1:
+	# Intentar obtener el límite del config_manager si está disponible
+	if dias == -1 and config_manager and config_manager.has_method("get_limite_tiempo_respuesta"):
 		dias = config_manager.get_limite_tiempo_respuesta()
+	elif dias == -1:
+		dias = 7  # Valor por defecto
 	
 	var hoy = Time.get_datetime_dict_from_system()
 	
@@ -742,13 +1165,13 @@ func notificar_nueva_queja(id_queja: int, prioridad: String):
 		return
 	
 	var mensaje = """
-		NUEVA QUEJA REGISTRADA
-		Caso: %s
-		Asunto: %s
-		Prioridad: %s
-		Cliente: %s %s
-		Monto Reclamado: $%.2f
-		Fecha Límite: %s
+        NUEVA QUEJA REGISTRADA
+        Caso: %s
+        Asunto: %s
+        Prioridad: %s
+        Cliente: %s %s
+        Monto Reclamado: $%.2f
+        Fecha Límite: %s
 	""" % [
 		queja["numero_caso"],
 		queja["asunto"],
@@ -1047,8 +1470,6 @@ func generar_comprobante_compensacion(id_compensacion: int):
 	Genera un comprobante de compensación.
 	"""
 	print("🖨️ Generando comprobante de compensación #" + str(id_compensacion))
-	# En una implementación real, aquí generarías un PDF o documento
-	# con los detalles de la compensación
 
 func notificar_escalamiento(id_queja: int, responsable: String, motivo: String, urgente: bool = false):
 	"""
@@ -1069,17 +1490,17 @@ func notificar_escalamiento(id_queja: int, responsable: String, motivo: String, 
 		titulo = " ESCALAMIENTO URGENTE"
 	
 	var mensaje = """
-		%s
-		Caso: %s
-		Asunto: %s
-		---
-			Nivel anterior: %d
-			Nivel nuevo: %d
-			Responsable anterior: %s
-			Nuevo responsable: %s
-			Motivo: %s
-			Prioridad: %s
-			Fecha límite: %s
+        %s
+        Caso: %s
+        Asunto: %s
+        ---
+            Nivel anterior: %d
+            Nivel nuevo: %d
+            Responsable anterior: %s
+            Nuevo responsable: %s
+            Motivo: %s
+            Prioridad: %s
+            Fecha límite: %s
 	""" % [
 		titulo,
 		numero_caso,
@@ -1215,16 +1636,16 @@ func solicitar_documentacion_cliente(id_queja: int, documentos: Array):
 		lista_documentos += "- " + doc + "\n"
 	
 	var mensaje = """
-		Estimado/a %s,
+        Estimado/a %s,
     
-		Hemos recibido su queja #%s y necesitamos la siguiente documentación adicional para procesarla:
+        Hemos recibido su queja #%s y necesitamos la siguiente documentación adicional para procesarla:
     
-		%s
+        %s
     
-		Por favor, envíe estos documentos a la mayor brevedad.
+        Por favor, envíe estos documentos a la mayor brevedad.
     
-		Saludos,
-		Departamento de Atención al Cliente
+        Saludos,
+        Departamento de Atención al Cliente
 	""" % [
 		queja.get("nombres", "Cliente"),
 		queja.get("numero_caso", "N/A"),
@@ -1250,16 +1671,6 @@ func test_insercion_simple():
 	
 	var id = Bd.insert("quejas_reclamaciones", test_data)
 	print("Test inserción - ID: ", id)
-
-func _on_cancelar_pressed_ui():
-	print("Recibida señal de cancelar desde InterfaceManager")
-	
-	# Opcional: Limpiar formulario antes de salir
-	if ui_manager.has_method("limpiar_formulario"):
-		ui_manager.limpiar_formulario()
-	
-	# Cambiar a la escena del menú principal
-	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
 
 func normalizar_datos_para_bd(datos: Dictionary) -> Dictionary:
 	var datos_normalizados = datos.duplicate(true)

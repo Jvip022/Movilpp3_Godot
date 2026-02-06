@@ -6,7 +6,7 @@ signal incidencia_registrada(codigo_incidencia: String, datos: Dictionary)
 signal error_registro(mensaje: String)
 
 # Variables de conexión a base de datos
-var db = Bd.db
+var db = Bd.db  # Usamos la BD real ahora
 var usuario_actual: Dictionary = {}
 var cliente_seleccionado: Dictionary = {}
 
@@ -14,186 +14,30 @@ var cliente_seleccionado: Dictionary = {}
 var formulario_valido: bool = false
 var requiere_investigacion: bool = true
 
-# Base de datos simulada
-var clientes_falsos: Array = []
-var incidencias_registradas: Array = []
-var codigo_incidencia_counter: int = 1000
-
 func _ready():
 	print("🔧 Inicializando módulo de Registrar Incidencia...")
 	
-	# Inicializar datos de prueba
-	inicializar_datos_prueba()
-	
-	# Cargar usuario actual (simulado para pruebas)
+	# Cargar usuario actual desde sesión
 	cargar_usuario_actual()
 	
 	# Inicializar la interfaz visual
 	inicializar_interfaz()
 	
-	print("✅ Módulo de Registrar Incidencias listo (Modo de Prueba)")
-
-func inicializar_datos_prueba():
-	# Crear clientes falsos para pruebas
-	clientes_falsos = [
-		{
-			"id": 1,
-			"codigo_cliente": "CLI001",
-			"nombre": "Juan Carlos",
-			"apellidos": "Pérez García",
-			"email": "juan.perez@ejemplo.com",
-			"telefono": "0991234567",
-			"direccion": "Av. Principal 123",
-			"ciudad": "Quito",
-			"tipo_cliente": "Regular"
-		},
-		{
-			"id": 2,
-			"codigo_cliente": "CLI002",
-			"nombre": "María Fernanda",
-			"apellidos": "Gómez Rodríguez",
-			"email": "maria.gomez@ejemplo.com",
-			"telefono": "0987654321",
-			"direccion": "Calle Secundaria 456",
-			"ciudad": "Guayaquil",
-			"tipo_cliente": "Premium"
-		},
-		{
-			"id": 3,
-			"codigo_cliente": "CLI003",
-			"nombre": "Carlos Alberto",
-			"apellidos": "Rodríguez López",
-			"email": "carlos.rodriguez@ejemplo.com",
-			"telefono": "0971122334",
-			"direccion": "Av. Amazonas 789",
-			"ciudad": "Cuenca",
-			"tipo_cliente": "Regular"
-		},
-		{
-			"id": 4,
-			"codigo_cliente": "CLI004",
-			"nombre": "Ana Lucía",
-			"apellidos": "López Martínez",
-			"email": "ana.lopez@ejemplo.com",
-			"telefono": "0969988776",
-			"direccion": "Calle Bolívar 321",
-			"ciudad": "Ambato",
-			"tipo_cliente": "VIP"
-		},
-		{
-			"id": 5,
-			"codigo_cliente": "CLI005",
-			"nombre": "Pedro José",
-			"apellidos": "Martínez Sánchez",
-			"email": "pedro.martinez@ejemplo.com",
-			"telefono": "0955544332",
-			"direccion": "Av. Shyris 654",
-			"ciudad": "Quito",
-			"tipo_cliente": "Regular"
-		}
-	]
-	
-	print("📋 Cargados " + str(clientes_falsos.size()) + " clientes de prueba")
-	
-	# Crear base de datos simulada
-	db = {
-		"buscar_cliente": func(termino: String) -> Array:
-			return await buscar_cliente_simulado(termino),
-		
-		"generar_codigo_incidencia": func() -> String:
-			return generar_codigo_incidencia_simulado(),
-		
-		"registrar_incidencia": func(datos: Dictionary) -> int:
-			return registrar_incidencia_simulado(datos),
-		
-		"registrar_traza": func(usuario_id: int, accion: String, modulo: String, descripcion: String) -> void:
-			registrar_traza_simulada(usuario_id, accion, modulo, descripcion),
-		
-		"registrar_backup": func(nombre: String, ruta: String, usuario_id: int, tipo: String) -> int:
-			return registrar_backup_simulado(nombre, ruta, usuario_id, tipo),
-		
-		"obtener_trazas": func(desde: String, hasta: String, usuario_id: int) -> Array:
-			return obtener_trazas_simuladas(desde, hasta, usuario_id),
-		
-		"obtener_usuarios": func() -> Array:
-			return obtener_usuarios_simulados()
-	}
-
-func buscar_cliente_simulado(termino: String) -> Array:
-	print("🔍 Búsqueda simulada: '" + termino + "'")
-	var resultados = []
-	var termino_lower = termino.to_lower().strip_edges()
-	
-	if termino_lower == "":
-		return []
-	
-	# Pequeña pausa para simular procesamiento (no bloqueante)
-	await get_tree().create_timer(0.1).timeout
-	
-	for cliente in clientes_falsos:
-		if (termino_lower in cliente["nombre"].to_lower() or
-			termino_lower in cliente["apellidos"].to_lower() or
-			termino_lower in cliente["codigo_cliente"].to_lower() or
-			termino_lower in cliente["email"].to_lower() or
-			termino_lower in cliente["telefono"] or
-			termino_lower in cliente["ciudad"].to_lower()):
-			resultados.append(cliente)
-	
-	print("📊 Resultados encontrados: " + str(resultados.size()))
-	return resultados
-
-func generar_codigo_incidencia_simulado() -> String:
-	codigo_incidencia_counter += 1
-	var fecha_actual = Time.get_datetime_dict_from_system()
-	var codigo = "INC-%04d%02d%02d-%04d" % [
-		fecha_actual["year"],
-		fecha_actual["month"],
-		fecha_actual["day"],
-		codigo_incidencia_counter
-	]
-	return codigo
-
-func registrar_incidencia_simulado(datos: Dictionary) -> int:
-	print("💾 Registrando incidencia simulada:")
-	for key in datos:
-		print("   " + key + ": " + str(datos[key]))
-	
-	# Agregar ID único
-	var id_incidencia = incidencias_registradas.size() + 1
-	datos["id"] = id_incidencia
-	datos["fecha_registro"] = Time.get_datetime_string_from_system()
-	
-	incidencias_registradas.append(datos)
-	print("✅ Incidencia registrada con ID: " + str(id_incidencia))
-	print("📊 Total de incidencias registradas: " + str(incidencias_registradas.size()))
-	
-	return id_incidencia
-
-func registrar_traza_simulada(usuario_id: int, accion: String, modulo: String, descripcion: String) -> void:
-	print("📝 Traza simulada - Usuario: " + str(usuario_id) + ", Acción: " + accion + ", Módulo: " + modulo + ", Descripción: " + descripcion)
-
-func registrar_backup_simulado(_nombre: String, _ruta: String, _usuario_id: int, _tipo: String) -> int:
-	print("💾 Backup simulado realizado")
-	return 1
-
-func obtener_trazas_simuladas(_desde: String, _hasta: String, _usuario_id: int) -> Array:
-	return []
-
-func obtener_usuarios_simulados() -> Array:
-	return [
-		{"id": 1, "nombre": "Supervisor General", "username": "supervisor", "rol": "Supervisor"},
-		{"id": 2, "nombre": "Analista de Calidad", "username": "analista", "rol": "Analista"},
-		{"id": 3, "nombre": "Administrador", "username": "admin", "rol": "Administrador"}
-	]
+	print("✅ Módulo de Registrar Incidencias listo")
 
 func cargar_usuario_actual():
-	# Simulación: cargar usuario desde sesión
-	usuario_actual = {
-		"id": 1,
-		"nombre_completo": "Supervisor General",
-		"username": "supervisor",
-		"rol": "Supervisor General"
-	}
+	# Obtener usuario de la sesión actual
+	var usuario_sesion = Bd.obtener_usuario_actual()
+	if usuario_sesion and not usuario_sesion.is_empty():
+		usuario_actual = usuario_sesion
+	else:
+		# Usuario por defecto para desarrollo
+		usuario_actual = {
+			"id": 1,
+			"nombre_completo": "Supervisor General",
+			"username": "supervisor",
+			"rol": "Supervisor General"
+		}
 	
 	print("👤 Usuario actual cargado: " + usuario_actual["nombre_completo"])
 
@@ -245,7 +89,7 @@ func inicializar_combos():
 		"ComboProducto": ["Seleccionar producto/servicio*", "Paquete turístico", "Hospedaje",
 					 "Transporte aéreo", "Transporte terrestre", "Excursión", 
 					 "Seguro de viaje", "Alquiler de auto", "Asistencia al viajero", "Tour guiado"],
-		"ComboSucursal": ["Seleccionar sucursal*","Pinar del Río" ,"Artemisa","La Habana","Mayabeque" ,"Matanzas" ,"Cienfuegos" ,"Villa Clara","Sancti Spíritus","Ciego de Ávila" ,"Camagüey","Las Tunas" ,"Granma" ,"Holguín" ,"Santiago", "Guantánamo" ],
+		"ComboSucursal": ["Seleccionar sucursal*","Pinar del Río" ,"Artemisa","La Habana","Mayabeque" ,"Matanzas" ,"Cienfuegos" ,"Villa Clara","Sancti Spíritus","Ciego de Ávila" ,"Camagüey","Las Tunas" ,"Granma" ,"Holguín" ,"Santiago", "Guantánamo"],
 		"ComboGravedad": ["Seleccionar gravedad*", "Leve (sin impacto operativo)", 
 					 "Moderado (impacto parcial)", "Grave (impacto significativo)", 
 					 "Crítico (paro operativo)"],
@@ -388,22 +232,8 @@ func buscar_cliente_bd_safe():
 	await get_tree().process_frame
 	await get_tree().create_timer(0.05).timeout
 	
-	# Realizar búsqueda (ahora es asíncrona) con manejo de errores simplificado
-	var clientes = []
-	
-	# En GDScript no hay try-catch, usamos un método simple
-	var resultado = await db["buscar_cliente"].call(termino)
-	
-	if resultado is Array:
-		clientes = resultado
-	else:
-		print("❌ Error en búsqueda: resultado no es un array")
-		mostrar_error("Error al buscar clientes")
-		# Restaurar botón
-		if btnBuscar:
-			btnBuscar.disabled = false
-			btnBuscar.text = "Buscar en Base Datos"
-		return
+	# Realizar búsqueda en la base de datos REAL
+	var clientes = await buscar_cliente_bd(termino)
 	
 	# Mostrar resultados
 	mostrar_clientes_en_tabla(clientes)
@@ -414,6 +244,34 @@ func buscar_cliente_bd_safe():
 		btnBuscar.text = "Buscar en Base Datos"
 	
 	print("✅ Búsqueda completada")
+
+func buscar_cliente_bd(termino: String) -> Array:
+	print("🔍 Buscando en BD real: '" + termino + "'")
+	
+	try:
+		# Usar LIKE para búsqueda flexible
+		var query = """
+			SELECT * FROM clientes 
+			WHERE nombre LIKE ? 
+			OR apellidos LIKE ? 
+			OR codigo_cliente LIKE ? 
+			OR email LIKE ? 
+			OR telefono LIKE ?
+			ORDER BY nombre, apellidos
+			LIMIT 50
+		"""
+		
+		var busqueda = "%" + termino + "%"
+		var params = [busqueda, busqueda, busqueda, busqueda, busqueda]
+		
+		var resultados = await db.select_query(query, params)
+		print("📊 Resultados BD: " + str(resultados.size()) + " clientes")
+		return resultados
+		
+	except Exception as e:
+		print("❌ Error en búsqueda BD: " + str(e))
+		mostrar_error("Error al buscar clientes en la base de datos")
+		return []
 
 func mostrar_clientes_en_tabla(clientes: Array):
 	print("📊 Mostrando " + str(clientes.size()) + " clientes en tabla")
@@ -595,9 +453,162 @@ func cerrar_confirmacion_estado():
 	if has_node("ConfirmacionEstado"):
 		$ConfirmacionEstado.hide()
 
+func generar_codigo_incidencia() -> String:
+	# Generar código único basado en fecha y secuencia
+	var fecha_actual = Time.get_datetime_dict_from_system()
+	
+	# Obtener el siguiente número de incidencia del día
+	var query = "SELECT COUNT(*) + 1 as siguiente FROM incidencias_calidad WHERE DATE(fecha_registro) = DATE('now')"
+	
+	try:
+		var resultado = await db.select_query(query)
+		var numero = 1
+		if resultado and resultado.size() > 0:
+			numero = resultado[0].get("siguiente", 1)
+		
+		return "INC-%04d%02d%02d-%04d" % [
+			fecha_actual["year"],
+			fecha_actual["month"],
+			fecha_actual["day"],
+			numero
+		]
+		
+	except Exception as e:
+		print("❌ Error generando código: " + str(e))
+		# Código de respaldo
+		return "INC-%04d%02d%02d-%04d" % [
+			fecha_actual["year"],
+			fecha_actual["month"],
+			fecha_actual["day"],
+			Time.get_ticks_msec() % 10000
+		]
+
+func registrar_incidencia_bd(datos: Dictionary) -> int:
+	print("💾 Registrando incidencia en BD...")
+	
+	try:
+		var query = """
+			INSERT INTO incidencias_calidad 
+			(codigo_incidencia, titulo, descripcion, tipo_hallazgo, producto_servicio, 
+			 sucursal, fecha_ocurrencia, nivel_gravedad, requiere_investigacion, 
+			 cliente_id, supervisor_id, estado, observaciones, fecha_registro)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		"""
+		
+		var params = [
+			datos.get("codigo_incidencia", ""),
+			datos.get("titulo", ""),
+			datos.get("descripcion", ""),
+			datos.get("tipo_hallazgo", ""),
+			datos.get("producto_servicio", ""),
+			datos.get("sucursal", ""),
+			datos.get("fecha_ocurrencia", ""),
+			datos.get("nivel_gravedad", ""),
+			1 if datos.get("requiere_investigacion", true) else 0,
+			datos.get("cliente_id", 0),
+			datos.get("supervisor_id", 0),
+			datos.get("estado", "abierta"),
+			datos.get("observaciones", "Registrado desde sistema"),
+			Time.get_datetime_string_from_system()
+		]
+		
+		var resultado = await db.insert_query(query, params)
+		
+		print("✅ Incidencia registrada con ID: " + str(resultado))
+		return resultado
+		
+	except Exception as e:
+		print("❌ Error registrando incidencia: " + str(e))
+		return -1
+
+func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
+	print("🔄 Convirtiendo incidencia a no conformidad...")
+	
+	try:
+		# Generar código de NC
+		var fecha_actual = Time.get_datetime_dict_from_system()
+		var query_count = "SELECT COUNT(*) + 1 as siguiente FROM no_conformidades WHERE DATE(fecha_registro) = DATE('now')"
+		var resultado_count = await db.select_query(query_count)
+		
+		var numero_nc = 1
+		if resultado_count and resultado_count.size() > 0:
+			numero_nc = resultado_count[0].get("siguiente", 1)
+		
+		var codigo_nc = "NC-%04d%02d%02d-%04d" % [
+			fecha_actual["year"],
+			fecha_actual["month"],
+			fecha_actual["day"],
+			numero_nc
+		]
+		
+		# Insertar en tabla no_conformidades
+		var query = """
+			INSERT INTO no_conformidades 
+			(codigo_nc, origen, codigo_origen, titulo, descripcion, tipo, 
+			 producto_servicio, sucursal, fecha_deteccion, nivel_gravedad,
+			 cliente_id, registrado_por, estado, fecha_registro, fuente_deteccion, 
+			 proceso_afectado, impacto_calidad)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		"""
+		
+		var params = [
+			codigo_nc,
+			"INCIDENCIA",
+			datos_incidencia.get("codigo_incidencia", ""),
+			datos_incidencia.get("titulo", ""),
+			datos_incidencia.get("descripcion", ""),
+			datos_incidencia.get("tipo_hallazgo", ""),
+			datos_incidencia.get("producto_servicio", ""),
+			datos_incidencia.get("sucursal", ""),
+			datos_incidencia.get("fecha_ocurrencia", ""),
+			datos_incidencia.get("nivel_gravedad", ""),
+			datos_incidencia.get("cliente_id", 0),
+			datos_incidencia.get("supervisor_id", 0),
+			"ABIERTA",
+			Time.get_datetime_string_from_system(),
+			"Cliente",
+			"SERVICIO AL CLIENTE",
+			"PÉRDIDA DE CLIENTE POTENCIAL"
+		]
+		
+		var nc_id = await db.insert_query(query, params)
+		
+		if nc_id > 0:
+			# Registrar traza de la conversión
+			var query_traza = """
+				INSERT INTO trazas_nc (id_nc, usuario_id, accion, descripcion, fecha)
+				VALUES (?, ?, ?, ?, ?)
+			"""
+			
+			var params_traza = [
+				nc_id,
+				datos_incidencia.get("supervisor_id", 0),
+				"CREACION",
+				"No conformidad creada automáticamente desde incidencia: " + datos_incidencia.get("codigo_incidencia", ""),
+				Time.get_datetime_string_from_system()
+			]
+			
+			await db.insert_query(query_traza, params_traza)
+			
+			print("✅ No Conformidad creada: " + codigo_nc + " (ID: " + str(nc_id) + ")")
+			
+			# Actualizar la incidencia para indicar que fue convertida
+			var query_update = "UPDATE incidencias_calidad SET id_no_conformidad = ? WHERE codigo_incidencia = ?"
+			var params_update = [nc_id, datos_incidencia.get("codigo_incidencia", "")]
+			await db.update_query(query_update, params_update)
+			
+			return nc_id
+		else:
+			print("❌ Error al crear no conformidad")
+			return -1
+			
+	except Exception as e:
+		print("❌ Error convirtiendo a no conformidad: " + str(e))
+		return -1
+
 func registrar_incidencia_con_estado(estado: String):
 	# Generar código de incidencia
-	var codigo_incidencia = db["generar_codigo_incidencia"].call()
+	var codigo_incidencia = await generar_codigo_incidencia()
 	
 	# Obtener datos del formulario
 	var datos_incidencia = obtener_datos_formulario()
@@ -611,20 +622,40 @@ func registrar_incidencia_con_estado(estado: String):
 	
 	mostrar_carga("Registrando incidencia...")
 	
-	# Pequeña pausa para simular procesamiento
-	await get_tree().create_timer(1.0).timeout
-	
-	# Registrar en base de datos simulada
-	var incidencia_id = db["registrar_incidencia"].call(datos_incidencia)
+	# Registrar en base de datos
+	var incidencia_id = await registrar_incidencia_bd(datos_incidencia)
 	
 	if incidencia_id > 0:
-		# Registrar traza
-		db["registrar_traza"].call(
-			usuario_actual.get("id", 1),
-			"REGISTRAR_INCIDENCIA",
-			"Incidencias",
-			"Incidente registrado: " + codigo_incidencia + " - " + datos_incidencia.get("titulo", "")
-		)
+		# Registrar traza en sistema de calidad
+		try:
+			var query_traza = """
+				INSERT INTO trazas_calidad (usuario_id, accion, modulo, descripcion, fecha)
+				VALUES (?, ?, ?, ?, ?)
+			"""
+			
+			var params_traza = [
+				usuario_actual.get("id", 1),
+				"REGISTRAR_INCIDENCIA",
+				"Incidencias",
+				"Incidente registrado: " + codigo_incidencia + " - " + datos_incidencia.get("titulo", ""),
+				Time.get_datetime_string_from_system()
+			]
+			
+			await db.insert_query(query_traza, params_traza)
+			
+		except Exception as e:
+			print("⚠️ Error registrando traza: " + str(e))
+		
+		# Si la incidencia requiere investigación, convertir a No Conformidad
+		if estado == "abierta" and requiere_investigacion:
+			print("🔍 Incidencia requiere investigación, convirtiendo a No Conformidad...")
+			var nc_id = await convertir_a_no_conformidad(datos_incidencia)
+			
+			if nc_id > 0:
+				datos_incidencia["id_no_conformidad"] = nc_id
+				print("✅ Conversión completada: NC-ID " + str(nc_id))
+			else:
+				print("⚠️ No se pudo convertir a No Conformidad, pero la incidencia fue registrada")
 		
 		ocultar_carga()
 		
@@ -637,10 +668,14 @@ func registrar_incidencia_con_estado(estado: String):
 		
 		if estado == "cerrada":
 			mensaje += "🔒 ESTADO: CERRADO (No requiere investigación)\n"
+			mensaje += "La incidencia ha sido registrada pero no generará una No Conformidad.\n"
 		else:
-			mensaje += "🔓 ESTADO: ABIERTO (Requiere investigación)\n"
+			mensaje += "🔓 ESTADO: ABIERTA (Requiere investigación)\n"
+			mensaje += "✓ Se ha creado automáticamente una No Conformidad\n"
+			mensaje += "✓ El equipo de calidad procederá con la investigación\n"
+			mensaje += "✓ Se realizará análisis de causa raíz\n"
 		
-		mensaje += "\nLa incidencia ha sido registrada en el sistema."
+		mensaje += "\nLa incidencia ha sido guardada en la base de datos del sistema."
 		
 		mostrar_exito(mensaje)
 		
@@ -651,7 +686,7 @@ func registrar_incidencia_con_estado(estado: String):
 		limpiar_formulario()
 	else:
 		ocultar_carga()
-		mostrar_error("Error al registrar la incidencia en el sistema")
+		mostrar_error("Error al registrar la incidencia en el sistema de base de datos")
 
 func obtener_datos_formulario() -> Dictionary:
 	# Obtener tipo de hallazgo
@@ -686,8 +721,8 @@ func obtener_datos_formulario() -> Dictionary:
 		"sucursal": sucursal,
 		"fecha_ocurrencia": fecha_sql,
 		"nivel_gravedad": nivel_gravedad,
-		"requiere_investigacion": 1 if requiere_investigacion else 0,
-		"observaciones": "Registrado desde sistema de pruebas"
+		"requiere_investigacion": requiere_investigacion,
+		"observaciones": "Registrado desde sistema de gestión"
 	}
 
 func limpiar_formulario():
@@ -845,8 +880,6 @@ func _process(_delta):
 
 func mostrar_estado_sistema():
 	print("\n=== ESTADO DEL SISTEMA ===")
-	print("📋 Clientes de prueba: " + str(clientes_falsos.size()))
-	print("📝 Incidencias registradas: " + str(incidencias_registradas.size()))
 	print("👤 Usuario actual: " + usuario_actual.get("nombre_completo", ""))
 	print("✅ Cliente seleccionado: " + ("Sí" if cliente_seleccionado and not cliente_seleccionado.is_empty() else "No"))
 	print("📊 Formulario válido: " + str(formulario_valido))
@@ -864,9 +897,25 @@ func prueba_busqueda_rapida():
 func prueba_formulario_completo():
 	print("🧪 Llenando formulario automáticamente...")
 	
-	# Seleccionar primer cliente
-	if clientes_falsos.size() > 0:
-		cliente_seleccionado = clientes_falsos[0]
+	# Buscar cliente en BD
+	var clientes = await buscar_cliente_bd("")
+	if clientes and clientes.size() > 0:
+		cliente_seleccionado = clientes[0]
+		if has_node("ContentContainer/FormContainer/SeccionCliente/InfoCliente"):
+			$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
+			$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
+			$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
+	else:
+		print("⚠️ No hay clientes en BD, usando datos de prueba")
+		# Crear cliente temporal para pruebas
+		cliente_seleccionado = {
+			"id": 999,
+			"codigo_cliente": "TEST001",
+			"nombre": "Cliente",
+			"apellidos": "de Prueba",
+			"email": "test@ejemplo.com",
+			"telefono": "0999999999"
+		}
 		if has_node("ContentContainer/FormContainer/SeccionCliente/InfoCliente"):
 			$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
 			$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
@@ -892,7 +941,7 @@ func prueba_formulario_completo():
 	
 	var comboSucursal = find_child("s", true, false)
 	if comboSucursal:
-		comboSucursal.select(1)  # Quito - Centro
+		comboSucursal.select(1)  # Pinar del Río
 	
 	var comboGravedad = find_child("ComboGravedad", true, false)
 	if comboGravedad:
