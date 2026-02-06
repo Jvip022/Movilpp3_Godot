@@ -743,7 +743,7 @@ func _actualizar_ui_con_datos(fecha_inicio: String, fecha_fin: String, sucursal:
 				if total > 0:
 					porcentaje = (cerradas * 100.0) / total
 				kpi2_valor.text = "%.1f%%" % porcentaje
-				print("✅ KPI2 (% Cerradas): %.1f%%" % porcentaje)
+				print("✅ KPI2 (% Cerradas): " + str(porcentaje) + "%")
 			
 			if kpi3_valor:
 				kpi3_valor.text = str(datos_reporte.get("pendientes", 0))
@@ -751,8 +751,8 @@ func _actualizar_ui_con_datos(fecha_inicio: String, fecha_fin: String, sucursal:
 			
 			# Crear texto de resumen
 			var texto = "📊 ESTADÍSTICAS DE NO CONFORMIDADES\n\n"
-			texto += "Período: %s a %s\n" % [fecha_inicio, fecha_fin]
-			texto += "Sucursal: %s\n\n" % sucursal
+			texto += "Período: " + fecha_inicio + " a " + fecha_fin + "\n"
+			texto += "Sucursal: " + sucursal + "\n\n"
 			texto += "Total NC: %d\n" % datos_reporte.get("total_nc", 0)
 			texto += "• Pendientes: %d\n" % datos_reporte.get("pendientes", 0)
 			texto += "• En análisis: %d\n" % datos_reporte.get("analizadas", 0)
@@ -763,7 +763,7 @@ func _actualizar_ui_con_datos(fecha_inicio: String, fecha_fin: String, sucursal:
 			if por_tipo.size() > 0:
 				texto += "Distribución por tipo:\n"
 				for item in por_tipo:
-					texto += "• %s: %d\n" % [item.get("tipo_nc", "Desconocido"), item.get("cantidad", 0)]
+					texto += "• " + str(item.get("tipo_nc", "Desconocido")) + ": " + str(item.get("cantidad", 0)) + "\n"
 			
 			if placeholder_text:
 				placeholder_text.text = texto

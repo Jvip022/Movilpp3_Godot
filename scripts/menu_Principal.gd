@@ -78,7 +78,8 @@ func _ready():
 	# Obtener referencia a Global
 	global_node = get_node("/root/Global") if has_node("/root/Global") else null
 	
-	
+	# Verificar nodos UI primero
+	verificar_nodos_ui()
 	# Inicializar diccionario de botones para acceso rápido
 	inicializar_botones()
 	
@@ -125,40 +126,76 @@ func conectar_botones():
 	btn_salir.pressed.connect(_on_btn_salir_pressed)
 
 func verificar_sesion():
-	# Verificar si Global está disponible
+	print("DEBUG: Verificando sesión...")
+	
 	if not global_node:
-		print("⚠️ Global no está disponible, usando modo invitado")
+		print("❌ Global no está disponible")
 		configurar_modo_invitado()
 		return
 	
+	print("DEBUG: Global encontrado: %s" % global_node.name)
+	print("DEBUG: Usuario en Global: %s" % str(global_node.usuario_actual))
+	
 	# Verificar si hay usuario autenticado en Global
 	if global_node.esta_autenticado():
-		# Obtener datos del usuario desde Global
 		var usuario_global = global_node.usuario_actual
 		
+		# Debug detallado
+		print("=== DATOS DE USUARIO DESDE GLOBAL ===")
+		print("  ID: %s" % usuario_global.get('id', 'N/A'))
+		print("  Username: %s" % usuario_global.get('username', 'N/A'))
+		print("  Nombre: %s" % usuario_global.get('nombre', 'N/A'))
+		print("  Rol (raw): %s" % usuario_global.get('rol', 'N/A'))
+		print("  Email: %s" % usuario_global.get('email', 'N/A'))
+		print("=====================================")
+		
 		# Mapear el rol de BD al enum de Dashboard
-		var rol_enum = mapear_rol_bd_a_enum(usuario_global.rol)
+		var rol_bd = str(usuario_global.get("rol", ""))
+		var rol_enum = mapear_rol_bd_a_enum(rol_bd)
 		
 		usuario_actual = {
-			"nombre": usuario_global.nombre,
+			"nombre": usuario_global.get("nombre", usuario_global.get("nombre_completo", "Usuario")),
 			"rol": rol_enum,
-			"id": usuario_global.id,
-			"email": usuario_global.email,
+			"id": usuario_global.get("id", -1),
+			"email": usuario_global.get("email", ""),
 			"sucursal": usuario_global.get("sucursal", ""),
 			"departamento": usuario_global.get("departamento", ""),
 			"cargo": usuario_global.get("cargo", "")
 		}
 		
-		user_name_label.text = "Usuario: " + usuario_actual["nombre"]
-		user_role_label.text = "Rol: " + usuario_global.rol
+		# Declarar nombre_rol aquí para que esté disponible en todo el ámbito
+		var nombre_rol = obtener_nombre_rol(rol_enum)
 		
-		print("✅ Sesión activa para: " + usuario_actual["nombre"] + " (Rol: " + usuario_global.rol + ")")
+		# Actualizar UI
+		if user_name_label:
+			user_name_label.text = "Usuario: " + usuario_actual["nombre"]
+		else:
+			print("ERROR: user_name_label no encontrado")
+			
+		if user_role_label:
+			user_role_label.text = "Rol: " + nombre_rol
+		else:
+			print("ERROR: user_role_label no encontrado")
+		
+		print("✅ Sesión activa para: %s (Rol: %s)" % [usuario_actual["nombre"], nombre_rol])
 	else:
-		# No hay sesión activa
+		print("DEBUG: No hay sesión activa en Global")
 		configurar_modo_invitado()
 	
 	# Actualizar visibilidad de botones según rol
 	actualizar_visibilidad_botones()
+
+func obtener_nombre_rol(rol_enum: int) -> String:
+	"""Convierte el enum de rol a nombre legible"""
+	match rol_enum:
+		Roles.SUPER_ADMIN: return "Super Administrador"
+		Roles.ADMINISTRADOR: return "Administrador"
+		Roles.SUPERVISOR_GENERAL: return "Supervisor General"
+		Roles.ESPECIALISTA_CALIDAD_SUCURSAL: return "Especialista de Calidad"
+		Roles.AUDITOR: return "Auditor"
+		Roles.USUARIO: return "Usuario"
+		Roles.SISTEMA: return "Sistema"
+		_: return "No autenticado"
 
 func configurar_modo_invitado():
 	usuario_actual = {
@@ -174,22 +211,24 @@ func configurar_modo_invitado():
 
 func mapear_rol_bd_a_enum(rol_bd: String) -> int:
 	"""
-	Convierte el rol de la base de datos (string) al enum del Dashboard.
-	"""
-	match rol_bd.to_upper():
-		"SUPER_ADMIN", "SUPERADMIN":
+    Convierte el rol de la base de datos (string) al enum del Dashboard.
+    """
+	var rol_normalizado = rol_bd.to_lower().strip_edges()
+	
+	match rol_normalizado:
+		"super_admin", "superadmin", "admin_super":
 			return Roles.SUPER_ADMIN
-		"ADMIN", "ADMINISTRADOR":
+		"admin", "administrador":
 			return Roles.ADMINISTRADOR
-		"SUPERVISOR", "SUPERVISOR_GENERAL":
+		"supervisor", "supervisor_general":
 			return Roles.SUPERVISOR_GENERAL
-		"ESPECIALISTA_CALIDAD", "ESPECIALISTA":
+		"especialista", "especialista_calidad", "analista":
 			return Roles.ESPECIALISTA_CALIDAD_SUCURSAL
-		"AUDITOR":
+		"auditor":
 			return Roles.AUDITOR
-		"SISTEMA":
+		"sistema":
 			return Roles.SISTEMA
-		"USUARIO", "OPERADOR", "USER":
+		"usuario", "operador", "user":
 			return Roles.USUARIO
 		_:
 			return Roles.NO_AUTENTICADO
@@ -405,8 +444,12 @@ func listar_usuarios_bd():
 		print("\n=== LISTA DE USUARIOS EN BD ===")
 		var usuarios = global_node.db.obtener_todos_usuarios()
 		for usuario in usuarios:
-			print("ID: %d, Usuario: %s, Nombre: %s, Rol: %s, Email: %s" % [
-				usuario.id, usuario.username, usuario.nombre, usuario.rol, usuario.email
+			print("ID: %s, Usuario: %s, Nombre: %s, Rol: %s, Email: %s" % [
+				str(usuario.get('id', 'N/A')), 
+				usuario.get('username', 'N/A'), 
+				usuario.get('nombre', 'N/A'), 
+				usuario.get('rol', 'N/A'), 
+				usuario.get('email', 'N/A')
 			])
 		print("=== FIN DE LISTA ===")
 
@@ -510,3 +553,15 @@ func mostrar_info_sistema():
 	
 	add_child(dialog)
 	dialog.popup_centered()
+	
+func verificar_nodos_ui():
+	print("=== VERIFICANDO NODOS UI ===")
+	print("user_name_label existe: %s" % (user_name_label != null))
+	print("user_role_label existe: %s" % (user_role_label != null))
+	
+	if user_name_label:
+		print("user_name_label path: %s" % user_name_label.get_path())
+	if user_role_label:
+		print("user_role_label path: %s" % user_role_label.get_path())
+	
+	print("===========================")
