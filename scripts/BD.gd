@@ -3,6 +3,8 @@ class_name BD
 
 var db: SQLite
 var database_path := "res://data/quejas.db"
+var is_initialized := false
+var _tablas_creadas := false  # Flag para evitar recreación repetida
 
 # =========================
 # CICLO DE VIDA
@@ -10,8 +12,19 @@ var database_path := "res://data/quejas.db"
 func _ready():
 	print("🔧 Inicializando Base de Datos...")
 	
+	# Verificar si ya está inicializado
+	if _tablas_creadas:
+		print("⚠️ Base de datos ya inicializada, omitiendo...")
+		is_initialized = true
+		return
+	
 	if not ClassDB.class_exists("SQLite"):
 		push_error("❌ El plugin SQLite no está disponible")
+		return
+	
+	# Evitar inicialización duplicada
+	if is_initialized:
+		print("⚠️ Base de datos ya inicializada, omitiendo...")
 		return
 	
 	_preparar_directorio()
@@ -42,6 +55,8 @@ func _ready():
 	inicializar_roles_y_permisos()
 	inicializar_usuario_admin()
 	
+	is_initialized = true
+	_tablas_creadas = true
 	print("✅ Base de datos lista y operativa")
 	
 	# Pruebas de conexión
@@ -103,6 +118,14 @@ func _crear_tabla_roles() -> bool:
 	""")
 
 func _crear_tabla_permisos() -> bool:
+	# Primero, si la tabla existe pero tiene la estructura incorrecta, la eliminamos
+	if table_exists("permisos"):
+		# Verificar si tiene la columna 'nombre'
+		if not _columna_existe("permisos", "nombre"):
+			print("⚠️ Tabla 'permisos' sin columna 'nombre', recreando...")
+			query("DROP TABLE IF EXISTS permisos")
+	
+	# Crear la tabla con la estructura correcta
 	return query("""
 		CREATE TABLE IF NOT EXISTS permisos (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -184,133 +207,173 @@ func _crear_tabla_incidencias() -> bool:
 	""")
 
 # =========================
-# CREACIÓN DE TABLAS - ESTRUCTURA ANTIGUA (MANTENIDA)
+# FUNCIÓN AUXILIAR PARA VERIFICAR COLUMNAS
+# =========================
+func _columna_existe(tabla: String, columna: String) -> bool:
+	"""Verifica si una columna existe en una tabla."""
+	var sql = "PRAGMA table_info(%s)" % tabla
+	var resultado = select_query(sql)
+	
+	if resultado:
+		for fila in resultado:
+			if fila.has("name") and fila["name"] == columna:
+				return true
+	return false
+
+# =========================
+# CREACIÓN DE TABLAS - ESTRUCTURA ANTIGUA (MANTENIDA) - CORREGIDO
 # =========================
 func crear_tablas_quejas() -> bool:
 	print("=== CREANDO TABLAS DE LA BASE DE DATOS ===")
 	
+	var exito = true
+	
+	# CORRECCIÓN: Deshabilitar temporalmente FOREIGN KEY constraints
+	print("🔧 Deshabilitando temporalmente FOREIGN KEY constraints...")
+	query("PRAGMA foreign_keys = OFF")
+	
 	# Tabla de USUARIOS para autenticación (estructura antigua)
 	print("Creando tabla 'usuarios'...")
-	var sql_usuarios = """
-		CREATE TABLE IF NOT EXISTS usuarios (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			username TEXT UNIQUE NOT NULL,
-			password_hash TEXT NOT NULL,
-			email TEXT UNIQUE NOT NULL,
-			nombre_completo TEXT NOT NULL,
-			avatar TEXT DEFAULT 'default.png',
-			telefono TEXT,
-			departamento TEXT,
-			cargo TEXT,
-			fecha_contratacion DATE,
-			estado_empleado TEXT DEFAULT 'activo',
-			rol TEXT DEFAULT 'operador',
-			permisos TEXT DEFAULT '["ver_dashboard", "crear_queja", "editar_perfil"]',
-			tema_preferido TEXT DEFAULT 'claro',
-			idioma TEXT DEFAULT 'es',
-			zona_horaria TEXT DEFAULT 'America/Lima',
-			notificaciones_email INTEGER DEFAULT 1,
-			notificaciones_push INTEGER DEFAULT 1,
-			ultimo_login DATETIME,
-			intentos_fallidos INTEGER DEFAULT 0,
-			bloqueado_hasta DATETIME,
-			requiere_cambio_password INTEGER DEFAULT 0,
-			token_recuperacion TEXT,
-			token_expiracion DATETIME,
-			fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-			creado_por INTEGER,
-			fecha_modificacion DATETIME,
-			modificado_por INTEGER,
-			sesiones_activas INTEGER DEFAULT 0,
-			preferencias TEXT DEFAULT '{}',
-			sucursal TEXT DEFAULT 'Central'
-		)
-	"""
 	
-	if not query(sql_usuarios):
-		push_error("ERROR: No se pudo crear la tabla 'usuarios'")
-		return false
+	# Primero eliminar la tabla si existe
+	# Ahora debería funcionar sin errores de FOREIGN KEY
+	if not query("DROP TABLE IF EXISTS usuarios"):
+		push_error("ERROR: No se pudo eliminar tabla 'usuarios'")
+		exito = false
+	
+	if exito:
+		var sql_usuarios = """
+			CREATE TABLE IF NOT EXISTS usuarios (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				username TEXT UNIQUE NOT NULL,
+				password_hash TEXT NOT NULL,
+				email TEXT UNIQUE NOT NULL,
+				nombre_completo TEXT NOT NULL,
+				avatar TEXT DEFAULT 'default.png',
+				telefono TEXT,
+				departamento TEXT,
+				cargo TEXT,
+				fecha_contratacion DATE,
+				estado_empleado TEXT DEFAULT 'activo',
+				rol TEXT DEFAULT 'operador',
+				permisos TEXT DEFAULT '["ver_dashboard", "crear_queja", "editar_perfil"]',
+				tema_preferido TEXT DEFAULT 'claro',
+				idioma TEXT DEFAULT 'es',
+				zona_horaria TEXT DEFAULT 'America/Lima',
+				notificaciones_email INTEGER DEFAULT 1,
+				notificaciones_push INTEGER DEFAULT 1,
+				ultimo_login DATETIME,
+				intentos_fallidos INTEGER DEFAULT 0,
+				bloqueado_hasta DATETIME,
+				requiere_cambio_password INTEGER DEFAULT 0,
+				token_recuperacion TEXT,
+				token_expiracion DATETIME,
+				fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+				creado_por INTEGER,
+				fecha_modificacion DATETIME,
+				modificado_por INTEGER,
+				sesiones_activas INTEGER DEFAULT 0,
+				preferencias TEXT DEFAULT '{}',
+				sucursal TEXT DEFAULT 'Central'
+			)
+		"""
+		
+		if not query(sql_usuarios):
+			push_error("ERROR: No se pudo crear la tabla 'usuarios'")
+			exito = false
+	
+	# Verificar y agregar columna 'sucursal' si no existe
+	if exito and not _columna_existe("usuarios", "sucursal"):
+		print("Agregando columna 'sucursal' a tabla 'usuarios'...")
+		if not query("ALTER TABLE usuarios ADD COLUMN sucursal TEXT DEFAULT 'Central'"):
+			push_error("ERROR: No se pudo agregar columna 'sucursal'")
+			exito = false
 	
 	# Tabla de HISTORIAL de actividad de usuarios
-	print("Creando tabla 'historial_usuarios'...")
-	if not query("""
-		CREATE TABLE IF NOT EXISTS historial_usuarios (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			usuario_id INTEGER NOT NULL,
-			fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
-			tipo_evento TEXT,
-			descripcion TEXT NOT NULL,
-			ip_address TEXT,
-			user_agent TEXT,
-			detalles TEXT
-		)
-	"""):
-		push_error("ERROR: No se pudo crear la tabla 'historial_usuarios'")
-		return false
+	if exito:
+		print("Creando tabla 'historial_usuarios'...")
+		if not query("""
+			CREATE TABLE IF NOT EXISTS historial_usuarios (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				usuario_id INTEGER NOT NULL,
+				fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+				tipo_evento TEXT,
+				descripcion TEXT NOT NULL,
+				ip_address TEXT,
+				user_agent TEXT,
+				detalles TEXT
+			)
+		"""):
+			push_error("ERROR: No se pudo crear la tabla 'historial_usuarios'")
+			exito = false
 	
 	# Tabla principal de QUEJAS y RECLAMACIONES
-	print("Verificando y recreando tabla 'quejas_reclamaciones'...")
-	query("DROP TABLE IF EXISTS quejas_reclamaciones")
+	if exito:
+		print("Verificando y recreando tabla 'quejas_reclamaciones'...")
+		if not query("DROP TABLE IF EXISTS quejas_reclamaciones"):
+			push_error("ERROR: No se pudo eliminar tabla 'quejas_reclamaciones'")
+			exito = false
 	
-	if not query("""
-		CREATE TABLE IF NOT EXISTS quejas_reclamaciones (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			numero_caso TEXT UNIQUE,
-			tipo_caso TEXT,
-			canal_entrada TEXT,
-			tipo_reclamante TEXT,
-			identificacion TEXT,
-			nombres TEXT NOT NULL,
-			apellidos TEXT,
-			telefono TEXT,
-			email TEXT,
-			direccion TEXT,
-			asunto TEXT NOT NULL,
-			descripcion_detallada TEXT NOT NULL,
-			producto_servicio TEXT,
-			numero_contrato TEXT,
-			numero_factura TEXT,
-			fecha_incidente DATE,
-			lugar_incidente TEXT,
-			categoria TEXT,
-			subcategoria TEXT,
-			monto_reclamado REAL DEFAULT 0,
-			moneda TEXT DEFAULT 'USD',
-			tipo_compensacion TEXT,
-			prioridad TEXT,
-			estado TEXT,
-			nivel_escalamiento INTEGER DEFAULT 1,
-			recibido_por INTEGER,
-			asignado_a INTEGER,
-			equipo_responsable TEXT,
-			fecha_recepcion DATETIME DEFAULT CURRENT_TIMESTAMP,
-			fecha_limite_respuesta DATE,
-			fecha_respuesta_cliente DATE,
-			fecha_cierre DATETIME,
-			hechos_constatados TEXT,
-			pruebas_adjuntas TEXT,
-			testigos TEXT,
-			responsable_interno TEXT,
-			decision TEXT,
-			solucion_propuesta TEXT,
-			compensacion_otorgada REAL DEFAULT 0,
-			descripcion_compensacion TEXT,
-			satisfaccion_cliente INTEGER,
-			comentarios_finales TEXT,
-			reincidente INTEGER DEFAULT 0,
-			requiere_legal INTEGER DEFAULT 0,
-			numero_expediente_legal TEXT,
-			asesor_legal TEXT,
-			creado_por INTEGER,
-			fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-			modificado_por INTEGER,
-			fecha_modificacion DATETIME,
-			tiempo_respuesta_horas INTEGER,
-			tags TEXT
-		)
-	"""):
-		push_error("ERROR: No se pudo crear la tabla 'quejas_reclamaciones'")
-		return false
+	if exito:
+		if not query("""
+			CREATE TABLE IF NOT EXISTS quejas_reclamaciones (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				numero_caso TEXT UNIQUE,
+				tipo_caso TEXT,
+				canal_entrada TEXT,
+				tipo_reclamante TEXT,
+				identificacion TEXT,
+				nombres TEXT NOT NULL,
+				apellidos TEXT,
+				telefono TEXT,
+				email TEXT,
+				direccion TEXT,
+				asunto TEXT NOT NULL,
+				descripcion_detallada TEXT NOT NULL,
+				producto_servicio TEXT,
+				numero_contrato TEXT,
+				numero_factura TEXT,
+				fecha_incidente DATE,
+				lugar_incidente TEXT,
+				categoria TEXT,
+				subcategoria TEXT,
+				monto_reclamado REAL DEFAULT 0,
+				moneda TEXT DEFAULT 'USD',
+				tipo_compensacion TEXT,
+				prioridad TEXT,
+				estado TEXT,
+				nivel_escalamiento INTEGER DEFAULT 1,
+				recibido_por INTEGER,
+				asignado_a INTEGER,
+				equipo_responsable TEXT,
+				fecha_recepcion DATETIME DEFAULT CURRENT_TIMESTAMP,
+				fecha_limite_respuesta DATE,
+				fecha_respuesta_cliente DATE,
+				fecha_cierre DATETIME,
+				hechos_constatados TEXT,
+				pruebas_adjuntas TEXT,
+				testigos TEXT,
+				responsable_interno TEXT,
+				decision TEXT,
+				solucion_propuesta TEXT,
+				compensacion_otorgada REAL DEFAULT 0,
+				descripcion_compensacion TEXT,
+				satisfaccion_cliente INTEGER,
+				comentarios_finales TEXT,
+				reincidente INTEGER DEFAULT 0,
+				requiere_legal INTEGER DEFAULT 0,
+				numero_expediente_legal TEXT,
+				asesor_legal TEXT,
+				creado_por INTEGER,
+				fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+				modificado_por INTEGER,
+				fecha_modificacion DATETIME,
+				tiempo_respuesta_horas INTEGER,
+				tags TEXT
+			)
+		"""):
+			push_error("ERROR: No se pudo crear la tabla 'quejas_reclamaciones'")
+			exito = false
 	
 	# Tablas adicionales
 	var tablas_adicionales = [
@@ -349,13 +412,22 @@ func crear_tablas_quejas() -> bool:
 	]
 	
 	for tabla in tablas_adicionales:
-		print("Creando tabla '%s'..." % tabla[0])
-		if not query(tabla[1]):
-			push_error("ERROR: No se pudo crear la tabla '%s'" % tabla[0])
-			return false
+		if exito:
+			print("Creando tabla '%s'..." % tabla[0])
+			if not query(tabla[1]):
+				push_error("ERROR: No se pudo crear la tabla '%s'" % tabla[0])
+				exito = false
 	
-	print("✅ Todas las tablas de quejas creadas correctamente")
-	return true
+	# CORRECCIÓN: Rehabilitar FOREIGN KEY constraints
+	print("🔧 Rehabilitando FOREIGN KEY constraints...")
+	query("PRAGMA foreign_keys = ON")
+	
+	if exito:
+		print("✅ Todas las tablas de quejas creadas correctamente")
+	else:
+		push_error("❌ Error creando tablas de quejas")
+	
+	return exito
 
 func crear_tablas_calidad() -> bool:
 	print("=== CREANDO TABLAS DEL SISTEMA DE CALIDAD ===")
@@ -688,7 +760,7 @@ func inicializar_usuario_admin():
 			"password_hash": "admin123",
 			"email": "admin@sistema.com",
 			"nombre_completo": "Administrador del Sistema",
-			"rol": "SUPER_ADMIN",
+			"rol": "admin",  # En minúscula para consistencia
 			"permisos": "[\"VER_TODO\", \"GESTIONAR_USUARIOS\", \"CREAR_EXPEDIENTE\", \"PROCESAR_EXPEDIENTE\", \"VER_REPORTES\", \"REGISTRAR_INCIDENCIA\", \"GESTIONAR_QUEJAS\", \"REGISTRAR_NC\", \"BACKUP_RESTORE\", \"VER_TRAZAS\"]",
 			"cargo": "Administrador",
 			"departamento": "TI",
@@ -720,14 +792,14 @@ func inicializar_usuario_admin():
 	crear_usuarios_prueba()
 
 func crear_usuarios_prueba():
-	"""Crea usuarios de prueba para diferentes roles"""
+	"""Crea usuarios de prueba para diferentes roles - TODOS EN MINÚSCULAS"""
 	var usuarios_prueba = [
 		{
 			"username": "supervisor",
 			"password_hash": "sup123",
 			"email": "supervisor@havanatur.ec",
 			"nombre_completo": "Supervisor General",
-			"rol": "SUPERVISOR",
+			"rol": "supervisor",  # ← minúscula
 			"permisos": "[\"VER_REPORTES\", \"REGISTRAR_INCIDENCIA\", \"PROCESAR_EXPEDIENTE\", \"VER_PROPIOS\"]",
 			"departamento": "Calidad",
 			"cargo": "Supervisor de Calidad",
@@ -739,7 +811,7 @@ func crear_usuarios_prueba():
 			"password_hash": "esp123",
 			"email": "especialista@havanatur.ec",
 			"nombre_completo": "Especialista de Calidad",
-			"rol": "ESPECIALISTA_CALIDAD",
+			"rol": "analista",  # ← usa 'analista' que es un rol válido
 			"permisos": "[\"CREAR_EXPEDIENTE\", \"PROCESAR_EXPEDIENTE\", \"GESTIONAR_QUEJAS\", \"VER_PROPIOS\"]",
 			"departamento": "Calidad",
 			"cargo": "Especialista en Calidad",
@@ -751,7 +823,7 @@ func crear_usuarios_prueba():
 			"password_hash": "aud123",
 			"email": "auditor@havanatur.ec",
 			"nombre_completo": "Auditor Interno",
-			"rol": "AUDITOR",
+			"rol": "analista",  # ← usa 'analista'
 			"permisos": "[\"REGISTRAR_NC\", \"VER_REPORTES\", \"VER_PROPIOS\"]",
 			"departamento": "Auditoría",
 			"cargo": "Auditor de Calidad",
@@ -763,7 +835,7 @@ func crear_usuarios_prueba():
 			"password_hash": "ope123",
 			"email": "operador@havanatur.ec",
 			"nombre_completo": "Operador Básico",
-			"rol": "OPERADOR",
+			"rol": "operador",  # ← minúscula
 			"permisos": "[\"VER_PROPIOS\", \"CREAR_EXPEDIENTE\"]",
 			"departamento": "Operaciones",
 			"cargo": "Operador",
@@ -775,8 +847,13 @@ func crear_usuarios_prueba():
 	for usuario in usuarios_prueba:
 		var existe = _scalar("SELECT COUNT(*) FROM usuarios WHERE username = ?", [usuario.username])
 		if existe == 0:
-			insert("usuarios", usuario)
-			print("✅ Usuario de prueba creado: ", usuario.username)
+			var user_id = insert("usuarios", usuario)
+			if user_id > 0:
+				print("✅ Usuario de prueba creado: ", usuario.username, " (ID: ", user_id, ")")
+			else:
+				print("❌ Error al crear usuario: ", usuario.username)
+		else:
+			print("⚠️ Usuario ya existe: ", usuario.username)
 
 # =========================
 # AUTENTICACIÓN Y GESTIÓN DE USUARIOS
@@ -1001,7 +1078,12 @@ func query(sql: String, params = []) -> bool:
 		push_error("Base de datos no inicializada en query()")
 		return false
 	
-	print("🔍 Ejecutando SQL: ", sql.substr(0, 100) + ("..." if sql.length() > 100 else ""))
+	# Acortar SQL para log
+	var sql_log = sql.strip_edges()
+	if sql_log.length() > 100:
+		sql_log = sql_log.substr(0, 100) + "..."
+	
+	print("🔍 Ejecutando SQL: ", sql_log)
 	if params.size() > 0:
 		print("   Parámetros: ", params)
 	
@@ -1145,7 +1227,12 @@ func insert(table: String, data: Dictionary) -> int:
 	
 	for key in data.keys():
 		keys.append(key)
-		values.append(str(data[key]))
+		var value = data[key]
+		# Manejar valores null
+		if value == null:
+			values.append(null)
+		else:
+			values.append(str(value))
 		placeholders.append("?")
 	
 	var sql = "INSERT INTO %s (%s) VALUES (%s)" % [
@@ -1154,8 +1241,8 @@ func insert(table: String, data: Dictionary) -> int:
 		", ".join(PackedStringArray(placeholders))
 	]
 	
-	print("📝 Ejecutando INSERT: ", sql)
-	print("📝 Valores: ", values)
+	print("📝 Ejecutando INSERT en tabla: ", table)
+	print("📝 Valores: ", data)
 	
 	if query(sql, values):
 		if db.has_method("last_insert_rowid"):
@@ -1184,14 +1271,14 @@ func update(table: String, data: Dictionary, where: String, where_params = []) -
 	
 	var sql = "UPDATE %s SET %s WHERE %s" % [table, ", ".join(PackedStringArray(sets)), where]
 	
-	print("📝 Ejecutando UPDATE: ", sql)
-	print("📝 Valores: ", values)
+	print("📝 Ejecutando UPDATE en tabla: ", table)
+	print("📝 Valores: ", data)
 	
 	return query(sql, values)
 
 func delete(table: String, where: String, params = []) -> bool:
 	var sql = "DELETE FROM %s WHERE %s" % [table, where]
-	print("📝 Ejecutando DELETE: ", sql)
+	print("📝 Ejecutando DELETE en tabla: ", table)
 	return query(sql, params)
 
 # =========================
@@ -1602,3 +1689,23 @@ func crear_backup(ruta_backup: String) -> bool:
 	
 	print("✅ Backup creado en: " + destino)
 	return true
+
+# =========================
+# SINGLETON PATTERN
+# =========================
+static var instance: BD
+
+func _enter_tree():
+	# Implementación de singleton simple
+	if instance:
+		queue_free()
+		print("⚠️ Múltiples instancias de BD detectadas, eliminando duplicado")
+	else:
+		instance = self
+		print("🗃️ Instancia BD creada como singleton")
+		set_name("BD")
+
+func _exit_tree():
+	if instance == self:
+		instance = null
+		print("🗃️ Instancia BD eliminada")

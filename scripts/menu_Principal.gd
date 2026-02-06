@@ -78,6 +78,7 @@ func _ready():
 	# Obtener referencia a Global
 	global_node = get_node("/root/Global") if has_node("/root/Global") else null
 	
+	
 	# Inicializar diccionario de botones para acceso rápido
 	inicializar_botones()
 	

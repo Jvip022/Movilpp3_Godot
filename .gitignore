@@ -9,10 +9,11 @@
 *.svg
 *.import
 *.cfg
-*.docx
-*.docx
+*.doc
+*.jpg
+*.txt
 *.pdf
 *.zip
-escenas_godot.txt
+*.py
 usser_data
 insertar_datos_random.sql

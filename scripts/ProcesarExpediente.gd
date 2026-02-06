@@ -60,13 +60,26 @@ func _ready():
 	mensaje_exito.exclusive = true
 	mensaje_error.exclusive = true
 	
-	# Configurar filtros de archivo
+	# CONFIGURACIÓN CRÍTICA PARA FileDialog
+	dialogo_cargar.exclusive = false  # Importante: permitir otros diálogos
+	dialogo_cargar.unresizable = false  # Permitir redimensionar
+	dialogo_cargar.min_size = Vector2i(600, 400)  # Tamaño mínimo
+	
+	# Configurar permisos de acceso
+	dialogo_cargar.access = FileDialog.ACCESS_FILESYSTEM
+	dialogo_cargar.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+	
+	# Establecer directorio inicial
+	dialogo_cargar.current_dir = "user://"  # Directorio del usuario
+	dialogo_cargar.current_path = "user://"
+	
+	# Configurar filtros de archivo - FORMATO CORRECTO
 	dialogo_cargar.filters = PackedStringArray([
-		"*.pdf ; Documentos PDF",
-		"*.doc, *.docx ; Documentos Word",
-		"*.xls, *.xlsx ; Hojas de cálculo",
-		"*.jpg, *.jpeg, *.png ; Imágenes",
-		"*.txt ; Archivos de texto"
+		"*.pdf", 
+		"*.doc; *.docx", 
+		"*.xls; *.xlsx", 
+		"*.jpg; *.jpeg; *.png",
+		"*.txt"
 	])
 	
 	# Crear PopupMenu para opciones múltiples
@@ -103,6 +116,9 @@ func _conectar_senales():
 	# Conectar diálogo de confirmación
 	dialogo_confirmar.confirmed.connect(_on_DialogoConfirmacion_confirmed)
 	dialogo_confirmar.canceled.connect(_on_DialogoConfirmacion_canceled)
+	
+	# Conectar señal de doble clic en la lista de documentos
+	lista_documentos.item_activated.connect(_on_ListaDocumentos_item_activated)
 
 # ============================================================
 # FUNCIONES DE CARGA DE DATOS DESDE BD - CORREGIDAS
@@ -193,6 +209,8 @@ func _cargar_documentos_desde_bd():
 	"""Carga los documentos asociados a la NC actual desde la base de datos."""
 	if id_nc_actual <= 0:
 		print("⚠️ No hay NC activa para cargar documentos")
+		lista_documentos.clear()
+		lista_documentos.add_item("No hay NC activa")
 		return
 	
 	print("Cargando documentos de NC desde BD: ", id_nc_actual)
@@ -201,62 +219,93 @@ func _cargar_documentos_desde_bd():
 	if not Bd.table_exists("documentos_nc"):
 		print("⚠️ Tabla 'documentos_nc' no existe")
 		lista_documentos.clear()
-		lista_documentos.add_item("No hay documentos disponibles")
+		lista_documentos.add_item("Tabla de documentos no disponible")
 		return
 	
+	# CONSULTA CORREGIDA - Usando parámetros de forma segura
 	var sql = """
-    SELECT 
-        dn.*,
-        u.nombre_completo as nombre_usuario
-    FROM documentos_nc dn
-    LEFT JOIN usuarios u ON dn.usuario_carga = u.id
-    WHERE dn.id_nc = {id_nc}
-    ORDER BY dn.fecha_carga DESC
-	""".format({"id_nc": id_nc_actual})
+	SELECT 
+		dn.*,
+		u.nombre_completo as nombre_usuario
+	FROM documentos_nc dn
+	LEFT JOIN usuarios u ON dn.usuario_carga = u.id
+	WHERE dn.id_nc = ?
+	ORDER BY dn.fecha_carga DESC
+	"""
 	
-	var resultado = Bd.select_query(sql)
+	var valores = [id_nc_actual]
+	var resultado = Bd.select_query(sql, valores)
 	
 	documentos.clear()
 	lista_documentos.clear()
 	
 	if resultado and resultado.size() > 0:
+		print("✅ Encontrados " + str(resultado.size()) + " documentos")
+		
 		for fila in resultado:
+			# Obtener valores con valores por defecto seguros
 			var nombre_archivo = str(fila.get("nombre_archivo", "Sin nombre"))
 			var tipo_archivo = str(fila.get("tipo_archivo", ""))
 			var fecha_carga = str(fila.get("fecha_carga", ""))
 			var usuario = str(fila.get("nombre_usuario", "Desconocido"))
+			var ruta_archivo = str(fila.get("ruta_archivo", ""))
+			var descripcion = str(fila.get("descripcion", ""))
+			
+			# Validar que tenemos datos mínimos
+			if nombre_archivo == "" or nombre_archivo == "Sin nombre":
+				nombre_archivo = "Documento sin nombre"
 			
 			# Agregar a array interno
 			documentos.append({
 				"id": fila.get("id", 0),
 				"nombre": nombre_archivo,
-				"ruta": fila.get("ruta_archivo", ""),
+				"ruta": ruta_archivo,
 				"tipo": tipo_archivo,
 				"fecha": fecha_carga,
 				"usuario": usuario,
-				"descripcion": str(fila.get("descripcion", ""))
+				"descripcion": descripcion
 			})
 			
 			# Agregar a ItemList con icono según tipo
 			var icono = _obtener_icono_por_tipo(tipo_archivo)
 			
-			# Mostrar nombre y fecha
-			var fecha_formateada = fecha_carga if fecha_carga else "Sin fecha"
-			if fecha_formateada.length() >= 10:
-				fecha_formateada = fecha_formateada.substr(0, 10)
+			# Formatear fecha para mostrar
+			var fecha_formateada = "Sin fecha"
+			if fecha_carga and fecha_carga != "":
+				# Intentar varios formatos de fecha
+				if fecha_carga.length() >= 10:
+					fecha_formateada = fecha_carga.substr(0, 10)
+				else:
+					fecha_formateada = fecha_carga
 			
-			var texto_item = "{icono} {nombre}\n   📅 {fecha} 👤 {usuario}".format({
-				"icono": icono,
-				"nombre": nombre_archivo,
-				"fecha": fecha_formateada,
-				"usuario": usuario
+			# Construir texto para mostrar (más simple para evitar problemas)
+			var texto_item = icono + " " + nombre_archivo + "  (" + fecha_formateada + ")"
+			
+			# Agregar a la lista
+			var idx = lista_documentos.add_item(texto_item)
+			
+			# Agregar metadata útil al item
+			lista_documentos.set_item_metadata(idx, {
+				"id": fila.get("id", 0),
+				"ruta": ruta_archivo,
+				"tipo": tipo_archivo,
+				"nombre": nombre_archivo
 			})
-			
-			lista_documentos.add_item(texto_item)
 		
 		print("✅ Documentos cargados desde BD: ", documentos.size())
+		
+		# Agregar información para el usuario
+		lista_documentos.add_item("💡 Haga doble clic en un documento para abrirlo")
+		lista_documentos.set_item_disabled(lista_documentos.item_count - 1, true)  # Deshabilitar este item
+			
 	else:
-		lista_documentos.add_item("No hay documentos asociados")
+		# No hay documentos - mostrar mensaje informativo
+		lista_documentos.add_item("📭 No hay documentos asociados a esta NC")
+		
+		# Agregar item instructivo
+		lista_documentos.add_item("💡 Use 'Cargar Documento' para agregar archivos")
+		lista_documentos.set_item_disabled(lista_documentos.item_count - 1, true)  # Deshabilitar este item
+		
 		print("ℹ️ No hay documentos asociados a esta NC")
 
 func _obtener_icono_por_tipo(tipo_archivo: String) -> String:
@@ -268,6 +317,217 @@ func _obtener_icono_por_tipo(tipo_archivo: String) -> String:
 		"xls", "xlsx": return "📊"
 		"jpg", "jpeg", "png", "gif": return "🖼️"
 		_: return "📎"
+
+# ============================================================
+# NUEVA FUNCIÓN PARA ABRIR DOCUMENTOS (DOBLE CLIC)
+# ============================================================
+
+func _on_ListaDocumentos_item_activated(index: int):
+	"""Abre el documento al hacer doble clic en la lista."""
+	
+	# Verificar que el índice sea válido
+	if index < 0 or index >= lista_documentos.item_count:
+		print("⚠️ Índice inválido: ", index)
+		return
+	
+	# Obtener metadata del item
+	var metadata = lista_documentos.get_item_metadata(index)
+	
+	# Verificar si es un documento válido (tiene metadata con ruta)
+	if metadata == null:
+		print("ℹ️ Item sin metadata (probablemente mensaje informativo)")
+		return
+	
+	# Obtener la ruta del archivo
+	var ruta_archivo = metadata.get("ruta", "")
+	var nombre_archivo = metadata.get("nombre", "Documento")
+	var tipo_archivo = metadata.get("tipo", "")
+	
+	if ruta_archivo.is_empty():
+		print("⚠️ No hay ruta para abrir el documento")
+		mensaje_error.dialog_text = "No se encontró la ruta del documento"
+		mensaje_error.popup_centered()
+		return
+	
+	print("📂 Intentando abrir documento: ", nombre_archivo)
+	print("   - Ruta: ", ruta_archivo)
+	print("   - Tipo: ", tipo_archivo)
+	
+	# Verificar si el archivo existe
+	if not FileAccess.file_exists(ruta_archivo):
+		print("❌ El archivo no existe en la ruta: ", ruta_archivo)
+		
+		# Intentar buscar en diferentes ubicaciones
+		var archivo_encontrado = _buscar_archivo_alternativo(nombre_archivo, ruta_archivo)
+		if archivo_encontrado != "":
+			ruta_archivo = archivo_encontrado
+			print("✅ Archivo encontrado en ubicación alternativa: ", ruta_archivo)
+		else:
+			mensaje_error.dialog_text = """
+			No se pudo encontrar el archivo: 
+			
+			{nombre}
+			
+			Ruta original: {ruta}
+			
+			Posibles causas:
+			1. El archivo fue movido o eliminado
+			2. La ruta almacenada es incorrecta
+			3. No tiene permisos de acceso
+			""".format({"nombre": nombre_archivo, "ruta": ruta_archivo})
+			mensaje_error.popup_centered()
+			return
+	
+	# Intentar abrir el archivo con la aplicación predeterminada del sistema
+	var resultado = OS.shell_open(ruta_archivo)
+	
+	if resultado == OK:
+		print("✅ Documento abierto exitosamente: ", nombre_archivo)
+		
+		# Registrar la acción en trazas si existe la tabla
+		if Bd.table_exists("trazas_nc"):
+			_registrar_traza("APERTURA_DOCUMENTO", "Documento abierto: " + nombre_archivo)
+	else:
+		print("❌ Error al abrir el documento: ", nombre_archivo)
+		
+		# Intentar métodos alternativos para abrir el archivo
+		if not _intentar_abrir_con_metodo_alternativo(ruta_archivo, tipo_archivo):
+			mensaje_error.dialog_text = """
+			No se pudo abrir el documento: 
+			
+			{nombre}
+			
+			Error: El sistema no tiene una aplicación asociada para abrir este tipo de archivo.
+			
+			Tipo de archivo: {tipo}
+			""".format({"nombre": nombre_archivo, "tipo": tipo_archivo})
+			mensaje_error.popup_centered()
+
+func _buscar_archivo_alternativo(nombre_archivo: String, ruta_original: String) -> String:
+	"""Busca el archivo en ubicaciones alternativas."""
+	print("🔍 Buscando archivo en ubicaciones alternativas...")
+	
+	# Lista de directorios donde buscar
+	var directorios_busqueda = [
+		"user://",
+		OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS),
+		OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS),
+		OS.get_system_dir(OS.SYSTEM_DIR_DESKTOP),
+		"res://",
+		ProjectSettings.globalize_path("user://")
+	]
+	
+	# También buscar en la carpeta de la aplicación
+	var exe_path = OS.get_executable_path().get_base_dir()
+	if exe_path != "":
+		directorios_busqueda.append(exe_path)
+	
+	for directorio in directorios_busqueda:
+		var ruta_posible = directorio.path_join(nombre_archivo)
+		if FileAccess.file_exists(ruta_posible):
+			print("✅ Encontrado en: ", ruta_posible)
+			return ruta_posible
+	
+	# Intentar buscar solo por nombre en todo el directorio original
+	var directorio_base = ruta_original.get_base_dir()
+	if directorio_base != "" and directorio_base != ".":
+		var dir = DirAccess.open(directorio_base)
+		if dir:
+			dir.list_dir_begin()
+			var nombre_archivo_actual = dir.get_next()
+			while nombre_archivo_actual != "":
+				if nombre_archivo_actual == nombre_archivo or nombre_archivo_actual.find(nombre_archivo) != -1:
+					var ruta_encontrada = directorio_base.path_join(nombre_archivo_actual)
+					if FileAccess.file_exists(ruta_encontrada):
+						print("✅ Encontrado por nombre similar: ", ruta_encontrada)
+						return ruta_encontrada
+				nombre_archivo_actual = dir.get_next()
+	
+	print("❌ No se encontró el archivo en ubicaciones alternativas")
+	return ""
+
+func _intentar_abrir_con_metodo_alternativo(ruta_archivo: String, tipo_archivo: String) -> bool:
+	"""Intenta abrir el archivo con métodos alternativos."""
+	print("🔄 Intentando métodos alternativos para abrir: ", ruta_archivo)
+	
+	# Dependiendo del tipo de archivo, usar diferentes estrategias
+	match tipo_archivo.to_lower():
+		"txt", "log", "csv":
+			# Para archivos de texto, intentar abrir con editor de texto simple
+			print("📝 Archivo de texto detectado, usando método alternativo")
+			# En Godot podemos mostrar el contenido en un diálogo si es pequeño
+			return _mostrar_contenido_texto(ruta_archivo)
+		
+		"jpg", "jpeg", "png", "gif", "bmp":
+			# Para imágenes, podemos cargarlas y mostrarlas en la aplicación
+			print("🖼️ Imagen detectada, usando método alternativo")
+			return _mostrar_imagen(ruta_archivo)
+		
+		_:
+			print("⚠️ No hay método alternativo para el tipo: ", tipo_archivo)
+			return false
+
+func _mostrar_contenido_texto(ruta_archivo: String) -> bool:
+	"""Muestra el contenido de un archivo de texto en un diálogo."""
+	var file = FileAccess.open(ruta_archivo, FileAccess.READ)
+	if file:
+		var contenido = file.get_as_text()
+		file.close()
+		
+		# Limitar el tamaño para no saturar el diálogo
+		if contenido.length() > 10000:
+			contenido = contenido.substr(0, 10000) + "\n\n... (contenido truncado, archivo muy grande)"
+		
+		# Crear diálogo para mostrar el contenido
+		var dialogo_texto = AcceptDialog.new()
+		dialogo_texto.title = "Contenido del archivo"
+		dialogo_texto.dialog_text = contenido
+		dialogo_texto.size = Vector2i(800, 600)
+		
+		# Agregar área de texto desplazable para contenido largo
+		var scroll_container = ScrollContainer.new()
+		scroll_container.size = Vector2i(780, 500)
+		
+		var label_contenido = RichTextLabel.new()
+		label_contenido.bbcode_enabled = false
+		label_contenido.text = contenido
+		label_contenido.scroll_following = true
+		label_contenido.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		
+		scroll_container.add_child(label_contenido)
+		dialogo_texto.add_child(scroll_container)
+		
+		add_child(dialogo_texto)
+		dialogo_texto.popup_centered(Vector2i(800, 600))
+		
+		return true
+	
+	return false
+
+func _mostrar_imagen(ruta_archivo: String) -> bool:
+	"""Muestra una imagen en un diálogo."""
+	var imagen = Image.load_from_file(ruta_archivo)
+	if imagen:
+		var textura = ImageTexture.create_from_image(imagen)
+		
+		# Crear diálogo para mostrar la imagen
+		var dialogo_imagen = AcceptDialog.new()
+		dialogo_imagen.title = "Vista previa de imagen"
+		dialogo_imagen.dialog_text = ""
+		
+		var textura_rect = TextureRect.new()
+		textura_rect.texture = textura
+		textura_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		textura_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		textura_rect.custom_minimum_size = Vector2i(600, 400)
+		
+		dialogo_imagen.add_child(textura_rect)
+		add_child(dialogo_imagen)
+		dialogo_imagen.popup_centered(Vector2i(650, 450))
+		
+		return true
+	
+	return false
 
 # ============================================================
 # FUNCIONES DE ACTUALIZACIÓN DE INTERFAZ
@@ -421,8 +681,8 @@ func _on_opcion_seleccionada(id: int):
 				"id": datos_nc.get("codigo_expediente", "")
 			})
 			
+			# Solo configuramos el botón OK (AcceptDialog no tiene cancel_button_text)
 			dialogo_confirmar.ok_button_text = "Sí, clasificar"
-			dialogo_confirmar.cancel_button_text = "Cancelar"
 			accion_pendiente = "clasificar_" + opcion
 			dialogo_confirmar.popup_centered()
 		
@@ -444,8 +704,8 @@ func _on_opcion_seleccionada(id: int):
 				"id": datos_nc.get("codigo_expediente", "")
 			})
 			
+			# Solo configuramos el botón OK (AcceptDialog no tiene cancel_button_text)
 			dialogo_confirmar.ok_button_text = "Sí, procesar"
-			dialogo_confirmar.cancel_button_text = "Cancelar"
 			accion_pendiente = "aprobar_" + opcion
 			dialogo_confirmar.popup_centered()
 	
@@ -456,10 +716,10 @@ func _on_DialogoConfirmacion_confirmed():
 	print("✅ Diálogo confirmado")
 	
 	if accion_pendiente.begins_with("clasificar_"):
-		var clasificacion = accion_pendiente.split("_")[1]  # CORREGIDO: accion_pendient -> accion_pendiente
+		var clasificacion = accion_pendiente.split("_")[1]
 		_procesar_clasificacion(clasificacion)
 	elif accion_pendiente.begins_with("aprobar_"):
-		var aprobacion = accion_pendiente.split("_")[1]  # CORREGIDO: accion_pendient -> accion_pendiente
+		var aprobacion = accion_pendiente.split("_")[1]
 		_procesar_aprobacion(aprobacion)
 	elif accion_pendiente == "cerrar":
 		_cerrar_expediente_bd()
@@ -560,7 +820,36 @@ func _procesar_aprobacion(aprobacion: String):
 
 func _on_BotonCargarDoc_pressed():
 	print("--- Botón Cargar presionado ---")
-	dialogo_cargar.popup_centered(Vector2i(800, 500))
+	
+	# Verificar que hay una NC activa
+	if id_nc_actual <= 0:
+		mensaje_error.dialog_text = "No hay expediente activo para cargar documentos"
+		mensaje_error.popup_centered()
+		return
+	
+	# Cerrar otros diálogos primero
+	_cerrar_todos_dialogos()
+	
+	# Configurar directorio inicial a Documentos del sistema
+	var directorio_documentos = OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+	dialogo_cargar.current_dir = directorio_documentos
+	dialogo_cargar.current_path = ""
+	
+	# Mostrar FileDialog usando popup_centered_ratio para mejor control
+	dialogo_cargar.popup_centered_ratio(0.7)
+	
+	print("✅ FileDialog abierto en: ", directorio_documentos)
+
+func _cerrar_todos_dialogos():
+	"""Cierra todos los diálogos abiertos."""
+	if dialogo_cargar.visible:
+		dialogo_cargar.hide()
+	if dialogo_confirmar.visible:
+		dialogo_confirmar.hide()
+	if mensaje_exito.visible:
+		mensaje_exito.hide()
+	if mensaje_error.visible:
+		mensaje_error.hide()
 
 func _on_BotonCerrarExp_pressed():
 	print("📦 Botón Cerrar expediente presionado")
@@ -640,11 +929,37 @@ func _on_BtnActualizarInfo_pressed():
 func _on_DialogoCargarDoc_file_selected(path: String):
 	print("📁 Procesando archivo: ", path)
 	
+	# Verificar que la ruta sea válida
+	if path.is_empty():
+		print("❌ Ruta de archivo vacía")
+		mensaje_error.dialog_text = "No se seleccionó ningún archivo"
+		mensaje_error.popup_centered()
+		return
+	
+	# Verificar que el archivo exista
+	if not FileAccess.file_exists(path):
+		print("❌ El archivo no existe: ", path)
+		mensaje_error.dialog_text = "El archivo seleccionado no existe o no se puede acceder"
+		mensaje_error.popup_centered()
+		return
+	
 	var nombre_archivo = path.get_file()
 	var extension = nombre_archivo.get_extension().to_lower()
 	
+	# Validar extensión
+	if extension.is_empty():
+		print("⚠️ Archivo sin extensión: ", nombre_archivo)
+		mensaje_error.dialog_text = "El archivo no tiene extensión válida"
+		mensaje_error.popup_centered()
+		return
+	
 	# Determinar tipo de archivo
 	var tipo_archivo = extension
+	
+	# Obtener tamaño
+	var tamanio_bytes = _obtener_tamanio_archivo(path)
+	if tamanio_bytes <= 0:
+		print("⚠️ Archivo de tamaño 0 o no accesible: ", path)
 	
 	# Guardar en la base de datos
 	var datos_documento = {
@@ -652,10 +967,12 @@ func _on_DialogoCargarDoc_file_selected(path: String):
 		"nombre_archivo": nombre_archivo,
 		"ruta_archivo": path,
 		"tipo_archivo": tipo_archivo,
-		"tamanio_bytes": _obtener_tamanio_archivo(path),
+		"tamanio_bytes": tamanio_bytes,
 		"usuario_carga": usuario_actual_id,
 		"descripcion": "Documento cargado desde sistema"
 	}
+	
+	print("📝 Insertando documento en BD: ", datos_documento)
 	
 	var id_insertado = Bd.insert("documentos_nc", datos_documento)
 	
@@ -678,12 +995,18 @@ func _on_DialogoCargarDoc_file_selected(path: String):
 		mensaje_error.popup_centered()
 
 func _obtener_tamanio_archivo(path: String) -> int:
+	if not FileAccess.file_exists(path):
+		print("⚠️ El archivo no existe: ", path)
+		return 0
+	
 	var file = FileAccess.open(path, FileAccess.READ)
 	if file:
 		var tamanio = file.get_length()
 		file.close()
 		return tamanio
-	return 0
+	else:
+		print("⚠️ No se pudo abrir el archivo para lectura: ", path)
+		return 0
 
 func _registrar_traza(accion: String, detalles: String):
 	"""Registra una traza en la base de datos (si la tabla existe)."""
@@ -706,9 +1029,18 @@ func _registrar_traza(accion: String, detalles: String):
 		print("⚠️ No se pudo registrar traza")
 
 # ============================================================
-# FUNCIONES DE UTILIDAD
+# FUNCIONES DE UTILIDAD Y MÉTODOS NUEVOS
 # ============================================================
 
 func _log(mensaje: String):
 	"""Función de logging para depuración."""
 	print("[ProcesarExpediente] " + mensaje)
+
+func _verificar_dialogos():
+	"""Verifica el estado de todos los diálogos."""
+	print("=== ESTADO DE DIÁLOGOS ===")
+	print("FileDialog visible: ", dialogo_cargar.visible)
+	print("FileDialog enabled: ", dialogo_cargar.disabled == false)
+	print("FileDialog exclusive: ", dialogo_cargar.exclusive)
+	print("FileDialog filters: ", dialogo_cargar.filters)
+	print("=== FIN ESTADO ===")

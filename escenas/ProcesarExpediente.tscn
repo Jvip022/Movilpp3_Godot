@@ -540,6 +540,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_secondary_hover")
 text = "🏠 VOLVER AL MENÚ"
 
 [node name="DialogoCargarDoc" type="FileDialog" parent="." unique_id=1446264309]
+oversampling_override = 1.0
 title = "Open File(s)"
 file_mode = 1
 filters = PackedStringArray("*.png, *.jpg, *.jpeg ; Imágenes", "*.pdf ; Documentos PDF", "*.txt ; Archivos de texto")
