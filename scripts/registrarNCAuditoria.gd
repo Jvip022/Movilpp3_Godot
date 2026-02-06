@@ -41,7 +41,7 @@ func _ready():
 		mostrar_error("Error de configuración del sistema")
 		return
 	
-	var global_node = get_node("/root/Global") if has_node("/root/Global") else null
+	var global_node = Engine.get_singleton("Global")
 	
 	# Obtener BD desde Global
 	if global_node and global_node.has_method("get_bd_reference"):
