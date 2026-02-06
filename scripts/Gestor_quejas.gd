@@ -52,7 +52,7 @@ func query_safe(query: String, args: Array = []) -> Array:
 	"""
     Ejecuta una consulta SQL de forma segura, manejando errores.
     Retorna siempre un Array, incluso si hay errores.
-    """
+	"""
 	var result = Bd.select_query(query, args)
 
 	if not result or typeof(result) != TYPE_ARRAY:
@@ -697,7 +697,7 @@ func cargar_datos_iniciales():
 func debe_registrar_como_nc(datos: Dictionary) -> bool:
 	"""
     Determina si una queja debe registrarse como no conformidad.
-    """
+	"""
 	var tipo_caso = datos.get("tipo_caso", "")
 	var categoria = datos.get("categoria", "")
 	var monto = float(datos.get("monto_reclamado", 0))
@@ -728,7 +728,7 @@ func registrar_no_conformidad_desde_queja(id_queja: int, _datos_queja: Dictionar
 	"""
     Registra una no conformidad a partir de una queja.
     Retorna el ID de la no conformidad creada.
-    """
+	"""
 	# Obtener la queja completa
 	var queja = obtener_queja_por_id(id_queja)
 	if not queja:
@@ -775,7 +775,7 @@ func generar_codigo_expediente_nc() -> String:
 	"""
     Genera un código único para el expediente de NC.
     Formato: EXP-YYYY-NNNNN
-    """
+	"""
 	var year = Time.get_datetime_string_from_system().substr(0, 4)
 	
 	var result = query_safe(
@@ -793,7 +793,7 @@ func generar_codigo_expediente_nc() -> String:
 func prioridad_a_numero(prioridad: String) -> int:
 	"""
     Convierte prioridad de texto a número (1-3)
-    """
+	"""
 	match prioridad:
 		"urgente", "alta":
 			return 1
@@ -887,7 +887,7 @@ func obtener_no_conformidades_pendientes() -> Array:
             ELSE 4
         END,
         nc.fecha_registro DESC
-    """
+	"""
 	
 	return query_safe(query_str)
 
@@ -1059,7 +1059,7 @@ func aprobar_compensacion(queja_id: int, datos_compensacion: Dictionary) -> int:
 	
 	# Actualizar estado de la queja
 	bd.query_with_args(
-        """UPDATE quejas_reclamaciones SET
+		"""UPDATE quejas_reclamaciones SET
             estado = 'resuelta',
             decision = 'aceptada_total',
             compensacion_otorgada = ?,

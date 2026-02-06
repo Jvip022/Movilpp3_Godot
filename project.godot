@@ -26,6 +26,11 @@ Global="*res://scripts/Global.gd"
 AuthManager="*uid://ct2k2efd7itcw"
 User="*uid://b4vapgyth3auh"
 
+[debug]
+
+settings/stdout/verbose_stdout=true
+file_logging/enable_file_logging=true
+
 [display]
 
 window/size/viewport_width=1600

@@ -222,7 +222,8 @@ func crear_tablas_quejas() -> bool:
 			fecha_modificacion DATETIME,
 			modificado_por INTEGER,
 			sesiones_activas INTEGER DEFAULT 0,
-			preferencias TEXT DEFAULT '{}'
+			preferencias TEXT DEFAULT '{}',
+			sucursal TEXT DEFAULT 'Central'
 		)
 	"""
 	
@@ -633,27 +634,37 @@ func _insertar_datos_prueba_nc():
 
 func inicializar_roles_y_permisos():
 	var roles = [
-		["ADMIN", "Acceso total"],
-		["GESTOR", "Gestión de expedientes"],
-		["USUARIO", "Acceso limitado"]
+		["SUPER_ADMIN", "Acceso total al sistema"],
+		["ADMIN", "Administrador del sistema"],
+		["SUPERVISOR", "Supervisor general"],
+		["ESPECIALISTA_CALIDAD", "Especialista en calidad"],
+		["AUDITOR", "Auditor interno"],
+		["USUARIO", "Usuario estándar"],
+		["OPERADOR", "Operador básico"]
 	]
 
 	for r in roles:
 		query("INSERT OR IGNORE INTO roles (nombre, descripcion) VALUES (?, ?)", r)
 
 	var permisos = [
-		"VER_TODO",
-		"GESTIONAR_USUARIOS",
-		"CREAR_EXPEDIENTE",
-		"PROCESAR_EXPEDIENTE",
-		"VER_PROPIOS"
+		["VER_TODO", "Ver todos los módulos"],
+		["GESTIONAR_USUARIOS", "Gestionar usuarios del sistema"],
+		["CREAR_EXPEDIENTE", "Crear nuevos expedientes"],
+		["PROCESAR_EXPEDIENTE", "Procesar expedientes"],
+		["VER_PROPIOS", "Ver solo expedientes propios"],
+		["VER_REPORTES", "Ver reportes del sistema"],
+		["REGISTRAR_INCIDENCIA", "Registrar incidencias"],
+		["GESTIONAR_QUEJAS", "Gestionar quejas y reclamaciones"],
+		["REGISTRAR_NC", "Registrar no conformidades"],
+		["BACKUP_RESTORE", "Realizar backup y restore"],
+		["VER_TRAZAS", "Ver trazas del sistema"]
 	]
 
 	for p in permisos:
-		query("INSERT OR IGNORE INTO permisos (nombre) VALUES (?)", [p])
+		query("INSERT OR IGNORE INTO permisos (nombre, descripcion) VALUES (?, ?)", p)
 
-	# ADMIN = todos los permisos
-	var admin_id = _get_id("roles", "nombre", "ADMIN")
+	# SUPER_ADMIN = todos los permisos
+	var admin_id = _get_id("roles", "nombre", "SUPER_ADMIN")
 	var perm_ids = _get_ids("permisos")
 
 	for pid in perm_ids:
@@ -661,6 +672,8 @@ func inicializar_roles_y_permisos():
 			"INSERT OR IGNORE INTO rol_permiso (rol_id, permiso_id) VALUES (?, ?)",
 			[admin_id, pid]
 		)
+	
+	print("✅ Roles y permisos inicializados")
 
 func inicializar_usuario_admin():
 	# Verificar en ambas tablas de usuarios
@@ -675,11 +688,15 @@ func inicializar_usuario_admin():
 			"password_hash": "admin123",
 			"email": "admin@sistema.com",
 			"nombre_completo": "Administrador del Sistema",
-			"rol": "admin",
-			"permisos": "[\"todos_permisos\"]",
+			"rol": "SUPER_ADMIN",
+			"permisos": "[\"VER_TODO\", \"GESTIONAR_USUARIOS\", \"CREAR_EXPEDIENTE\", \"PROCESAR_EXPEDIENTE\", \"VER_REPORTES\", \"REGISTRAR_INCIDENCIA\", \"GESTIONAR_QUEJAS\", \"REGISTRAR_NC\", \"BACKUP_RESTORE\", \"VER_TRAZAS\"]",
 			"cargo": "Administrador",
 			"departamento": "TI",
-			"estado_empleado": "activo"
+			"estado_empleado": "activo",
+			"sucursal": "Central",
+			"tema_preferido": "oscuro",
+			"idioma": "es",
+			"zona_horaria": "America/Lima"
 		}
 		
 		var user_id = insert("usuarios", admin_data)
@@ -692,12 +709,285 @@ func inicializar_usuario_admin():
 	
 	if existe_nuevo == 0:
 		print("⚠️ No existe usuario admin en tabla nueva, creando...")
-		var rol_admin = _get_id("roles", "nombre", "ADMIN")
+		var rol_admin = _get_id("roles", "nombre", "SUPER_ADMIN")
 		query("""
 			INSERT INTO usuarios_nueva (username, password_hash, nombre, rol_id)
 			VALUES ('admin', 'admin123', 'Administrador', ?)
 		""", [rol_admin])
 		print("👑 Usuario admin creado en tabla nueva")
+	
+	# Crear usuarios de prueba adicionales si no existen
+	crear_usuarios_prueba()
+
+func crear_usuarios_prueba():
+	"""Crea usuarios de prueba para diferentes roles"""
+	var usuarios_prueba = [
+		{
+			"username": "supervisor",
+			"password_hash": "sup123",
+			"email": "supervisor@havanatur.ec",
+			"nombre_completo": "Supervisor General",
+			"rol": "SUPERVISOR",
+			"permisos": "[\"VER_REPORTES\", \"REGISTRAR_INCIDENCIA\", \"PROCESAR_EXPEDIENTE\", \"VER_PROPIOS\"]",
+			"departamento": "Calidad",
+			"cargo": "Supervisor de Calidad",
+			"estado_empleado": "activo",
+			"sucursal": "Central"
+		},
+		{
+			"username": "especialista",
+			"password_hash": "esp123",
+			"email": "especialista@havanatur.ec",
+			"nombre_completo": "Especialista de Calidad",
+			"rol": "ESPECIALISTA_CALIDAD",
+			"permisos": "[\"CREAR_EXPEDIENTE\", \"PROCESAR_EXPEDIENTE\", \"GESTIONAR_QUEJAS\", \"VER_PROPIOS\"]",
+			"departamento": "Calidad",
+			"cargo": "Especialista en Calidad",
+			"estado_empleado": "activo",
+			"sucursal": "Sucursal Norte"
+		},
+		{
+			"username": "auditor",
+			"password_hash": "aud123",
+			"email": "auditor@havanatur.ec",
+			"nombre_completo": "Auditor Interno",
+			"rol": "AUDITOR",
+			"permisos": "[\"REGISTRAR_NC\", \"VER_REPORTES\", \"VER_PROPIOS\"]",
+			"departamento": "Auditoría",
+			"cargo": "Auditor de Calidad",
+			"estado_empleado": "activo",
+			"sucursal": "Central"
+		},
+		{
+			"username": "operador",
+			"password_hash": "ope123",
+			"email": "operador@havanatur.ec",
+			"nombre_completo": "Operador Básico",
+			"rol": "OPERADOR",
+			"permisos": "[\"VER_PROPIOS\", \"CREAR_EXPEDIENTE\"]",
+			"departamento": "Operaciones",
+			"cargo": "Operador",
+			"estado_empleado": "activo",
+			"sucursal": "Sucursal Sur"
+		}
+	]
+	
+	for usuario in usuarios_prueba:
+		var existe = _scalar("SELECT COUNT(*) FROM usuarios WHERE username = ?", [usuario.username])
+		if existe == 0:
+			insert("usuarios", usuario)
+			print("✅ Usuario de prueba creado: ", usuario.username)
+
+# =========================
+# AUTENTICACIÓN Y GESTIÓN DE USUARIOS
+# =========================
+func autenticar_usuario(username: String, password: String) -> Dictionary:
+	"""
+	Autentica un usuario con username y password.
+	Retorna un diccionario con los datos del usuario si la autenticación es exitosa,
+	o un diccionario vacío si falla.
+	"""
+	print("🔐 Intentando autenticar usuario: ", username)
+	
+	# Buscar en la tabla antigua de usuarios (compatible con el sistema existente)
+	var sql = """
+		SELECT 
+			id, 
+			username, 
+			nombre_completo as nombre, 
+			email, 
+			rol, 
+			departamento,
+			sucursal,
+			cargo,
+			avatar,
+			telefono,
+			fecha_contratacion,
+			estado_empleado,
+			permisos,
+			tema_preferido,
+			idioma,
+			zona_horaria,
+			ultimo_login
+		FROM usuarios 
+		WHERE username = ? AND password_hash = ? AND estado_empleado = 'activo'
+		LIMIT 1
+	"""
+	
+	var result = select_query(sql, [username, password])
+	
+	if result and result.size() > 0:
+		var usuario = result[0]
+		print("✅ Autenticación exitosa para: ", username)
+		
+		# Actualizar último login
+		actualizar_ultimo_login(usuario.id)
+		
+		# Registrar en auditoría
+		registrar_auditoria_login(usuario.id, "LOGIN_EXITOSO")
+		
+		return usuario
+	else:
+		print("❌ Autenticación fallida para: ", username)
+		# Registrar intento fallido
+		registrar_intento_fallido(username)
+		return {}
+
+func obtener_usuario_por_id(usuario_id: int) -> Dictionary:
+	"""
+	Obtiene un usuario por su ID.
+	"""
+	var sql = """
+		SELECT 
+			id, 
+			username, 
+			nombre_completo as nombre, 
+			email, 
+			rol, 
+			departamento,
+			sucursal,
+			cargo,
+			avatar,
+			telefono,
+			fecha_contratacion,
+			estado_empleado,
+			permisos,
+			tema_preferido,
+			idioma,
+			zona_horaria,
+			ultimo_login
+		FROM usuarios 
+		WHERE id = ?
+	"""
+	
+	var result = select_query(sql, [usuario_id])
+	
+	if result and result.size() > 0:
+		return result[0]
+	return {}
+
+func obtener_usuario_por_username(username: String) -> Dictionary:
+	"""
+	Obtiene un usuario por su username.
+	"""
+	var sql = """
+		SELECT 
+			id, 
+			username, 
+			nombre_completo as nombre, 
+			email, 
+			rol, 
+			departamento,
+			sucursal,
+			cargo,
+			avatar,
+			telefono,
+			fecha_contratacion,
+			estado_empleado,
+			permisos,
+			tema_preferido,
+			idioma,
+			zona_horaria,
+			ultimo_login
+		FROM usuarios 
+		WHERE username = ?
+	"""
+	
+	var result = select_query(sql, [username])
+	
+	if result and result.size() > 0:
+		return result[0]
+	return {}
+
+func actualizar_ultimo_login(usuario_id: int):
+	"""
+	Actualiza la fecha del último login del usuario.
+	"""
+	query("UPDATE usuarios SET ultimo_login = CURRENT_TIMESTAMP, sesiones_activas = sesiones_activas + 1 WHERE id = ?", [usuario_id])
+
+func actualizar_sesion_activa(usuario_id: int, incremento: int = 1):
+	"""
+	Actualiza el contador de sesiones activas.
+	"""
+	query("UPDATE usuarios SET sesiones_activas = sesiones_activas + ? WHERE id = ?", [incremento, usuario_id])
+
+func cambiar_password(usuario_id: int, nuevo_password_hash: String):
+	"""
+	Cambia la contraseña de un usuario.
+	"""
+	var data = {
+		"password_hash": nuevo_password_hash,
+		"requiere_cambio_password": 0,
+		"token_recuperacion": null,
+		"token_expiracion": null
+	}
+	
+	update("usuarios", data, "id = ?", [usuario_id])
+	
+	# Registrar en auditoría
+	registrar_auditoria(usuario_id, "CAMBIAR_PASSWORD", "sistema", "Contraseña actualizada")
+
+func obtener_todos_usuarios() -> Array:
+	"""
+	Obtiene todos los usuarios del sistema.
+	"""
+	var sql = """
+		SELECT 
+			id, 
+			username, 
+			nombre_completo as nombre, 
+			email, 
+			rol, 
+			departamento,
+			sucursal,
+			cargo,
+			estado_empleado,
+			ultimo_login,
+			fecha_creacion
+		FROM usuarios 
+		ORDER BY nombre_completo
+	"""
+	
+	return select_query(sql)
+
+func registrar_intento_fallido(username: String):
+	"""
+	Registra un intento fallido de login.
+	"""
+	# Primero obtener el usuario
+	var usuario = obtener_usuario_por_username(username)
+	if usuario and not usuario.is_empty():
+		# Incrementar intentos fallidos
+		var intentos = usuario.get("intentos_fallidos", 0) + 1
+		query("UPDATE usuarios SET intentos_fallidos = ? WHERE id = ?", [intentos, usuario.id])
+		
+		# Si tiene 3 o más intentos fallidos, bloquear temporalmente
+		if intentos >= 3:
+			var bloqueo_hasta = "datetime('now', '+15 minutes')"
+			query("UPDATE usuarios SET bloqueado_hasta = %s WHERE id = ?" % bloqueo_hasta, [usuario.id])
+			print("⚠️ Usuario bloqueado temporalmente: ", username)
+
+func verificar_bloqueo_usuario(username: String) -> bool:
+	"""
+	Verifica si un usuario está bloqueado.
+	Retorna true si está bloqueado, false si no lo está.
+	"""
+	var sql = """
+		SELECT bloqueado_hasta 
+		FROM usuarios 
+		WHERE username = ? 
+		AND bloqueado_hasta > CURRENT_TIMESTAMP
+	"""
+	
+	var result = select_query(sql, [username])
+	return result and result.size() > 0
+
+func registrar_auditoria_login(user_id: int, accion: String):
+	"""
+	Registra auditoría específica para login.
+	"""
+	var detalles = "Acción: " + accion + " | Fecha: " + Time.get_datetime_string_from_system()
+	registrar_auditoria(user_id, accion, "login", detalles)
 
 # =========================
 # FUNCIONES DE CONSULTA (del código antiguo)
@@ -958,8 +1248,8 @@ func count(table: String, where: String = "", params = []) -> int:
 		return int(result[0]["count"])
 	return 0
 
-func _scalar(sql: String) -> int:
-	var result = select_query(sql)
+func _scalar(sql: String, params = []) -> int:
+	var result = select_query(sql, params)
 	if result and result.size() > 0:
 		return int(result[0].values()[0])
 	return 0
@@ -1134,7 +1424,13 @@ func verificar_funciones_bd():
 		"table_exists",
 		"get_database_info",
 		"get_table_structure",
-		"count"
+		"count",
+		"autenticar_usuario",
+		"obtener_usuario_por_id",
+		"obtener_usuario_por_username",
+		"obtener_todos_usuarios",
+		"registrar_auditoria",
+		"cambiar_password"
 	]
 	
 	for funcion in funciones_a_verificar:
@@ -1142,3 +1438,167 @@ func verificar_funciones_bd():
 			print("✓ ", funcion, " - DISPONIBLE")
 		else:
 			print("✗ ", funcion, " - NO DISPONIBLE")
+
+# =========================
+# FUNCIONES ESPECÍFICAS PARA EL SISTEMA DE CALIDAD
+# =========================
+func obtener_incidencias_por_usuario(usuario_id: int, estado: String = "") -> Array:
+	"""
+	Obtiene las incidencias asociadas a un usuario.
+	"""
+	var sql = "SELECT * FROM incidencias_calidad WHERE supervisor_id = ?"
+	var params = [usuario_id]
+	
+	if estado != "":
+		sql += " AND estado = ?"
+		params.append(estado)
+	
+	sql += " ORDER BY fecha_registro DESC"
+	
+	return select_query(sql, params)
+
+func obtener_no_conformidades_por_responsable(responsable_id: int, estado: String = "") -> Array:
+	"""
+	Obtiene las no conformidades donde el usuario es responsable.
+	"""
+	var sql = "SELECT * FROM no_conformidades WHERE responsable_id = ?"
+	var params = [responsable_id]
+	
+	if estado != "":
+		sql += " AND estado = ?"
+		params.append(estado)
+	
+	sql += " ORDER BY fecha_registro DESC"
+	
+	return select_query(sql, params)
+
+func obtener_quejas_por_asignado(asignado_id: int, estado: String = "") -> Array:
+	"""
+	Obtiene las quejas asignadas a un usuario.
+	"""
+	var sql = "SELECT * FROM quejas_reclamaciones WHERE asignado_a = ?"
+	var params = [asignado_id]
+	
+	if estado != "":
+		sql += " AND estado = ?"
+		params.append(estado)
+	
+	sql += " ORDER BY fecha_recepcion DESC"
+	
+	return select_query(sql, params)
+
+# =========================
+# FUNCIONES DE REPORTES
+# =========================
+func generar_reporte_estadisticas(_desde: String = "", _hasta: String = "") -> Dictionary:
+	"""
+	Genera un reporte estadístico del sistema.
+	Nota: Los parámetros _desde y _hasta están reservados para uso futuro.
+	"""
+	var reporte = {
+		"total_usuarios": 0,
+		"total_quejas": 0,
+		"total_incidencias": 0,
+		"total_no_conformidades": 0,
+		"quejas_por_estado": {},
+		"incidencias_por_gravedad": {},
+		"nc_por_tipo": {}
+	}
+	
+	# Contar totales
+	reporte["total_usuarios"] = count("usuarios", "estado_empleado = 'activo'")
+	reporte["total_quejas"] = count("quejas_reclamaciones")
+	reporte["total_incidencias"] = count("incidencias_calidad")
+	reporte["total_no_conformidades"] = count("no_conformidades")
+	
+	# Quejas por estado
+	var estados_quejas = select_query("SELECT estado, COUNT(*) as total FROM quejas_reclamaciones GROUP BY estado")
+	for fila in estados_quejas:
+		reporte["quejas_por_estado"][fila["estado"]] = fila["total"]
+	
+	# Incidencias por gravedad
+	var gravedad_incidencias = select_query("SELECT nivel_gravedad, COUNT(*) as total FROM incidencias_calidad GROUP BY nivel_gravedad")
+	for fila in gravedad_incidencias:
+		reporte["incidencias_por_gravedad"][fila["nivel_gravedad"]] = fila["total"]
+	
+	# NC por tipo
+	var tipos_nc = select_query("SELECT tipo_nc, COUNT(*) as total FROM no_conformidades GROUP BY tipo_nc")
+	for fila in tipos_nc:
+		reporte["nc_por_tipo"][fila["tipo_nc"]] = fila["total"]
+	
+	return reporte
+
+# =========================
+# FUNCIONES DE MIGRACIÓN
+# =========================
+func migrar_usuario_antiguo_a_nuevo(usuario_id: int) -> bool:
+	"""
+	Migra un usuario de la tabla antigua a la nueva estructura.
+	"""
+	var usuario = obtener_usuario_por_id(usuario_id)
+	if usuario.is_empty():
+		return false
+	
+	# Obtener el rol_id correspondiente
+	var rol = usuario.get("rol", "USUARIO")
+	var rol_id = _get_id("roles", "nombre", rol)
+	if rol_id == 0:
+		rol_id = _get_id("roles", "nombre", "USUARIO")
+	
+	# Insertar en la tabla nueva
+	var data = {
+		"username": usuario.username,
+		"password_hash": usuario.get("password_hash", ""),
+		"nombre": usuario.nombre,
+		"email": usuario.email,
+		"rol_id": rol_id,
+		"activo": 1
+	}
+	
+	return insert("usuarios_nueva", data) > 0
+
+# =========================
+# FUNCIONES DE BACKUP Y RESTAURACIÓN
+# =========================
+func crear_backup(ruta_backup: String) -> bool:
+	"""
+	Crea una copia de seguridad de la base de datos.
+	"""
+	var dir = DirAccess.open("res://")
+	if not dir.dir_exists("backups"):
+		dir.make_dir("backups")
+	
+	var destino = "user://backups/" + ruta_backup
+	var origen = database_path
+	
+	# Copiar archivo de base de datos
+	var origen_file = FileAccess.open(origen, FileAccess.READ)
+	if not origen_file:
+		push_error("No se pudo abrir la base de datos para backup")
+		return false
+	
+	var contenido = origen_file.get_buffer(origen_file.get_length())
+	origen_file.close()
+	
+	var destino_file = FileAccess.open(destino, FileAccess.WRITE)
+	if not destino_file:
+		push_error("No se pudo crear el archivo de backup")
+		return false
+	
+	destino_file.store_buffer(contenido)
+	destino_file.close()
+	
+	# Registrar en tabla de backups
+	var backup_data = {
+		"nombre_archivo": ruta_backup,
+		"ruta": destino,
+		"tamano_bytes": contenido.size(),
+		"usuario_id": 0,  # Sistema
+		"tipo": "manual",
+		"estado": "completado"
+	}
+	
+	insert("backups", backup_data)
+	
+	print("✅ Backup creado en: " + destino)
+	return true

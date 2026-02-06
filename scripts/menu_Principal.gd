@@ -12,7 +12,7 @@ enum Roles {
 	SUPER_ADMIN  # Nuevo rol con acceso a todo
 }
 
-# Diccionario de botones y sus roles permitidos
+# Diccionario de botones y sus roles permitidos (actualizado para coincidir con los roles de BD)
 var permisos_botones = {
 	# Botones para SUPER_ADMIN + rol específico
 	"BtnAdministrarUsuarios": [Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
@@ -71,7 +71,13 @@ var usuario_actual = {
 # Variables para acceso rápido a botones
 var botones = {}
 
+# Referencia a Global
+var global_node
+
 func _ready():
+	# Obtener referencia a Global
+	global_node = get_node("/root/Global") if has_node("/root/Global") else null
+	
 	# Inicializar diccionario de botones para acceso rápido
 	inicializar_botones()
 	
@@ -80,6 +86,26 @@ func _ready():
 	
 	# Verificar si hay una sesión activa
 	verificar_sesion()
+	
+	# Configurar atajos de teclado
+	configurar_atajos_teclado()
+
+func configurar_atajos_teclado():
+	# Hacer que el botón de cerrar sesión responda a Ctrl+Q
+	btn_cerrar_sesion.shortcut = crear_atajo_teclado(KEY_Q, true, false, false)
+	
+	# Hacer que el botón de salir responda a Ctrl+Shift+Q
+	btn_salir.shortcut = crear_atajo_teclado(KEY_Q, true, true, false)
+
+func crear_atajo_teclado(keycode: int, ctrl: bool = false, shift: bool = false, alt: bool = false) -> Shortcut:
+	var shortcut = Shortcut.new()
+	var input_event = InputEventKey.new()
+	input_event.keycode = keycode
+	input_event.ctrl_pressed = ctrl
+	input_event.shift_pressed = shift
+	input_event.alt_pressed = alt
+	shortcut.events = [input_event]
+	return shortcut
 
 func inicializar_botones():
 	# Recoger todos los botones del grid
@@ -98,120 +124,84 @@ func conectar_botones():
 	btn_salir.pressed.connect(_on_btn_salir_pressed)
 
 func verificar_sesion():
-	# Simulamos diferentes usuarios para pruebas
-	# En producción, esto vendría de tu sistema de autenticación
+	# Verificar si Global está disponible
+	if not global_node:
+		print("⚠️ Global no está disponible, usando modo invitado")
+		configurar_modo_invitado()
+		return
 	
-	# Para probar diferentes roles, cambia esta línea:
-	var usuario_prueba = "super_admin"  # Opciones: invitado, admin, supervisor, especialista, auditor, usuario, sistema, super_admin
-	
-	match usuario_prueba:
-		"invitado":
-			usuario_actual = {
-				"nombre": "Invitado",
-				"rol": Roles.NO_AUTENTICADO,
-				"id": null,
-				"email": "",
-				"sucursal": ""
-			}
-			user_name_label.text = "Usuario: Invitado"
-			user_role_label.text = "Rol: No autenticado"
-			mensaje_no_autenticado.popup_centered()
+	# Verificar si hay usuario autenticado en Global
+	if global_node.esta_autenticado():
+		# Obtener datos del usuario desde Global
+		var usuario_global = global_node.usuario_actual
 		
-		"admin":
-			usuario_actual = {
-				"nombre": "Admin Principal",
-				"rol": Roles.ADMINISTRADOR,
-				"id": 1,
-				"email": "admin@havanatur.ec",
-				"sucursal": "Central"
-			}
-			user_name_label.text = "Usuario: Admin Principal"
-			user_role_label.text = "Rol: Administrador"
+		# Mapear el rol de BD al enum de Dashboard
+		var rol_enum = mapear_rol_bd_a_enum(usuario_global.rol)
 		
-		"supervisor":
-			usuario_actual = {
-				"nombre": "Supervisor General",
-				"rol": Roles.SUPERVISOR_GENERAL,
-				"id": 2,
-				"email": "supervisor@havanatur.ec",
-				"sucursal": "Central"
-			}
-			user_name_label.text = "Usuario: Supervisor General"
-			user_role_label.text = "Rol: Supervisor General"
+		usuario_actual = {
+			"nombre": usuario_global.nombre,
+			"rol": rol_enum,
+			"id": usuario_global.id,
+			"email": usuario_global.email,
+			"sucursal": usuario_global.get("sucursal", ""),
+			"departamento": usuario_global.get("departamento", ""),
+			"cargo": usuario_global.get("cargo", "")
+		}
 		
-		"especialista":
-			usuario_actual = {
-				"nombre": "Especialista Calidad",
-				"rol": Roles.ESPECIALISTA_CALIDAD_SUCURSAL,
-				"id": 3,
-				"email": "calidad@havanatur.ec",
-				"sucursal": "Sucursal Norte"
-			}
-			user_name_label.text = "Usuario: Especialista Calidad"
-			user_role_label.text = "Rol: Especialista Calidad Sucursal"
+		user_name_label.text = "Usuario: " + usuario_actual["nombre"]
+		user_role_label.text = "Rol: " + usuario_global.rol
 		
-		"auditor":
-			usuario_actual = {
-				"nombre": "Auditor Interno",
-				"rol": Roles.AUDITOR,
-				"id": 4,
-				"email": "auditor@havanatur.ec",
-				"sucursal": "Central"
-			}
-			user_name_label.text = "Usuario: Auditor Interno"
-			user_role_label.text = "Rol: Auditor"
-		
-		"usuario":
-			usuario_actual = {
-				"nombre": "Usuario General",
-				"rol": Roles.USUARIO,
-				"id": 5,
-				"email": "usuario@havanatur.ec",
-				"sucursal": "Sucursal Sur"
-			}
-			user_name_label.text = "Usuario: Usuario General"
-			user_role_label.text = "Rol: Usuario"
-		
-		"sistema":
-			usuario_actual = {
-				"nombre": "Sistema",
-				"rol": Roles.SISTEMA,
-				"id": 0,
-				"email": "sistema@havanatur.ec",
-				"sucursal": "Central"
-			}
-			user_name_label.text = "Usuario: Sistema"
-			user_role_label.text = "Rol: Sistema"
-		
-		"super_admin":
-			usuario_actual = {
-				"nombre": "Super Administrador",
-				"rol": Roles.SUPER_ADMIN,
-				"id": 999,
-				"email": "superadmin@havanatur.ec",
-				"sucursal": "Central"
-			}
-			user_name_label.text = "Usuario: Super Administrador"
-			user_role_label.text = "Rol: Super Admin"
-		
-		_:  # Por defecto, invitado
-			usuario_actual = {
-				"nombre": "Invitado",
-				"rol": Roles.NO_AUTENTICADO,
-				"id": null,
-				"email": "",
-				"sucursal": ""
-			}
-			user_name_label.text = "Usuario: Invitado"
-			user_role_label.text = "Rol: No autenticado"
+		print("✅ Sesión activa para: " + usuario_actual["nombre"] + " (Rol: " + usuario_global.rol + ")")
+	else:
+		# No hay sesión activa
+		configurar_modo_invitado()
 	
 	# Actualizar visibilidad de botones según rol
 	actualizar_visibilidad_botones()
+
+func configurar_modo_invitado():
+	usuario_actual = {
+		"nombre": "Invitado",
+		"rol": Roles.NO_AUTENTICADO,
+		"id": null,
+		"email": "",
+		"sucursal": ""
+	}
+	user_name_label.text = "Usuario: Invitado"
+	user_role_label.text = "Rol: No autenticado"
+	mensaje_no_autenticado.popup_centered()
+
+func mapear_rol_bd_a_enum(rol_bd: String) -> int:
+	"""
+	Convierte el rol de la base de datos (string) al enum del Dashboard.
+	"""
+	match rol_bd.to_upper():
+		"SUPER_ADMIN", "SUPERADMIN":
+			return Roles.SUPER_ADMIN
+		"ADMIN", "ADMINISTRADOR":
+			return Roles.ADMINISTRADOR
+		"SUPERVISOR", "SUPERVISOR_GENERAL":
+			return Roles.SUPERVISOR_GENERAL
+		"ESPECIALISTA_CALIDAD", "ESPECIALISTA":
+			return Roles.ESPECIALISTA_CALIDAD_SUCURSAL
+		"AUDITOR":
+			return Roles.AUDITOR
+		"SISTEMA":
+			return Roles.SISTEMA
+		"USUARIO", "OPERADOR", "USER":
+			return Roles.USUARIO
+		_:
+			return Roles.NO_AUTENTICADO
 
 func actualizar_visibilidad_botones():
 	# Ocultar todos los botones primero
 	for boton_nombre in botones:
 		botones[boton_nombre].visible = false
+	
+	# Si no está autenticado, solo mostrar botón de salir
+	if usuario_actual["rol"] == Roles.NO_AUTENTICADO:
+		btn_cerrar_sesion.visible = false
+		return
 	
 	# Si es SUPER_ADMIN, mostrar todos los botones excepto Configuración (solo SISTEMA)
 	if usuario_actual["rol"] == Roles.SUPER_ADMIN:
@@ -238,6 +228,11 @@ func actualizar_visibilidad_botones():
 func _on_boton_pressed(boton_nombre: String):
 	print("Botón presionado: ", boton_nombre)
 	
+	# Verificar autenticación primero
+	if usuario_actual["rol"] == Roles.NO_AUTENTICADO:
+		mensaje_no_autenticado.popup_centered()
+		return
+	
 	# Verificar si el usuario tiene permiso
 	var roles_permitidos = permisos_botones.get(boton_nombre, [])
 	
@@ -251,16 +246,9 @@ func _on_boton_pressed(boton_nombre: String):
 		if boton_nombre in rutas_escenas:
 			var ruta_escena = rutas_escenas[boton_nombre]
 			
-			# MODIFICACIÓN: Verificar si la escena existe antes de cargarla
-			if FileAccess.file_exists(ruta_escena):
-				# Usar SceneManager si está disponible
-				if has_node("/root/SceneManager"):
-					var scene_manager = get_node("/root/SceneManager")
-					var scene_key = boton_nombre.replace("Btn", "").to_lower()
-					scene_manager.change_scene_to(scene_key)
-				else:
-					# Fallback: cambiar escena directamente
-					get_tree().change_scene_to_file(ruta_escena)
+			# Verificar si la escena existe antes de cargarla
+			if ResourceLoader.exists(ruta_escena):
+				get_tree().change_scene_to_file(ruta_escena)
 			else:
 				print("ERROR: Escena no encontrada: ", ruta_escena)
 				mostrar_mensaje_error("La funcionalidad no está disponible todavía.\nEscena: " + ruta_escena)
@@ -285,27 +273,31 @@ func _on_btn_cerrar_sesion_pressed():
 func _confirmar_cerrar_sesion():
 	print("Sesión cerrada")
 	
-	# Resetear usuario a invitado
-	usuario_actual = {
-		"nombre": "Invitado",
-		"rol": Roles.NO_AUTENTICADO,
-		"id": null,
-		"email": "",
-		"sucursal": ""
-	}
-	
-	# Actualizar UI
-	user_name_label.text = "Usuario: Invitado"
-	user_role_label.text = "Rol: No autenticado"
-	
-	# Actualizar visibilidad de botones
-	actualizar_visibilidad_botones()
+	# Cerrar sesión en Global si está disponible
+	if global_node:
+		global_node.cerrar_sesion()
+	else:
+		# Resetear usuario local si Global no está disponible
+		usuario_actual = {
+			"nombre": "Invitado",
+			"rol": Roles.NO_AUTENTICADO,
+			"id": null,
+			"email": "",
+			"sucursal": ""
+		}
+		
+		# Actualizar UI
+		user_name_label.text = "Usuario: Invitado"
+		user_role_label.text = "Rol: No autenticado"
+		
+		# Actualizar visibilidad de botones
+		actualizar_visibilidad_botones()
 	
 	# Mostrar mensaje
 	mostrar_mensaje_temporal("Sesión cerrada", "Se ha cerrado la sesión correctamente.")
 	
-	# Opcional: Redirigir a pantalla de login
-	# get_tree().change_scene_to_file("res://escenas/autentificar.tscn")
+	# Redirigir a pantalla de login
+	get_tree().change_scene_to_file("res://escenas/login.tscn")
 
 func _cancelar_cerrar_sesion():
 	print("Cierre de sesión cancelado")
@@ -322,6 +314,19 @@ func _on_btn_salir_pressed():
 	
 	add_child(dialog)
 	dialog.popup_centered()
+
+func _confirmar_salida():
+	print("Saliendo del sistema...")
+	
+	# Si hay sesión activa, cerrarla primero
+	if global_node and global_node.esta_autenticado():
+		global_node.cerrar_sesion()
+	
+	# Salir de la aplicación
+	get_tree().quit()
+
+func _cancelar_salida():
+	print("Salida cancelada")
 
 # Funciones de utilidad
 func mostrar_mensaje_error(mensaje: String):
@@ -342,13 +347,6 @@ func mostrar_mensaje_temporal(titulo: String, mensaje: String):
 	await get_tree().create_timer(3.0).timeout
 	dialog.queue_free()
 
-func _confirmar_salida():
-	print("Saliendo del sistema...")
-	get_tree().quit()
-
-func _cancelar_salida():
-	print("Salida cancelada")
-
 # Función para manejar la tecla ESC para salir
 func _input(event):
 	if event is InputEventKey:
@@ -362,48 +360,152 @@ func _unhandled_input(event):
 		if event.ctrl_pressed and event.shift_pressed:
 			match event.keycode:
 				KEY_A:  # Cambiar a Admin
-					usuario_actual["rol"] = Roles.ADMINISTRADOR
-					user_name_label.text = "Usuario: Admin (Debug)"
-					user_role_label.text = "Rol: Administrador (Debug)"
-					actualizar_visibilidad_botones()
+					if global_node:
+						global_node.usuario_actual = {
+							"id": 1,
+							"username": "admin",
+							"nombre": "Admin Debug",
+							"email": "admin@debug.com",
+							"rol": "ADMIN",
+							"sucursal": "Central",
+							"departamento": "TI",
+							"cargo": "Administrador"
+						}
+						verificar_sesion()
+						mostrar_mensaje_temporal("Debug", "Ahora eres: Admin Debug")
 				KEY_S:  # Cambiar a Super Admin
-					usuario_actual["rol"] = Roles.SUPER_ADMIN
-					user_name_label.text = "Usuario: Super Admin (Debug)"
-					user_role_label.text = "Rol: Super Admin (Debug)"
-					actualizar_visibilidad_botones()
+					if global_node:
+						global_node.usuario_actual = {
+							"id": 999,
+							"username": "superadmin",
+							"nombre": "Super Admin Debug",
+							"email": "superadmin@debug.com",
+							"rol": "SUPER_ADMIN",
+							"sucursal": "Central",
+							"departamento": "TI",
+							"cargo": "Super Administrador"
+						}
+						verificar_sesion()
+						mostrar_mensaje_temporal("Debug", "Ahora eres: Super Admin Debug")
 				KEY_I:  # Cambiar a Invitado
-					usuario_actual["rol"] = Roles.NO_AUTENTICADO
-					user_name_label.text = "Usuario: Invitado (Debug)"
-					user_role_label.text = "Rol: No autenticado (Debug)"
-					actualizar_visibilidad_botones()
+					if global_node:
+						global_node.usuario_actual = {}
+						verificar_sesion()
+						mostrar_mensaje_temporal("Debug", "Ahora eres: Invitado")
 				KEY_R:  # Recargar interfaz
-					actualizar_visibilidad_botones()
+					verificar_sesion()
+				KEY_L:  # Listar usuarios en consola
+					if global_node and global_node.db:
+						listar_usuarios_bd()
 
-# Función para simular autenticación (para pruebas) - CORREGIDA
+# Función para listar usuarios de la BD (debug)
+func listar_usuarios_bd():
+	if global_node and global_node.db:
+		print("\n=== LISTA DE USUARIOS EN BD ===")
+		var usuarios = global_node.db.obtener_todos_usuarios()
+		for usuario in usuarios:
+			print("ID: %d, Usuario: %s, Nombre: %s, Rol: %s, Email: %s" % [
+				usuario.id, usuario.username, usuario.nombre, usuario.rol, usuario.email
+			])
+		print("=== FIN DE LISTA ===")
+
+# Función para simular autenticación (para pruebas) - Mantenida para compatibilidad
 func simular_autenticacion(nombre: String, rol: int):
-	usuario_actual = {
-		"nombre": nombre,
-		"rol": rol,
-		"id": 100,
-		"email": nombre.to_lower().replace(" ", ".") + "@havanatur.ec",  # CORRECCIÓN: to_lower() en lugar de lower()
-		"sucursal": "Central"
+	# Mapear rol enum a string de BD
+	var rol_bd = ""
+	match rol:
+		Roles.SUPER_ADMIN: rol_bd = "SUPER_ADMIN"
+		Roles.ADMINISTRADOR: rol_bd = "ADMIN"
+		Roles.SUPERVISOR_GENERAL: rol_bd = "SUPERVISOR"
+		Roles.ESPECIALISTA_CALIDAD_SUCURSAL: rol_bd = "ESPECIALISTA_CALIDAD"
+		Roles.AUDITOR: rol_bd = "AUDITOR"
+		Roles.USUARIO: rol_bd = "USUARIO"
+		Roles.SISTEMA: rol_bd = "SISTEMA"
+		_: rol_bd = "INVITADO"
+	
+	# Actualizar Global si está disponible
+	if global_node:
+		global_node.usuario_actual = {
+			"id": 100,
+			"username": nombre.to_lower().replace(" ", "_"),
+			"nombre": nombre,
+			"email": nombre.to_lower().replace(" ", ".") + "@havanatur.ec",
+			"rol": rol_bd,
+			"sucursal": "Central",
+			"departamento": "Pruebas",
+			"cargo": "Usuario de Prueba"
+		}
+		verificar_sesion()
+	else:
+		# Fallback: actualizar localmente
+		usuario_actual = {
+			"nombre": nombre,
+			"rol": rol,
+			"id": 100,
+			"email": nombre.to_lower().replace(" ", ".") + "@havanatur.ec",
+			"sucursal": "Central"
+		}
+		
+		user_name_label.text = "Usuario: " + nombre
+		match rol:
+			Roles.SUPER_ADMIN:
+				user_role_label.text = "Rol: Super Administrador"
+			Roles.ADMINISTRADOR:
+				user_role_label.text = "Rol: Administrador"
+			Roles.SUPERVISOR_GENERAL:
+				user_role_label.text = "Rol: Supervisor General"
+			Roles.ESPECIALISTA_CALIDAD_SUCURSAL:
+				user_role_label.text = "Rol: Especialista Calidad"
+			Roles.AUDITOR:
+				user_role_label.text = "Rol: Auditor"
+			Roles.USUARIO:
+				user_role_label.text = "Rol: Usuario"
+			Roles.SISTEMA:
+				user_role_label.text = "Rol: Sistema"
+		
+		actualizar_visibilidad_botones()
+
+# Función para aplicar tema del usuario
+func aplicar_tema_usuario():
+	if global_node and global_node.usuario_actual.has("tema_preferido"):
+		var tema = global_node.usuario_actual.tema_preferido
+		match tema:
+			"oscuro":
+				# Aquí puedes aplicar un tema oscuro
+				# Por ejemplo: self.theme = preload("res://temas/tema_oscuro.tres")
+				pass
+			"claro":
+				# Tema claro por defecto
+				pass
+
+# Función para mostrar información del sistema
+func mostrar_info_sistema():
+	var info = {
+		"usuario": usuario_actual["nombre"],
+		"rol": user_role_label.text,
+		"hora": Time.get_time_string_from_system(),
+		"fecha": Time.get_date_string_from_system()
 	}
 	
-	user_name_label.text = "Usuario: " + nombre
-	match rol:
-		Roles.SUPER_ADMIN:
-			user_role_label.text = "Rol: Super Administrador"
-		Roles.ADMINISTRADOR:
-			user_role_label.text = "Rol: Administrador"
-		Roles.SUPERVISOR_GENERAL:
-			user_role_label.text = "Rol: Supervisor General"
-		Roles.ESPECIALISTA_CALIDAD_SUCURSAL:
-			user_role_label.text = "Rol: Especialista Calidad"
-		Roles.AUDITOR:
-			user_role_label.text = "Rol: Auditor"
-		Roles.USUARIO:
-			user_role_label.text = "Rol: Usuario"
-		Roles.SISTEMA:
-			user_role_label.text = "Rol: Sistema"
+	var dialog = AcceptDialog.new()
+	dialog.title = "Información del Sistema"
+	dialog.dialog_text = """
+	Sistema de Gestión de Calidad - Havanatur
 	
-	actualizar_visibilidad_botones()
+	Usuario: {usuario}
+	Rol: {rol}
+	Fecha: {fecha}
+	Hora: {hora}
+	
+	Versión: 1.0.0
+	Sesión activa: {sesion_activa}
+	""".format({
+		"usuario": info.usuario,
+		"rol": info.rol,
+		"fecha": info.fecha,
+		"hora": info.hora,
+		"sesion_activa": "Sí" if usuario_actual["rol"] != Roles.NO_AUTENTICADO else "No"
+	})
+	
+	add_child(dialog)
+	dialog.popup_centered()

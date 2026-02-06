@@ -1,23 +1,15 @@
 extends Control
 
 """
-Módulo para procesar expedientes de No Conformidades (NC) - Refactorizado BPMN
-
-Esta escena permite a los usuarios especialistas de calidad:
-1. Evaluar incidencias y solicitar clasificación de NC
-2. Solicitar aprobación de dictámenes
-3. Cerrar expedientes cuando la NC está en estado 'cerrada'
-4. Gestionar documentos asociados a cada NC
-5. Todas las decisiones humanas pasan por diálogos reutilizables
-
-Usa la base de datos SQLite existente (BD.gd singleton)
+Módulo para procesar expedientes de No Conformidades (NC) - Versión corregida
+Con manejo de base de datos y diálogos corregido
 """
 
 # ============================================================
-# VARIABLES Y REFERENCIAS A NODOS (ACTUALIZADAS PARA NUEVO DISEÑO)
+# VARIABLES Y REFERENCIAS A NODOS
 # ============================================================
 
-# Nodos de información del expediente (Panel Izquierdo) - NUEVAS RUTAS
+# Nodos de información del expediente (Panel Izquierdo)
 @onready var label_id: Label = $ContentContainer/PanelIzquierdo/PanelInfoExpediente/InfoContainer/InfoGrid/IDExpediente
 @onready var label_tipo: Label = $ContentContainer/PanelIzquierdo/PanelInfoExpediente/InfoContainer/InfoGrid/TipoNC
 @onready var label_estado: Label = $ContentContainer/PanelIzquierdo/PanelInfoExpediente/InfoContainer/InfoGrid/EstadoNC
@@ -25,7 +17,7 @@ Usa la base de datos SQLite existente (BD.gd singleton)
 @onready var label_desc: Label = $ContentContainer/PanelIzquierdo/PanelInfoExpediente/InfoContainer/DescripcionContainer/Descripcion
 @onready var lista_documentos: ItemList = $ContentContainer/PanelIzquierdo/PanelInfoExpediente/InfoContainer/DocumentosContainer/ListaDocumentos
 
-# Nodos de acciones (Panel Derecho) - NUEVAS RUTAS
+# Nodos de acciones (Panel Derecho)
 @onready var boton_cargar: Button = $ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/BotonesContainer/BotonCargarDoc
 @onready var boton_clasificar: Button = $ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/BotonesContainer/BotonClasificar
 @onready var boton_aprobar: Button = $ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/BotonesContainer/BotonAprobar
@@ -33,14 +25,19 @@ Usa la base de datos SQLite existente (BD.gd singleton)
 @onready var mensaje_estado: Label = $ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/EstadoContainer/MensajeEstado
 @onready var boton_actualizar: Button = $ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/AccionesSecundarias/BtnActualizarInfo
 
-# Nodos del footer - NUEVAS RUTAS
+# Nodos del footer
 @onready var boton_menu: Button = $Footer/FooterContainer/BtnVolverMenu
 
-# Nodos de diálogo (sin cambios)
+# Nodos de diálogo
 @onready var dialogo_cargar: FileDialog = $DialogoCargarDoc
-@onready var dialogo_confirmar: AcceptDialog = $DialogoConfirmacion
+@onready var dialogo_confirmar: AcceptDialog = $DialogoConfirmacion  # CORREGIDO: AcceptDialog en lugar de ConfirmationDialog
 @onready var mensaje_exito: AcceptDialog = $MensajeExito
 @onready var mensaje_error: AcceptDialog = $MensajeError
+
+# Popup para opciones múltiples
+var popup_opciones: PopupMenu
+var accion_pendiente: String = ""
+var tipo_accion: String = ""
 
 # ============================================================
 # VARIABLES DE ESTADO
@@ -49,6 +46,7 @@ Usa la base de datos SQLite existente (BD.gd singleton)
 var id_nc_actual: int = 0
 var datos_nc: Dictionary = {}
 var documentos: Array = []
+var usuario_actual_id: int = 1
 
 # ============================================================
 # FUNCIONES DE INICIALIZACIÓN
@@ -57,11 +55,10 @@ var documentos: Array = []
 func _ready():
 	print("=== PROCESAR EXPEDIENTE - INICIO ===")
 	
-	# Verificar estructura de la base de datos
-	_verificar_estructura_bd()
-	
-	# Conectar señales de todos los botones
-	_conectar_senales()
+	# Configurar diálogos para evitar problemas de exclusividad
+	dialogo_confirmar.exclusive = true
+	mensaje_exito.exclusive = true
+	mensaje_error.exclusive = true
 	
 	# Configurar filtros de archivo
 	dialogo_cargar.filters = PackedStringArray([
@@ -72,68 +69,19 @@ func _ready():
 		"*.txt ; Archivos de texto"
 	])
 	
+	# Crear PopupMenu para opciones múltiples
+	popup_opciones = PopupMenu.new()
+	popup_opciones.id_pressed.connect(_on_opcion_seleccionada)
+	add_child(popup_opciones)
+	
+	# Conectar señales de todos los botones
+	_conectar_senales()
+	
 	# Cargar la NC desde la base de datos
 	_cargar_nc_desde_bd()
 	
 	# Actualizar interfaz
 	_actualizar_interfaz()
-
-func _verificar_estructura_bd():
-	"""Verifica la estructura de la tabla no_conformidades."""
-	print("🔍 Verificando estructura de la tabla no_conformidades...")
-	
-	# Verificar si la tabla existe
-	if not Bd.table_exists("no_conformidades"):
-		print("❌ Tabla 'no_conformidades' no existe")
-		return
-	
-	# Obtener estructura de la tabla
-	var estructura = Bd.get_table_structure("no_conformidades")
-	print("📋 Estructura de la tabla 'no_conformidades':")
-	for columna in estructura:
-		print("   - " + str(columna))
-	
-	# Verificar columnas necesarias
-	var columnas_requeridas = ["clasificacion", "fecha_clasificacion", "usuario_clasificacion", 
-							   "aprobacion", "fecha_aprobacion", "usuario_aprobacion",
-							   "expediente_cerrado", "fecha_cierre", "usuario_cierre"]
-	
-	var columnas_faltantes = []
-	for columna in columnas_requeridas:
-		var encontrada = false
-		for col in estructura:
-			if col.get("name", "") == columna:
-				encontrada = true
-				break
-		
-		if not encontrada:
-			columnas_faltantes.append(columna)
-	
-	if columnas_faltantes.size() > 0:
-		print("⚠️ Columnas faltantes: ", columnas_faltantes)
-		print("Intentando agregar columnas faltantes...")
-		_agregar_columnas_faltantes(columnas_faltantes)
-	else:
-		print("✅ Todas las columnas requeridas existen")
-
-func _agregar_columnas_faltantes(columnas_faltantes: Array):
-	"""Agrega columnas faltantes a la tabla no_conformidades."""
-	for columna in columnas_faltantes:
-		var tipo_columna = "TEXT"
-		if columna in ["usuario_clasificacion", "usuario_aprobacion", "usuario_cierre", "expediente_cerrado"]:
-			tipo_columna = "INTEGER"
-		
-		var sql = "ALTER TABLE no_conformidades ADD COLUMN {columna} {tipo}".format({
-			"columna": columna,
-			"tipo": tipo_columna
-		})
-		
-		print("   Agregando columna '{columna}'...".format({"columna": columna}))
-		var resultado = Bd.query(sql)
-		if resultado:
-			print("   ✅ Columna '{columna}' agregada".format({"columna": columna}))
-		else:
-			print("   ❌ Error al agregar columna '{columna}'".format({"columna": columna}))
 
 func _conectar_senales():
 	"""Conecta todas las señales de los botones."""
@@ -154,22 +102,33 @@ func _conectar_senales():
 	
 	# Conectar diálogo de confirmación
 	dialogo_confirmar.confirmed.connect(_on_DialogoConfirmacion_confirmed)
+	dialogo_confirmar.canceled.connect(_on_DialogoConfirmacion_canceled)
 
 # ============================================================
-# FUNCIONES DE CARGA DE DATOS DESDE BD
+# FUNCIONES DE CARGA DE DATOS DESDE BD - CORREGIDAS
 # ============================================================
 
 func _cargar_nc_desde_bd():
 	"""Carga una No Conformidad desde la base de datos para procesamiento."""
 	print("Buscando NC para procesar desde BD...")
 	
-	# Verificar si la tabla existe
-	if not Bd.table_exists("no_conformidades"):
-		print("❌ Tabla 'no_conformidades' no existe")
-		mensaje_estado.text = "Error: Tabla de NC no encontrada en BD"
+	# PRIMERO: Verificar qué NC existen en la BD
+	var sql_test = "SELECT id_nc, codigo_expediente, estado, descripcion FROM no_conformidades LIMIT 10"
+	var test_resultado = Bd.select_query(sql_test)
+	
+	if test_resultado and test_resultado.size() > 0:
+		print("📊 NC disponibles en BD:")
+		for nc in test_resultado:
+			print("   - ID: " + str(nc.get("id_nc", "N/A")) + 
+				  ", Código: " + str(nc.get("codigo_expediente", "N/A")) + 
+				  ", Estado: " + str(nc.get("estado", "N/A")))
+	else:
+		print("⚠️ No se encontraron NC en la tabla 'no_conformidades'")
+		mensaje_estado.text = "No hay No Conformidades registradas"
+		_deshabilitar_todos_botones()
 		return
 	
-	# Buscar la primera NC en estado 'analizado' o 'cerrada'
+	# Buscar NC en estados procesables
 	var sql = """
     SELECT 
         nc.*,
@@ -178,9 +137,18 @@ func _cargar_nc_desde_bd():
     FROM no_conformidades nc
     LEFT JOIN clientes c ON nc.cliente_id = c.id
     LEFT JOIN usuarios u ON nc.responsable_id = u.id
-    WHERE nc.estado IN ('analizado', 'cerrada')
+    WHERE (nc.estado IN ('analizado', 'cerrada', 'pendiente') 
+           OR nc.estado IS NULL)
         AND (nc.expediente_cerrado = 0 OR nc.expediente_cerrado IS NULL)
-    ORDER BY nc.prioridad ASC, nc.fecha_registro ASC
+    ORDER BY 
+        CASE 
+            WHEN nc.estado = 'cerrada' THEN 1
+            WHEN nc.estado = 'analizado' THEN 2
+            WHEN nc.estado = 'pendiente' THEN 3
+            ELSE 4
+        END,
+        nc.prioridad ASC, 
+        nc.fecha_registro ASC
     LIMIT 1
 	"""
 	
@@ -188,21 +156,53 @@ func _cargar_nc_desde_bd():
 	
 	if resultado and resultado.size() > 0:
 		var fila = resultado[0]
-		id_nc_actual = fila["id_nc"]
-		datos_nc = fila
+		id_nc_actual = fila["id_nc"] if fila.has("id_nc") else 0
+		datos_nc = fila.duplicate(true)
 		print("✅ NC cargada desde BD: ", id_nc_actual)
-		print("📊 Datos NC: ", datos_nc)
 		
 		# Cargar documentos asociados
 		_cargar_documentos_desde_bd()
 	else:
-		print("⚠️ No hay NC para procesar en BD")
-		mensaje_estado.text = "No hay expedientes disponibles para procesar"
-		_deshabilitar_todos_botones()
+		# Si no hay NC en estados procesables, cargar cualquier NC
+		print("⚠️ No hay NC en estados procesables, intentando cargar cualquier NC...")
+		sql = """
+		SELECT 
+			nc.*,
+			c.nombre as nombre_cliente,
+			u.nombre_completo as nombre_responsable
+		FROM no_conformidades nc
+		LEFT JOIN clientes c ON nc.cliente_id = c.id
+		LEFT JOIN usuarios u ON nc.responsable_id = u.id
+		ORDER BY nc.fecha_registro DESC
+		LIMIT 1
+		"""
+		
+		resultado = Bd.select_query(sql)
+		if resultado and resultado.size() > 0:
+			var fila = resultado[0]
+			id_nc_actual = fila["id_nc"] if fila.has("id_nc") else 0
+			datos_nc = fila.duplicate(true)
+			print("✅ NC cargada (cualquier estado): ", id_nc_actual)
+			_cargar_documentos_desde_bd()
+		else:
+			print("⚠️ No hay NC para procesar en BD")
+			mensaje_estado.text = "No hay expedientes disponibles para procesar"
+			_deshabilitar_todos_botones()
 
 func _cargar_documentos_desde_bd():
 	"""Carga los documentos asociados a la NC actual desde la base de datos."""
+	if id_nc_actual <= 0:
+		print("⚠️ No hay NC activa para cargar documentos")
+		return
+	
 	print("Cargando documentos de NC desde BD: ", id_nc_actual)
+	
+	# Verificar si la tabla existe
+	if not Bd.table_exists("documentos_nc"):
+		print("⚠️ Tabla 'documentos_nc' no existe")
+		lista_documentos.clear()
+		lista_documentos.add_item("No hay documentos disponibles")
+		return
 	
 	var sql = """
     SELECT 
@@ -219,48 +219,55 @@ func _cargar_documentos_desde_bd():
 	documentos.clear()
 	lista_documentos.clear()
 	
-	if resultado:
+	if resultado and resultado.size() > 0:
 		for fila in resultado:
-			var nombre_archivo = fila["nombre_archivo"]
-			var tipo_archivo = fila["tipo_archivo"]
-			var fecha_carga = fila["fecha_carga"]
-			var usuario = fila["nombre_usuario"] or "Desconocido"
+			var nombre_archivo = str(fila.get("nombre_archivo", "Sin nombre"))
+			var tipo_archivo = str(fila.get("tipo_archivo", ""))
+			var fecha_carga = str(fila.get("fecha_carga", ""))
+			var usuario = str(fila.get("nombre_usuario", "Desconocido"))
 			
 			# Agregar a array interno
 			documentos.append({
-				"id": fila["id"],
+				"id": fila.get("id", 0),
 				"nombre": nombre_archivo,
-				"ruta": fila["ruta_archivo"],
+				"ruta": fila.get("ruta_archivo", ""),
 				"tipo": tipo_archivo,
 				"fecha": fecha_carga,
 				"usuario": usuario,
-				"descripcion": fila["descripcion"] or ""
+				"descripcion": str(fila.get("descripcion", ""))
 			})
 			
 			# Agregar a ItemList con icono según tipo
-			var icono = ""
-			if tipo_archivo:
-				match tipo_archivo.to_lower():
-					"pdf": icono = "📄"
-					"doc", "docx": icono = "📝"
-					"xls", "xlsx": icono = "📊"
-					"jpg", "jpeg", "png": icono = "🖼️"
-					_: icono = "📎"
-			else:
-				icono = "📎"
+			var icono = _obtener_icono_por_tipo(tipo_archivo)
 			
 			# Mostrar nombre y fecha
 			var fecha_formateada = fecha_carga if fecha_carga else "Sin fecha"
+			if fecha_formateada.length() >= 10:
+				fecha_formateada = fecha_formateada.substr(0, 10)
+			
 			var texto_item = "{icono} {nombre}\n   📅 {fecha} 👤 {usuario}".format({
 				"icono": icono,
 				"nombre": nombre_archivo,
-				"fecha": fecha_formateada.substr(0, 10) if fecha_formateada.length() >= 10 else fecha_formateada,
+				"fecha": fecha_formateada,
 				"usuario": usuario
 			})
 			
 			lista_documentos.add_item(texto_item)
-	
-	print("✅ Documentos cargados desde BD: ", documentos.size())
+		
+		print("✅ Documentos cargados desde BD: ", documentos.size())
+	else:
+		lista_documentos.add_item("No hay documentos asociados")
+		print("ℹ️ No hay documentos asociados a esta NC")
+
+func _obtener_icono_por_tipo(tipo_archivo: String) -> String:
+	"""Devuelve un emoji según el tipo de archivo."""
+	var tipo = tipo_archivo.to_lower()
+	match tipo:
+		"pdf": return "📄"
+		"doc", "docx": return "📝"
+		"xls", "xlsx": return "📊"
+		"jpg", "jpeg", "png", "gif": return "🖼️"
+		_: return "📎"
 
 # ============================================================
 # FUNCIONES DE ACTUALIZACIÓN DE INTERFAZ
@@ -270,60 +277,75 @@ func _actualizar_interfaz():
 	"""Actualiza toda la interfaz de usuario con los datos de la NC."""
 	print("Actualizando interfaz desde BD...")
 	
-	if datos_nc.size() == 0:
+	if datos_nc.is_empty():
 		print("⚠️ No hay datos de NC para mostrar")
+		label_id.text = "N/A"
+		label_tipo.text = "N/A"
+		label_estado.text = "N/A"
+		label_fecha.text = "N/A"
+		label_desc.text = "No hay expediente cargado"
 		return
 	
-	# Mostrar información básica - solo el valor, las etiquetas ya están en el diseño
-	label_id.text = datos_nc.get("codigo_expediente", "N/A")
-	label_tipo.text = datos_nc.get("tipo_nc", "No especificado")
-	label_estado.text = datos_nc.get("estado", "Desconocido")
+	# Mostrar información básica
+	label_id.text = str(datos_nc.get("codigo_expediente", "N/A"))
+	label_tipo.text = str(datos_nc.get("tipo_nc", "No especificado"))
+	label_estado.text = str(datos_nc.get("estado", "Desconocido"))
 	
 	# Formatear fecha
-	var fecha_registro = datos_nc.get("fecha_registro", "")
-	if fecha_registro:
-		label_fecha.text = fecha_registro.substr(0, 10)
+	var fecha_registro = str(datos_nc.get("fecha_registro", ""))
+	if fecha_registro and fecha_registro != "N/A":
+		if fecha_registro.length() >= 10:
+			label_fecha.text = fecha_registro.substr(0, 10)
+		else:
+			label_fecha.text = fecha_registro
 	else:
 		label_fecha.text = "N/A"
 	
-	label_desc.text = datos_nc.get("descripcion", "Sin descripción")
+	label_desc.text = str(datos_nc.get("descripcion", "Sin descripción"))
 	
 	# Actualizar botones según estado
 	_actualizar_botones_segun_estado()
 
 func _actualizar_botones_segun_estado():
 	"""Actualiza el estado de los botones según el estado de la NC."""
-	var estado = datos_nc.get("estado", "")
+	if datos_nc.is_empty():
+		mensaje_estado.text = "❌ No hay expediente cargado"
+		_deshabilitar_todos_botones()
+		return
+	
+	var estado = str(datos_nc.get("estado", ""))
+	var expediente_cerrado = bool(datos_nc.get("expediente_cerrado", false))
 	
 	# Resetear todos los botones
 	_deshabilitar_todos_botones()
 	
+	if expediente_cerrado:
+		mensaje_estado.text = "📁 Expediente cerrado - Solo lectura"
+		print("Estado: expediente_cerrado - Todos deshabilitados")
+		return
+	
+	# Habilitar botón de cargar siempre (excepto si está cerrado)
+	boton_cargar.disabled = false
+	
 	match estado:
-		"analizado":
+		"analizado", "pendiente":
 			mensaje_estado.text = "📊 Puede clasificar la no conformidad"
-			boton_cargar.disabled = false
 			boton_clasificar.disabled = false
-			print("Estado: analizado - Clasificar habilitado")
+			print("Estado: " + estado + " - Clasificar habilitado")
 		
 		"pendiente_aprobacion":
 			mensaje_estado.text = "⏳ Esperando aprobación del comité de calidad"
-			boton_cargar.disabled = false
 			boton_aprobar.disabled = false
 			print("Estado: pendiente_aprobacion - Aprobar habilitado")
 		
 		"cerrada":
 			mensaje_estado.text = "✅ Puede proceder a cerrar el expediente"
-			boton_cargar.disabled = false
 			boton_cerrar.disabled = false
 			print("Estado: cerrada - Cerrar habilitado")
 		
-		"expediente_cerrado":
-			mensaje_estado.text = "📁 Expediente cerrado - Solo lectura"
-			print("Estado: expediente_cerrado - Todos deshabilitados")
-		
 		_:
 			mensaje_estado.text = "⚠️ Estado no procesable: " + estado
-			print("Estado: ", estado, " - Todos deshabilitados")
+			print("Estado: " + estado + " - Todos deshabilitados")
 
 func _deshabilitar_todos_botones():
 	"""Deshabilita todos los botones de acción."""
@@ -333,140 +355,149 @@ func _deshabilitar_todos_botones():
 	boton_cerrar.disabled = true
 
 # ============================================================
-# FUNCIONES DE DECISIÓN (FLUJO BPMN)
+# FUNCIONES DE DECISIÓN (FLUJO BPMN) - SIMPLIFICADAS
 # ============================================================
 
 func _on_BotonClasificar_pressed():
-	"""Maneja la solicitud de clasificación usando diálogo."""
+	"""Maneja la solicitud de clasificación usando popup."""
 	print("📊 Botón Clasificar presionado")
 	
-	# Crear un diálogo simple de clasificación
-	dialogo_confirmar.dialog_text = """
-	📋 CLASIFICAR NO CONFORMIDAD
+	if id_nc_actual <= 0:
+		mensaje_error.dialog_text = "No hay NC seleccionada para clasificar"
+		mensaje_error.popup_centered()
+		return
 	
-	ID Expediente: {id}
-	Descripción: {desc}
+	tipo_accion = "clasificar"
 	
-	Seleccione la clasificación:
-	""".format({
-		"id": datos_nc.get("codigo_expediente", ""),
-		"desc": datos_nc.get("descripcion", "").substr(0, 100) + "..."
-	})
+	# Configurar popup con opciones
+	popup_opciones.clear()
+	popup_opciones.add_item("Leve", 0)
+	popup_opciones.add_item("Mayor", 1)
+	popup_opciones.add_item("Crítica", 2)
 	
-	# Limpiar conexiones previas
-	_limpiar_conexiones_dialogo()
-	
-	# Configurar botones personalizados
-	dialogo_confirmar.get_ok_button().text = "Leve"
-	dialogo_confirmar.add_button("Mayor", false, "mayor")
-	dialogo_confirmar.add_button("Crítica", false, "critica")
-	dialogo_confirmar.add_button("Cancelar", true, "cancel")
-	
-	# Conectar nuevas señales
-	dialogo_confirmar.confirmed.connect(_on_clasificacion_leve)
-	dialogo_confirmar.custom_action.connect(_on_clasificacion_accion_personalizada)
-	
-	dialogo_confirmar.popup_centered()
+	popup_opciones.position = get_global_mouse_position()
+	popup_opciones.popup()
 
 func _on_BotonAprobar_pressed():
-	"""Maneja la solicitud de aprobación usando diálogo."""
+	"""Maneja la solicitud de aprobación usando popup."""
 	print("✅ Botón Aprobar presionado")
 	
-	# Crear un diálogo simple de aprobación
-	dialogo_confirmar.dialog_text = """
-	📋 APROBAR DICTAMEN
+	if id_nc_actual <= 0:
+		mensaje_error.dialog_text = "No hay NC seleccionada para aprobar"
+		mensaje_error.popup_centered()
+		return
 	
-	ID Expediente: {id}
-	Clasificación: {clasif}
+	tipo_accion = "aprobar"
 	
-	¿Desea aprobar el dictamen?
-	""".format({
-		"id": datos_nc.get("codigo_expediente", ""),
-		"clasif": datos_nc.get("clasificacion", "No clasificada")
-	})
+	# Configurar popup con opciones
+	popup_opciones.clear()
+	popup_opciones.add_item("Aprobar", 0)
+	popup_opciones.add_item("Rechazar", 1)
+	popup_opciones.add_item("Revisar", 2)
 	
-	# Limpiar conexiones previas
-	_limpiar_conexiones_dialogo()
-	
-	# Configurar botones personalizados
-	dialogo_confirmar.get_ok_button().text = "Aprobar"
-	dialogo_confirmar.add_button("Rechazar", false, "rechazar")
-	dialogo_confirmar.add_button("Revisar", false, "revisar")
-	dialogo_confirmar.add_button("Cancelar", true, "cancel")
-	
-	# Conectar nuevas señales
-	dialogo_confirmar.confirmed.connect(_on_aprobacion_confirmada)
-	dialogo_confirmar.custom_action.connect(_on_aprobacion_accion_personalizada)
-	
-	dialogo_confirmar.popup_centered()
+	popup_opciones.position = get_global_mouse_position()
+	popup_opciones.popup()
 
-func _limpiar_conexiones_dialogo():
-	"""Limpia todas las conexiones del diálogo para evitar conflictos."""
-	# Desconectar todas las conexiones de confirmed
-	if dialogo_confirmar.confirmed.is_connected(_on_clasificacion_leve):
-		dialogo_confirmar.confirmed.disconnect(_on_clasificacion_leve)
-	if dialogo_confirmar.confirmed.is_connected(_on_aprobacion_confirmada):
-		dialogo_confirmar.confirmed.disconnect(_on_aprobacion_confirmada)
-	if dialogo_confirmar.confirmed.is_connected(_on_DialogoConfirmacion_confirmed):
-		dialogo_confirmar.confirmed.disconnect(_on_DialogoConfirmacion_confirmed)
+func _on_opcion_seleccionada(id: int):
+	"""Procesa la opción seleccionada en el popup."""
+	var opcion = ""
 	
-	# Desconectar todas las conexiones de custom_action
-	for conn in dialogo_confirmar.custom_action.get_connections():
-		dialogo_confirmar.custom_action.disconnect(conn.callable)
+	match tipo_accion:
+		"clasificar":
+			match id:
+				0: opcion = "Leve"
+				1: opcion = "Mayor"
+				2: opcion = "Crítica"
+			
+			# Mostrar diálogo de confirmación
+			dialogo_confirmar.dialog_text = """
+			📋 CONFIRMAR CLASIFICACIÓN
+			
+			¿Clasificar como: {clasificacion}?
+			
+			ID Expediente: {id}
+			""".format({
+				"clasificacion": opcion,
+				"id": datos_nc.get("codigo_expediente", "")
+			})
+			
+			dialogo_confirmar.ok_button_text = "Sí, clasificar"
+			dialogo_confirmar.cancel_button_text = "Cancelar"
+			accion_pendiente = "clasificar_" + opcion
+			dialogo_confirmar.popup_centered()
+		
+		"aprobar":
+			match id:
+				0: opcion = "Aprobar"
+				1: opcion = "Rechazar"
+				2: opcion = "Revisar"
+			
+			# Mostrar diálogo de confirmación
+			dialogo_confirmar.dialog_text = """
+			📋 CONFIRMAR DICTAMEN
+			
+			¿Procesar como: {aprobacion}?
+			
+			ID Expediente: {id}
+			""".format({
+				"aprobacion": opcion,
+				"id": datos_nc.get("codigo_expediente", "")
+			})
+			
+			dialogo_confirmar.ok_button_text = "Sí, procesar"
+			dialogo_confirmar.cancel_button_text = "Cancelar"
+			accion_pendiente = "aprobar_" + opcion
+			dialogo_confirmar.popup_centered()
+	
+	tipo_accion = ""
 
-func _on_clasificacion_leve():
-	"""Procesa clasificación como "Leve"."""
-	print("📝 Clasificando como LEVE")
-	_procesar_clasificacion("Leve")
+func _on_DialogoConfirmacion_confirmed():
+	"""Procesa la confirmación del diálogo según la acción pendiente."""
+	print("✅ Diálogo confirmado")
+	
+	if accion_pendiente.begins_with("clasificar_"):
+		var clasificacion = accion_pendiente.split("_")[1]  # CORREGIDO: accion_pendient -> accion_pendiente
+		_procesar_clasificacion(clasificacion)
+	elif accion_pendiente.begins_with("aprobar_"):
+		var aprobacion = accion_pendiente.split("_")[1]  # CORREGIDO: accion_pendient -> accion_pendiente
+		_procesar_aprobacion(aprobacion)
+	elif accion_pendiente == "cerrar":
+		_cerrar_expediente_bd()
+	
+	accion_pendiente = ""
 
-func _on_clasificacion_accion_personalizada(action: String):
-	"""Procesa otras clasificaciones."""
-	match action:
-		"mayor":
-			print("📝 Clasificando como MAYOR")
-			_procesar_clasificacion("Mayor")
-		"critica":
-			print("📝 Clasificando como CRÍTICA")
-			_procesar_clasificacion("Crítica")
-		"cancel":
-			print("❌ Clasificación cancelada")
+func _on_DialogoConfirmacion_canceled():
+	"""Maneja la cancelación del diálogo."""
+	print("❌ Diálogo cancelado")
+	accion_pendiente = ""
 
 func _procesar_clasificacion(clasificacion: String):
 	"""Procesa la clasificación seleccionada."""
-	# Determinar nuevo estado
+	print("📝 Clasificando como: ", clasificacion)
+	
 	var nuevo_estado = "cerrada"
 	if clasificacion == "Crítica":
 		nuevo_estado = "pendiente_aprobacion"
 	
-	# Actualizar la NC en la base de datos
-	var datos_actualizacion = {
-		"clasificacion": clasificacion,
-		"estado": nuevo_estado,
-		"fecha_clasificacion": Time.get_datetime_string_from_system(),
-		"usuario_clasificacion": 1  # ID del usuario actual
-	}
+	# Usar consulta UPDATE directa
+	var sql = """
+	UPDATE no_conformidades 
+	SET clasificacion = ?, 
+		estado = ?,
+		fecha_clasificacion = datetime('now'),
+		usuario_clasificacion = ?
+	WHERE id_nc = ?
+	"""
 	
-	print("📝 Actualizando NC con datos: ", datos_actualizacion)
-	print("📝 WHERE: id_nc = ?")
-	print("📝 Parámetros: ", [id_nc_actual])
+	var valores = [clasificacion, nuevo_estado, usuario_actual_id, id_nc_actual]
 	
-	# Intentar con el método update primero
-	var exito = Bd.update("no_conformidades", datos_actualizacion, "id_nc = ?", [id_nc_actual])
-	
-	if not exito:
-		print("⚠️ Método update() falló, intentando con consulta directa...")
-		# Método alternativo usando consulta SQL directa
-		exito = _actualizar_nc_directo(datos_actualizacion)
-	
-	if exito:
+	# Usar query en lugar de select_query para UPDATE
+	if Bd.query(sql, valores):
 		print("✅ NC clasificada como: ", clasificacion)
 		
-		# Registrar traza
-		_registrar_traza("CLASIFICACION_NC", "NC clasificada como: " + clasificacion)
-		
-		# Notificar si es crítica
-		if clasificacion == "Crítica":
-			_notificar_comite_calidad()
+		# Registrar traza (si existe la tabla)
+		if Bd.table_exists("trazas_nc"):
+			_registrar_traza("CLASIFICACION_NC", "NC clasificada como: " + clasificacion)
 		
 		# Recargar datos
 		_cargar_nc_desde_bd()
@@ -477,148 +508,64 @@ func _procesar_clasificacion(clasificacion: String):
 		mensaje_exito.popup_centered()
 	else:
 		print("❌ Error al clasificar NC")
-		mensaje_error.dialog_text = "Error al clasificar la no conformidad. Verifique la base de datos."
+		mensaje_error.dialog_text = "Error al clasificar la no conformidad."
 		mensaje_error.popup_centered()
 
-func _on_aprobacion_confirmada():
-	"""Procesa aprobación del dictamen."""
-	print("✅ Aprobando dictamen")
-	_procesar_aprobacion("Aprobado")
-
-func _on_aprobacion_accion_personalizada(action: String):
-	"""Procesa otras acciones de aprobación."""
-	match action:
-		"rechazar":
-			print("❌ Rechazando dictamen")
-			_procesar_aprobacion("Rechazado")
-		"revisar":
-			print("🔍 Enviando a revisión")
-			_procesar_aprobacion("En revisión")
-		"cancel":
-			print("❌ Aprobación cancelada")
-
-func _procesar_aprobacion(decision: String):
-	"""Procesa la decisión de aprobación."""
-	var nuevo_estado = "cerrado"
-	match decision:
-		"Aprobado": nuevo_estado = "cerrado"
-		"Rechazado": nuevo_estado = "rechazado"
-		"En revisión": nuevo_estado = "en_revision"
+func _procesar_aprobacion(aprobacion: String):
+	"""Procesa la aprobación seleccionada."""
+	print("📝 Aprobación: ", aprobacion)
+	
+	var nuevo_estado = "cerrada"
+	match aprobacion:
+		"Aprobar": nuevo_estado = "cerrada"
+		"Rechazar": nuevo_estado = "rechazado"
+		"Revisar": nuevo_estado = "en_revision"
 		_: nuevo_estado = "pendiente_aprobacion"
 	
-	# Actualizar la NC en la base de datos
-	var datos_actualizacion = {
-		"aprobacion": decision,
-		"estado": nuevo_estado,
-		"fecha_aprobacion": Time.get_datetime_string_from_system(),
-		"usuario_aprobacion": 1  # ID del usuario actual
-	}
+	# Usar consulta UPDATE directa
+	var sql = """
+	UPDATE no_conformidades 
+	SET aprobacion = ?, 
+		estado = ?,
+		fecha_aprobacion = datetime('now'),
+		usuario_aprobacion = ?
+	WHERE id_nc = ?
+	"""
 	
-	print("📝 Actualizando aprobación con datos: ", datos_actualizacion)
+	var valores = [aprobacion, nuevo_estado, usuario_actual_id, id_nc_actual]
 	
-	# Intentar con el método update primero
-	var exito = Bd.update("no_conformidades", datos_actualizacion, "id_nc = ?", [id_nc_actual])
-	
-	if not exito:
-		print("⚠️ Método update() falló, intentando con consulta directa...")
-		# Método alternativo usando consulta SQL directa
-		exito = _actualizar_nc_directo(datos_actualizacion)
-	
-	if exito:
-		print("✅ Dictamen: ", decision)
+	# Usar query en lugar de select_query para UPDATE
+	if Bd.query(sql, valores):
+		print("✅ Dictamen procesado: ", aprobacion)
 		
-		# Registrar traza
-		_registrar_traza("APROBACION_NC", "Dictamen: " + decision)
-		
-		# Notificar al responsable si fue aprobado
-		if decision == "Aprobado":
-			_notificar_responsable_cierre()
+		# Registrar traza (si existe la tabla)
+		if Bd.table_exists("trazas_nc"):
+			_registrar_traza("APROBACION_NC", "Dictamen: " + aprobacion)
 		
 		# Recargar datos
 		_cargar_nc_desde_bd()
 		_actualizar_interfaz()
 		
 		# Mostrar mensaje de éxito
-		mensaje_exito.dialog_text = "✅ Dictamen '{decision}' registrado".format({"decision": decision})
+		mensaje_exito.dialog_text = "✅ Dictamen '{aprobacion}' registrado".format({"aprobacion": aprobacion})
 		mensaje_exito.popup_centered()
 	else:
 		print("❌ Error al procesar dictamen")
 		mensaje_error.dialog_text = "Error al procesar el dictamen"
 		mensaje_error.popup_centered()
 
-func _actualizar_nc_directo(datos_actualizacion: Dictionary) -> bool:
-	"""Método alternativo para actualizar la NC usando SQL directo."""
-	print("🔧 Usando método de actualización directa...")
-	
-	# Construir la consulta UPDATE
-	var sets = []
-	var valores = []
-	
-	for key in datos_actualizacion.keys():
-		sets.append("{key} = ?".format({"key": key}))
-		valores.append(datos_actualizacion[key])
-	
-	# Agregar el ID al final para el WHERE
-	valores.append(id_nc_actual)
-	
-	var sql = "UPDATE no_conformidades SET {sets} WHERE id_nc = ?".format({
-		"sets": ", ".join(sets)
-	})
-	
-	print("📝 SQL: ", sql)
-	print("📝 Valores: ", valores)
-	
-	# Ejecutar la consulta
-	var resultado = Bd.select_query(sql, valores)
-	print("📝 Resultado de consulta directa: ", resultado)
-	
-	# Si la consulta no devuelve error, consideramos éxito
-	return resultado != null
-
-func _notificar_comite_calidad():
-	"""Notifica al comité de calidad sobre una NC crítica."""
-	print("📢 Notificando al comité de calidad sobre NC crítica")
-	
-	# Registrar notificación en la base de datos
-	var datos_traza = {
-		"id_nc": id_nc_actual,
-		"usuario_id": 1,
-		"accion": "NOTIFICACION_COMITE",
-		"detalles": "NC crítica requiere revisión del comité de calidad",
-		"ip_address": "127.0.0.1"
-	}
-	
-	var id_traza = Bd.insert("trazas_nc", datos_traza)
-	if id_traza > 0:
-		print("✅ Notificación registrada con ID: ", id_traza)
-
-func _notificar_responsable_cierre():
-	"""Notifica al responsable sobre el cierre del expediente."""
-	print("📧 Notificando al responsable sobre cierre de expediente")
-	
-	# Registrar notificación en la base de datos
-	var datos_traza = {
-		"id_nc": id_nc_actual,
-		"usuario_id": 1,
-		"accion": "NOTIFICACION_CIERRE",
-		"detalles": "Expediente cerrado y notificado al responsable",
-		"ip_address": "127.0.0.1"
-	}
-	
-	var id_traza = Bd.insert("trazas_nc", datos_traza)
-	if id_traza > 0:
-		print("✅ Notificación registrada con ID: ", id_traza)
-
 # ============================================================
-# FUNCIONES ORIGINALES (MODIFICADAS MÍNIMAMENTE)
+# FUNCIONES ORIGINALES (MODIFICADAS PARA CORREGIR ERRORES)
 # ============================================================
 
 func _on_BotonCargarDoc_pressed():
 	print("--- Botón Cargar presionado ---")
-	dialogo_cargar.popup(Rect2i(100, 100, 800, 500))
+	dialogo_cargar.popup_centered(Vector2i(800, 500))
 
 func _on_BotonCerrarExp_pressed():
 	print("📦 Botón Cerrar expediente presionado")
+	
+	accion_pendiente = "cerrar"
 	
 	dialogo_confirmar.dialog_text = """
 	¿Está seguro que desea cerrar definitivamente este expediente?
@@ -632,13 +579,45 @@ func _on_BotonCerrarExp_pressed():
 		"estado": datos_nc.get("estado", "")
 	})
 	
-	# Limpiar conexiones previas
-	_limpiar_conexiones_dialogo()
-	
-	# Restaurar conexión original para cierre
-	dialogo_confirmar.confirmed.connect(_on_DialogoConfirmacion_confirmed)
-	
+	dialogo_confirmar.ok_button_text = "Sí, cerrar expediente"
 	dialogo_confirmar.popup_centered()
+
+func _cerrar_expediente_bd():
+	"""Cierra el expediente en la base de datos."""
+	print("🚪 Cerrando expediente en BD...")
+	
+	var sql = """
+	UPDATE no_conformidades 
+	SET expediente_cerrado = 1,
+		fecha_cierre = datetime('now'),
+		usuario_cierre = ?,
+		estado = 'expediente_cerrado'
+	WHERE id_nc = ?
+	"""
+	
+	var valores = [usuario_actual_id, id_nc_actual]
+	
+	if Bd.query(sql, valores):
+		print("✅ Expediente cerrado en BD")
+		
+		# Actualizar datos locales
+		datos_nc["estado"] = "expediente_cerrado"
+		datos_nc["expediente_cerrado"] = 1
+		
+		# Actualizar interfaz
+		_actualizar_interfaz()
+		
+		# Mostrar mensaje de éxito
+		mensaje_exito.dialog_text = "✅ Expediente cerrado exitosamente"
+		mensaje_exito.popup_centered()
+		
+		# Registrar traza de auditoría (si existe la tabla)
+		if Bd.table_exists("trazas_nc"):
+			_registrar_traza("CIERRE_EXPEDIENTE", "Expediente cerrado: " + str(datos_nc.get("codigo_expediente", "")))
+	else:
+		print("❌ Error al cerrar expediente en BD")
+		mensaje_error.dialog_text = "Error al cerrar el expediente en la base de datos"
+		mensaje_error.popup_centered()
 
 func _on_BtnVolverMenu_pressed():
 	print("🏠 Regresando al menú principal...")
@@ -663,7 +642,6 @@ func _on_DialogoCargarDoc_file_selected(path: String):
 	
 	var nombre_archivo = path.get_file()
 	var extension = nombre_archivo.get_extension().to_lower()
-	var tamanio_bytes = _obtener_tamanio_archivo(path)
 	
 	# Determinar tipo de archivo
 	var tipo_archivo = extension
@@ -674,8 +652,8 @@ func _on_DialogoCargarDoc_file_selected(path: String):
 		"nombre_archivo": nombre_archivo,
 		"ruta_archivo": path,
 		"tipo_archivo": tipo_archivo,
-		"tamanio_bytes": tamanio_bytes,
-		"usuario_carga": 1,  # ID del usuario actual
+		"tamanio_bytes": _obtener_tamanio_archivo(path),
+		"usuario_carga": usuario_actual_id,
 		"descripcion": "Documento cargado desde sistema"
 	}
 	
@@ -691,8 +669,9 @@ func _on_DialogoCargarDoc_file_selected(path: String):
 		mensaje_exito.dialog_text = "✅ Documento '{nombre}' cargado exitosamente".format({"nombre": nombre_archivo})
 		mensaje_exito.popup_centered()
 		
-		# Registrar traza de auditoría
-		_registrar_traza("CARGA_DOCUMENTO", "Documento cargado: " + nombre_archivo)
+		# Registrar traza de auditoría (si existe la tabla)
+		if Bd.table_exists("trazas_nc"):
+			_registrar_traza("CARGA_DOCUMENTO", "Documento cargado: " + nombre_archivo)
 	else:
 		print("❌ Error al guardar documento en BD")
 		mensaje_error.dialog_text = "Error al guardar el documento en la base de datos"
@@ -706,55 +685,15 @@ func _obtener_tamanio_archivo(path: String) -> int:
 		return tamanio
 	return 0
 
-func _on_DialogoConfirmacion_confirmed():
-	print("🚪 Cerrando expediente en BD...")
-	
-	var datos_actualizacion = {
-		"expediente_cerrado": 1,
-		"fecha_cierre": Time.get_datetime_string_from_system(),
-		"usuario_cierre": 1,
-		"estado": "expediente_cerrado"
-	}
-	
-	print("📝 Cerrando expediente con datos: ", datos_actualizacion)
-	
-	# Intentar con el método update primero
-	var exito = Bd.update("no_conformidades", datos_actualizacion, "id_nc = ?", [id_nc_actual])
-	
-	if not exito:
-		print("⚠️ Método update() falló, intentando con consulta directa...")
-		# Método alternativo usando consulta SQL directa
-		exito = _actualizar_nc_directo(datos_actualizacion)
-	
-	if exito:
-		print("✅ Expediente cerrado en BD")
-		
-		# Actualizar datos locales
-		datos_nc["estado"] = "expediente_cerrado"
-		datos_nc["expediente_cerrado"] = 1
-		
-		# Actualizar interfaz
-		_actualizar_interfaz()
-		
-		# Mostrar mensaje de éxito
-		mensaje_exito.dialog_text = "✅ Expediente cerrado exitosamente"
-		mensaje_exito.popup_centered()
-		
-		# Registrar traza de auditoría
-		_registrar_traza("CIERRE_EXPEDIENTE", "Expediente cerrado: " + datos_nc.get("codigo_expediente", ""))
-	else:
-		print("❌ Error al cerrar expediente en BD")
-		mensaje_error.dialog_text = "Error al cerrar el expediente en la base de datos"
-		mensaje_error.popup_centered()
-
 func _registrar_traza(accion: String, detalles: String):
+	"""Registra una traza en la base de datos (si la tabla existe)."""
 	if not Bd.table_exists("trazas_nc"):
 		print("⚠️ Tabla 'trazas_nc' no existe, no se puede registrar traza")
 		return
 	
 	var datos_traza = {
 		"id_nc": id_nc_actual,
-		"usuario_id": 1,
+		"usuario_id": usuario_actual_id,
 		"accion": accion,
 		"detalles": detalles,
 		"ip_address": "127.0.0.1"
@@ -763,6 +702,8 @@ func _registrar_traza(accion: String, detalles: String):
 	var id_traza = Bd.insert("trazas_nc", datos_traza)
 	if id_traza > 0:
 		print("✅ Traza registrada con ID: ", id_traza)
+	else:
+		print("⚠️ No se pudo registrar traza")
 
 # ============================================================
 # FUNCIONES DE UTILIDAD
@@ -771,37 +712,3 @@ func _registrar_traza(accion: String, detalles: String):
 func _log(mensaje: String):
 	"""Función de logging para depuración."""
 	print("[ProcesarExpediente] " + mensaje)
-
-func _copiar_archivo_a_documentos(origen: String, nombre_archivo: String, id_documento: int) -> bool:
-	"""Copia un archivo a la carpeta de documentos del sistema."""
-	var _carpeta_docs = "user://documentos_nc/"
-	
-	# Crear directorio si no existe
-	var dir = DirAccess.open("user://")
-	if not dir.dir_exists("documentos_nc"):
-		var error = dir.make_dir("documentos_nc")
-		if error != OK:
-			print("❌ Error al crear carpeta documentos_nc: ", error)
-			return false
-	
-	# Generar nombre único para evitar colisiones
-	var timestamp = Time.get_unix_time_from_system()
-	var nombre_unico = "{id_nc}_{id_doc}_{timestamp}_{nombre}".format({
-		"id_nc": id_nc_actual,
-		"id_doc": id_documento,
-		"timestamp": timestamp,
-		"nombre": nombre_archivo
-	})
-	
-	var destino = _carpeta_docs + nombre_unico
-	
-	# Copiar archivo
-	if DirAccess.copy_absolute(origen, destino) == OK:
-		print("✅ Archivo copiado a: ", destino)
-		
-		# Actualizar ruta en la base de datos
-		Bd.update("documentos_nc", {"ruta_archivo": destino}, "id = ?", [id_documento])
-		return true
-	else:
-		print("⚠️ No se pudo copiar archivo, usando ruta original")
-		return false

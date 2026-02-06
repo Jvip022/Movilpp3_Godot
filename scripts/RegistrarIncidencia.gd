@@ -26,10 +26,20 @@ func _ready():
 	print("✅ Módulo de Registrar Incidencias listo")
 
 func cargar_usuario_actual():
-	# Obtener usuario de la sesión actual
-	var usuario_sesion = Bd.obtener_usuario_actual()
-	if usuario_sesion and not usuario_sesion.is_empty():
-		usuario_actual = usuario_sesion
+	# Intentar obtener el primer usuario de la base de datos
+	var resultados = Bd.select_query("SELECT * FROM usuarios LIMIT 1")
+	
+	if resultados and resultados.size() > 0:
+		usuario_actual = resultados[0]
+		# Asegurar que tenga los campos necesarios
+		if not "nombre_completo" in usuario_actual:
+			usuario_actual["nombre_completo"] = usuario_actual.get("username", "Usuario Desconocido")
+		if not "id" in usuario_actual:
+			usuario_actual["id"] = usuario_actual.get("rowid", 1)
+		if not "rol" in usuario_actual:
+			usuario_actual["rol"] = "Supervisor General"
+		
+		print("👤 Usuario actual cargado: " + usuario_actual["nombre_completo"])
 	else:
 		# Usuario por defecto para desarrollo
 		usuario_actual = {
@@ -38,8 +48,7 @@ func cargar_usuario_actual():
 			"username": "supervisor",
 			"rol": "Supervisor General"
 		}
-	
-	print("👤 Usuario actual cargado: " + usuario_actual["nombre_completo"])
+		print("⚠️ No se encontraron usuarios, usando usuario por defecto: " + usuario_actual["nombre_completo"])
 
 func inicializar_interfaz():
 	print("🎨 Inicializando interfaz...")
@@ -248,30 +257,30 @@ func buscar_cliente_bd_safe():
 func buscar_cliente_bd(termino: String) -> Array:
 	print("🔍 Buscando en BD real: '" + termino + "'")
 	
-	try:
-		# Usar LIKE para búsqueda flexible
-		var query = """
-			SELECT * FROM clientes 
-			WHERE nombre LIKE ? 
-			OR apellidos LIKE ? 
-			OR codigo_cliente LIKE ? 
-			OR email LIKE ? 
-			OR telefono LIKE ?
-			ORDER BY nombre, apellidos
-			LIMIT 50
-		"""
-		
-		var busqueda = "%" + termino + "%"
-		var params = [busqueda, busqueda, busqueda, busqueda, busqueda]
-		
-		var resultados = await db.select_query(query, params)
-		print("📊 Resultados BD: " + str(resultados.size()) + " clientes")
-		return resultados
-		
-	except Exception as e:
-		print("❌ Error en búsqueda BD: " + str(e))
+	# Usar LIKE para búsqueda flexible
+	var query = """
+		SELECT * FROM clientes 
+		WHERE nombre LIKE ? 
+		OR apellidos LIKE ? 
+		OR codigo_cliente LIKE ? 
+		OR email LIKE ? 
+		OR telefono LIKE ?
+		ORDER BY nombre, apellidos
+		LIMIT 50
+	"""
+	
+	var busqueda = "%" + termino + "%"
+	var params = [busqueda, busqueda, busqueda, busqueda, busqueda]
+	
+	var resultados = await db.select_query(query, params)
+	
+	if resultados == null:
+		print("❌ Error en búsqueda BD: resultado null")
 		mostrar_error("Error al buscar clientes en la base de datos")
 		return []
+	
+	print("📊 Resultados BD: " + str(resultados.size()) + " clientes")
+	return resultados
 
 func mostrar_clientes_en_tabla(clientes: Array):
 	print("📊 Mostrando " + str(clientes.size()) + " clientes en tabla")
@@ -460,150 +469,133 @@ func generar_codigo_incidencia() -> String:
 	# Obtener el siguiente número de incidencia del día
 	var query = "SELECT COUNT(*) + 1 as siguiente FROM incidencias_calidad WHERE DATE(fecha_registro) = DATE('now')"
 	
-	try:
-		var resultado = await db.select_query(query)
-		var numero = 1
-		if resultado and resultado.size() > 0:
-			numero = resultado[0].get("siguiente", 1)
-		
-		return "INC-%04d%02d%02d-%04d" % [
-			fecha_actual["year"],
-			fecha_actual["month"],
-			fecha_actual["day"],
-			numero
-		]
-		
-	except Exception as e:
-		print("❌ Error generando código: " + str(e))
-		# Código de respaldo
-		return "INC-%04d%02d%02d-%04d" % [
-			fecha_actual["year"],
-			fecha_actual["month"],
-			fecha_actual["day"],
-			Time.get_ticks_msec() % 10000
-		]
+	var resultado = await db.select_query(query)
+	var numero = 1
+	if resultado and resultado.size() > 0:
+		numero = resultado[0].get("siguiente", 1)
+	
+	return "INC-%04d%02d%02d-%04d" % [
+		fecha_actual["year"],
+		fecha_actual["month"],
+		fecha_actual["day"],
+		numero
+	]
 
 func registrar_incidencia_bd(datos: Dictionary) -> int:
 	print("💾 Registrando incidencia en BD...")
 	
-	try:
-		var query = """
-			INSERT INTO incidencias_calidad 
-			(codigo_incidencia, titulo, descripcion, tipo_hallazgo, producto_servicio, 
-			 sucursal, fecha_ocurrencia, nivel_gravedad, requiere_investigacion, 
-			 cliente_id, supervisor_id, estado, observaciones, fecha_registro)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		"""
-		
-		var params = [
-			datos.get("codigo_incidencia", ""),
-			datos.get("titulo", ""),
-			datos.get("descripcion", ""),
-			datos.get("tipo_hallazgo", ""),
-			datos.get("producto_servicio", ""),
-			datos.get("sucursal", ""),
-			datos.get("fecha_ocurrencia", ""),
-			datos.get("nivel_gravedad", ""),
-			1 if datos.get("requiere_investigacion", true) else 0,
-			datos.get("cliente_id", 0),
-			datos.get("supervisor_id", 0),
-			datos.get("estado", "abierta"),
-			datos.get("observaciones", "Registrado desde sistema"),
-			Time.get_datetime_string_from_system()
-		]
-		
-		var resultado = await db.insert_query(query, params)
-		
+	var query = """
+		INSERT INTO incidencias_calidad 
+		(codigo_incidencia, titulo, descripcion, tipo_hallazgo, producto_servicio, 
+		 sucursal, fecha_ocurrencia, nivel_gravedad, requiere_investigacion, 
+		 cliente_id, supervisor_id, estado, observaciones, fecha_registro)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	"""
+	
+	var params = [
+		datos.get("codigo_incidencia", ""),
+		datos.get("titulo", ""),
+		datos.get("descripcion", ""),
+		datos.get("tipo_hallazgo", ""),
+		datos.get("producto_servicio", ""),
+		datos.get("sucursal", ""),
+		datos.get("fecha_ocurrencia", ""),
+		datos.get("nivel_gravedad", ""),
+		1 if datos.get("requiere_investigacion", true) else 0,
+		datos.get("cliente_id", 0),
+		datos.get("supervisor_id", 0),
+		datos.get("estado", "abierta"),
+		datos.get("observaciones", "Registrado desde sistema"),
+		Time.get_datetime_string_from_system()
+	]
+	
+	var resultado = await db.insert_query(query, params)
+	
+	if resultado > 0:
 		print("✅ Incidencia registrada con ID: " + str(resultado))
 		return resultado
-		
-	except Exception as e:
-		print("❌ Error registrando incidencia: " + str(e))
+	else:
+		print("❌ Error registrando incidencia")
 		return -1
 
 func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 	print("🔄 Convirtiendo incidencia a no conformidad...")
 	
-	try:
-		# Generar código de NC
-		var fecha_actual = Time.get_datetime_dict_from_system()
-		var query_count = "SELECT COUNT(*) + 1 as siguiente FROM no_conformidades WHERE DATE(fecha_registro) = DATE('now')"
-		var resultado_count = await db.select_query(query_count)
-		
-		var numero_nc = 1
-		if resultado_count and resultado_count.size() > 0:
-			numero_nc = resultado_count[0].get("siguiente", 1)
-		
-		var codigo_nc = "NC-%04d%02d%02d-%04d" % [
-			fecha_actual["year"],
-			fecha_actual["month"],
-			fecha_actual["day"],
-			numero_nc
-		]
-		
-		# Insertar en tabla no_conformidades
-		var query = """
-			INSERT INTO no_conformidades 
-			(codigo_nc, origen, codigo_origen, titulo, descripcion, tipo, 
-			 producto_servicio, sucursal, fecha_deteccion, nivel_gravedad,
-			 cliente_id, registrado_por, estado, fecha_registro, fuente_deteccion, 
-			 proceso_afectado, impacto_calidad)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	# Generar código de NC
+	var fecha_actual = Time.get_datetime_dict_from_system()
+	var query_count = "SELECT COUNT(*) + 1 as siguiente FROM no_conformidades WHERE DATE(fecha_registro) = DATE('now')"
+	var resultado_count = await db.select_query(query_count)
+	
+	var numero_nc = 1
+	if resultado_count and resultado_count.size() > 0:
+		numero_nc = resultado_count[0].get("siguiente", 1)
+	
+	var codigo_nc = "NC-%04d%02d%02d-%04d" % [
+		fecha_actual["year"],
+		fecha_actual["month"],
+		fecha_actual["day"],
+		numero_nc
+	]
+	
+	# Insertar en tabla no_conformidades
+	var query = """
+		INSERT INTO no_conformidades 
+		(codigo_nc, origen, codigo_origen, titulo, descripcion, tipo, 
+		 producto_servicio, sucursal, fecha_deteccion, nivel_gravedad,
+		 cliente_id, registrado_por, estado, fecha_registro, fuente_deteccion, 
+		 proceso_afectado, impacto_calidad)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	"""
+	
+	var params = [
+		codigo_nc,
+		"INCIDENCIA",
+		datos_incidencia.get("codigo_incidencia", ""),
+		datos_incidencia.get("titulo", ""),
+		datos_incidencia.get("descripcion", ""),
+		datos_incidencia.get("tipo_hallazgo", ""),
+		datos_incidencia.get("producto_servicio", ""),
+		datos_incidencia.get("sucursal", ""),
+		datos_incidencia.get("fecha_ocurrencia", ""),
+		datos_incidencia.get("nivel_gravedad", ""),
+		datos_incidencia.get("cliente_id", 0),
+		datos_incidencia.get("supervisor_id", 0),
+		"ABIERTA",
+		Time.get_datetime_string_from_system(),
+		"Cliente",
+		"SERVICIO AL CLIENTE",
+		"PÉRDIDA DE CLIENTE POTENCIAL"
+	]
+	
+	var nc_id = await db.insert_query(query, params)
+	
+	if nc_id > 0:
+		# Registrar traza de la conversión
+		var query_traza = """
+			INSERT INTO trazas_nc (id_nc, usuario_id, accion, descripcion, fecha)
+			VALUES (?, ?, ?, ?, ?)
 		"""
 		
-		var params = [
-			codigo_nc,
-			"INCIDENCIA",
-			datos_incidencia.get("codigo_incidencia", ""),
-			datos_incidencia.get("titulo", ""),
-			datos_incidencia.get("descripcion", ""),
-			datos_incidencia.get("tipo_hallazgo", ""),
-			datos_incidencia.get("producto_servicio", ""),
-			datos_incidencia.get("sucursal", ""),
-			datos_incidencia.get("fecha_ocurrencia", ""),
-			datos_incidencia.get("nivel_gravedad", ""),
-			datos_incidencia.get("cliente_id", 0),
+		var params_traza = [
+			nc_id,
 			datos_incidencia.get("supervisor_id", 0),
-			"ABIERTA",
-			Time.get_datetime_string_from_system(),
-			"Cliente",
-			"SERVICIO AL CLIENTE",
-			"PÉRDIDA DE CLIENTE POTENCIAL"
+			"CREACION",
+			"No conformidad creada automáticamente desde incidencia: " + datos_incidencia.get("codigo_incidencia", ""),
+			Time.get_datetime_string_from_system()
 		]
 		
-		var nc_id = await db.insert_query(query, params)
+		await db.insert_query(query_traza, params_traza)
 		
-		if nc_id > 0:
-			# Registrar traza de la conversión
-			var query_traza = """
-				INSERT INTO trazas_nc (id_nc, usuario_id, accion, descripcion, fecha)
-				VALUES (?, ?, ?, ?, ?)
-			"""
-			
-			var params_traza = [
-				nc_id,
-				datos_incidencia.get("supervisor_id", 0),
-				"CREACION",
-				"No conformidad creada automáticamente desde incidencia: " + datos_incidencia.get("codigo_incidencia", ""),
-				Time.get_datetime_string_from_system()
-			]
-			
-			await db.insert_query(query_traza, params_traza)
-			
-			print("✅ No Conformidad creada: " + codigo_nc + " (ID: " + str(nc_id) + ")")
-			
-			# Actualizar la incidencia para indicar que fue convertida
-			var query_update = "UPDATE incidencias_calidad SET id_no_conformidad = ? WHERE codigo_incidencia = ?"
-			var params_update = [nc_id, datos_incidencia.get("codigo_incidencia", "")]
-			await db.update_query(query_update, params_update)
-			
-			return nc_id
-		else:
-			print("❌ Error al crear no conformidad")
-			return -1
-			
-	except Exception as e:
-		print("❌ Error convirtiendo a no conformidad: " + str(e))
+		print("✅ No Conformidad creada: " + codigo_nc + " (ID: " + str(nc_id) + ")")
+		
+		# Actualizar la incidencia para indicar que fue convertida
+		var query_update = "UPDATE incidencias_calidad SET id_no_conformidad = ? WHERE codigo_incidencia = ?"
+		var params_update = [nc_id, datos_incidencia.get("codigo_incidencia", "")]
+		await db.update_query(query_update, params_update)
+		
+		return nc_id
+	else:
+		print("❌ Error al crear no conformidad")
 		return -1
 
 func registrar_incidencia_con_estado(estado: String):
@@ -627,24 +619,20 @@ func registrar_incidencia_con_estado(estado: String):
 	
 	if incidencia_id > 0:
 		# Registrar traza en sistema de calidad
-		try:
-			var query_traza = """
-				INSERT INTO trazas_calidad (usuario_id, accion, modulo, descripcion, fecha)
-				VALUES (?, ?, ?, ?, ?)
-			"""
-			
-			var params_traza = [
-				usuario_actual.get("id", 1),
-				"REGISTRAR_INCIDENCIA",
-				"Incidencias",
-				"Incidente registrado: " + codigo_incidencia + " - " + datos_incidencia.get("titulo", ""),
-				Time.get_datetime_string_from_system()
-			]
-			
-			await db.insert_query(query_traza, params_traza)
-			
-		except Exception as e:
-			print("⚠️ Error registrando traza: " + str(e))
+		var query_traza = """
+			INSERT INTO trazas_calidad (usuario_id, accion, modulo, descripcion, fecha)
+			VALUES (?, ?, ?, ?, ?)
+		"""
+		
+		var params_traza = [
+			usuario_actual.get("id", 1),
+			"REGISTRAR_INCIDENCIA",
+			"Incidencias",
+			"Incidente registrado: " + codigo_incidencia + " - " + datos_incidencia.get("titulo", ""),
+			Time.get_datetime_string_from_system()
+		]
+		
+		await db.insert_query(query_traza, params_traza)
 		
 		# Si la incidencia requiere investigación, convertir a No Conformidad
 		if estado == "abierta" and requiere_investigacion:
@@ -875,82 +863,3 @@ func _process(_delta):
 		var progress = $PanelCargando/ProgressBar
 		if progress:
 			progress.value = fmod(progress.value + 2.0, 100.0)
-
-# ==================== FUNCIONES DE PRUEBA Y DIAGNÓSTICO ====================
-
-func mostrar_estado_sistema():
-	print("\n=== ESTADO DEL SISTEMA ===")
-	print("👤 Usuario actual: " + usuario_actual.get("nombre_completo", ""))
-	print("✅ Cliente seleccionado: " + ("Sí" if cliente_seleccionado and not cliente_seleccionado.is_empty() else "No"))
-	print("📊 Formulario válido: " + str(formulario_valido))
-	print("🔍 Requiere investigación: " + str(requiere_investigacion))
-	print("==========================\n")
-
-# Función para probar búsqueda rápida
-func prueba_busqueda_rapida():
-	print("🧪 Iniciando prueba de búsqueda...")
-	if has_node("DialogoBuscarCliente"):
-		$DialogoBuscarCliente/BuscarClienteVBox/BuscarClienteHBox/InputBuscarCliente.text = "Juan"
-		buscar_cliente_bd_safe()
-
-# Función para llenar formulario automáticamente para pruebas
-func prueba_formulario_completo():
-	print("🧪 Llenando formulario automáticamente...")
-	
-	# Buscar cliente en BD
-	var clientes = await buscar_cliente_bd("")
-	if clientes and clientes.size() > 0:
-		cliente_seleccionado = clientes[0]
-		if has_node("ContentContainer/FormContainer/SeccionCliente/InfoCliente"):
-			$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
-			$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
-			$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
-	else:
-		print("⚠️ No hay clientes en BD, usando datos de prueba")
-		# Crear cliente temporal para pruebas
-		cliente_seleccionado = {
-			"id": 999,
-			"codigo_cliente": "TEST001",
-			"nombre": "Cliente",
-			"apellidos": "de Prueba",
-			"email": "test@ejemplo.com",
-			"telefono": "0999999999"
-		}
-		if has_node("ContentContainer/FormContainer/SeccionCliente/InfoCliente"):
-			$ContentContainer/FormContainer/SeccionCliente/InfoCliente.visible = true
-			$ContentContainer/FormContainer/SeccionCliente/InfoCliente/LabelNombreCliente.text = "Nombre: " + cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
-			$ContentContainer/FormContainer/SeccionCliente/ClienteHBox/InputCliente.text = cliente_seleccionado.get("nombre", "") + " " + cliente_seleccionado.get("apellidos", "")
-	
-	# Llenar campos
-	var inputTitulo = find_child("InputTitulo", true, false)
-	if inputTitulo:
-		inputTitulo.text = "Prueba: Retraso en entrega de paquete turístico"
-	
-	var inputDescripcion = find_child("InputDescripcion", true, false)
-	if inputDescripcion:
-		inputDescripcion.text = "El cliente reporta que su paquete turístico no fue entregado en la fecha acordada, causando inconvenientes en su viaje programado."
-	
-	# Seleccionar combos
-	var comboTipo = find_child("ComboTipo", true, false)
-	if comboTipo:
-		comboTipo.select(1)  # Retraso en servicio
-	
-	var comboProducto = find_child("ComboProducto", true, false)
-	if comboProducto:
-		comboProducto.select(1)  # Paquete turístico
-	
-	var comboSucursal = find_child("s", true, false)
-	if comboSucursal:
-		comboSucursal.select(1)  # Pinar del Río
-	
-	var comboGravedad = find_child("ComboGravedad", true, false)
-	if comboGravedad:
-		comboGravedad.select(2)  # Moderado
-	
-	var comboInvestigacion = find_child("ComboInvestigacion", true, false)
-	if comboInvestigacion:
-		comboInvestigacion.select(1)  # Sí
-	
-	validar_formulario()
-	print("✅ Formulario llenado automáticamente")
-	mostrar_estado_sistema()

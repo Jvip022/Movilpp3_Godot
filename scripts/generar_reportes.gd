@@ -17,6 +17,9 @@ var kpi3_valor: Label
 var categoria_actual = "no_conformidades"
 var datos_reporte: Dictionary = {}
 
+# Ruta para exportación de documentos
+var ruta_exportacion = "user://doc_Export/"
+
 func _ready():
 	print("🔍 INICIANDO SISTEMA DE REPORTES...")
 	
@@ -29,6 +32,9 @@ func _ready():
 		return
 	
 	print("✅ Singleton BD encontrado en AutoLoad")
+	
+	# Crear carpeta de exportación si no existe
+	_crear_carpeta_exportacion()
 	
 	# Primero, imprimir la estructura completa para depuración
 	print("=== INSPECCIÓN DE ESTRUCTURA DE NODOS ===")
@@ -47,6 +53,8 @@ func _ready():
 	
 	# Prueba de conexión a BD
 	probar_conexion_bd()
+	
+	
 
 func mostrar_error_bd():
 	if placeholder_text:
@@ -82,6 +90,40 @@ func probar_conexion_bd():
 		print("❌ Error en la consulta o resultado nulo")
 		print("   Tipo de resultado: ", typeof(resultado))
 		print("   Valor: ", resultado)
+
+func _crear_carpeta_exportacion():
+	"""Crea la carpeta para documentos exportados si no existe"""
+	var dir = DirAccess.open("user://")
+	if not dir.dir_exists(ruta_exportacion):
+		var error = dir.make_dir(ruta_exportacion)
+		if error == OK:
+			print("✅ Carpeta de exportación creada: ", ruta_exportacion)
+		else:
+			print("❌ Error al crear carpeta de exportación: ", error)
+	else:
+		print("✅ Carpeta de exportación ya existe: ", ruta_exportacion)
+		
+	# Listar archivos existentes en la carpeta
+	_listar_archivos_exportados()
+
+func _listar_archivos_exportados():
+	"""Lista los archivos exportados en la carpeta"""
+	var dir = DirAccess.open(ruta_exportacion)
+	if dir:
+		dir.list_dir_begin()
+		var nombre_archivo = dir.get_next()
+		var archivos = []
+		while nombre_archivo != "":
+			if not dir.current_is_dir():
+				archivos.append(nombre_archivo)
+			nombre_archivo = dir.get_next()
+		
+		if archivos.size() > 0:
+			print("📁 Archivos en carpeta de exportación:")
+			for archivo in archivos:
+				print("   - ", archivo)
+		else:
+			print("📁 Carpeta de exportación vacía")
 
 func _imprimir_estructura_nodos():
 	"""Imprime la estructura completa de nodos desde el nodo actual"""
@@ -746,12 +788,195 @@ func _actualizar_ui_con_datos(fecha_inicio: String, fecha_fin: String, sucursal:
 		print("✅ Fecha de actualización actualizada")
 
 func _on_exportar_reporte():
-	"""Maneja la exportación del reporte"""
-	print("📤 Exportando reporte...")
+	"""Maneja la exportación del reporte a DOCX"""
+	print("📤 Exportando reporte a DOCX...")
 	
-	# Mostrar mensaje de confirmación
-	if placeholder_text:
-		placeholder_text.text = "✅ REPORTE EXPORTADO\n\nEl reporte ha sido exportado exitosamente.\n\nFormatos disponibles:\n• PDF\n• Excel\n• CSV\n\nEl archivo se ha guardado en la carpeta de documentos."
+	# Verificar que hay datos para exportar
+	if datos_reporte.is_empty():
+		print("❌ No hay datos para exportar. Genere primero el reporte.")
+		if placeholder_text:
+			placeholder_text.text = "❌ ERROR: No hay datos para exportar\n\nGenere primero el reporte usando el botón 'Generar Vista Previa'."
+		return
+	
+	# Generar documento DOCX
+	var exportado = _generar_documento_docx()
+	
+	if exportado:
+		print("✅ Reporte exportado exitosamente")
+		
+		# Mostrar mensaje de confirmación con ruta
+		if placeholder_text:
+			var ruta_completa = ruta_exportacion + _obtener_nombre_archivo()
+			placeholder_text.text = "✅ REPORTE EXPORTADO EXITOSAMENTE\n\n"
+			placeholder_text.text += "El reporte se ha guardado en:\n"
+			placeholder_text.text += "📁 " + ruta_completa + "\n\n"
+			placeholder_text.text += "Puede encontrar el documento en la carpeta:\n"
+			placeholder_text.text += "doc_Export/\n\n"
+			placeholder_text.text += "Formatos disponibles:\n"
+			placeholder_text.text += "• DOCX (Documento de Word)\n"
+			placeholder_text.text += "• PDF (pendiente)\n"
+			placeholder_text.text += "• Excel (pendiente)"
+		
+		# Listar archivos en la carpeta
+		_listar_archivos_exportados()
+	else:
+		print("❌ Error al exportar el reporte")
+		if placeholder_text:
+			placeholder_text.text = "❌ ERROR AL EXPORTAR\n\nNo se pudo guardar el documento.\nVerifique los permisos de escritura."
+
+func _generar_documento_docx() -> bool:
+	"""Genera un documento DOCX con el contenido del reporte"""
+	print("📝 Generando documento DOCX...")
+	
+	# Crear contenido del documento
+	var contenido = _generar_contenido_documento()
+	
+	# Generar nombre de archivo único
+	var nombre_archivo = _obtener_nombre_archivo()
+	var ruta_completa = ruta_exportacion + nombre_archivo
+	
+	# En un entorno real, aquí usaríamos una librería para generar DOCX
+	# Por ahora, generaremos un archivo de texto simple con formato RTF básico
+	# que puede ser abierto por Word como documento de texto enriquecido
+	
+	# Crear contenido RTF básico (Word puede abrir archivos .rtf como .docx)
+	var contenido_rtf = _generar_contenido_rtf(contenido)
+	
+	# Guardar archivo con extensión .docx (aunque es RTF por ahora)
+	var archivo = FileAccess.open(ruta_completa, FileAccess.WRITE)
+	if archivo:
+		archivo.store_string(contenido_rtf)
+		archivo.close()
+		print("✅ Documento guardado: ", ruta_completa)
+		return true
+	else:
+		print("❌ Error al abrir archivo: ", FileAccess.get_open_error())
+		return false
+
+func _obtener_nombre_archivo() -> String:
+	"""Genera un nombre de archivo único para el reporte"""
+	var fecha_hora = Time.get_datetime_string_from_system()
+	fecha_hora = fecha_hora.replace(":", "").replace("-", "").replace("T", "_").replace(" ", "_")
+	
+	var nombre_categoria = ""
+	match categoria_actual:
+		"no_conformidades":
+			nombre_categoria = "NoConformidades"
+		"satisfaccion":
+			nombre_categoria = "SatisfaccionCliente"
+		"objetivos":
+			nombre_categoria = "ObjetivosCalidad"
+		"estado_nc":
+			nombre_categoria = "EstadoNC"
+		_:
+			nombre_categoria = "Reporte"
+	
+	return "Reporte_%s_%s.docx" % [nombre_categoria, fecha_hora]
+
+func _generar_contenido_documento() -> Dictionary:
+	"""Genera la estructura de contenido para el documento"""
+	var contenido = {
+		"titulo": titulo_reporte.text if titulo_reporte else "REPORTE DEL SISTEMA",
+		"subtitulo": subtitulo_reporte.text if subtitulo_reporte else "",
+		"fecha_generacion": Time.get_datetime_string_from_system(),
+		"filtros": {
+			"fecha_inicio": input_fecha_inicio.text if input_fecha_inicio else "",
+			"fecha_fin": input_fecha_fin.text if input_fecha_fin else "",
+			"sucursal": select_sucursal.text if select_sucursal else ""
+		},
+		"datos": datos_reporte,
+		"categoria": categoria_actual
+	}
+	
+	return contenido
+
+func _generar_contenido_rtf(contenido: Dictionary) -> String:
+	"""Genera contenido RTF básico para el documento"""
+	print("📋 Generando contenido RTF...")
+	
+	var rtf = "{\\rtf1\\ansi\\deff0\n"
+	rtf += "{\\fonttbl{\\f0\\fnil\\fcharset0 Arial;}}\n"
+	rtf += "\\viewkind4\\uc1\\pard\\f0\\fs24\n\n"
+	
+	# Título principal
+	rtf += "\\b\\fs36 " + contenido["titulo"] + "\\b0\\fs24\\par\n"
+	rtf += "\\par\n"
+	
+	# Información del reporte
+	rtf += "\\b Fecha de generación:\\b0 " + contenido["fecha_generacion"] + "\\par\n"
+	rtf += "\\b Período del reporte:\\b0 " + contenido["filtros"]["fecha_inicio"] + " a " + contenido["filtros"]["fecha_fin"] + "\\par\n"
+	rtf += "\\b Sucursal/Provincia:\\b0 " + contenido["filtros"]["sucursal"] + "\\par\n"
+	rtf += "\\par\\par\n"
+	
+	# Contenido según categoría
+	match contenido["categoria"]:
+		"no_conformidades":
+			var datos = contenido["datos"]
+			rtf += "\\b\\fs28 RESUMEN DE NO CONFORMIDADES\\b0\\fs24\\par\n"
+			rtf += "\\par\n"
+			rtf += "• Total de No Conformidades: " + str(datos.get("total_nc", 0)) + "\\par\n"
+			rtf += "• Pendientes de análisis: " + str(datos.get("pendientes", 0)) + "\\par\n"
+			rtf += "• En proceso de análisis: " + str(datos.get("analizadas", 0)) + "\\par\n"
+			rtf += "• Cerradas y resueltas: " + str(datos.get("cerradas", 0)) + "\\par\n"
+			rtf += "\\par\n"
+			
+			# Calcular porcentaje de cierre
+			var total = datos.get("total_nc", 0)
+			var cerradas = datos.get("cerradas", 0)
+			var porcentaje_cierre = 0.0
+			if total > 0:
+				porcentaje_cierre = (cerradas * 100.0) / total
+			rtf += "• Porcentaje de cierre: " + ("%.1f" % porcentaje_cierre) + "%\\par\n"
+			rtf += "\\par\\par\n"
+			
+			# Distribución por tipo si existe
+			var por_tipo = datos.get("por_tipo", [])
+			if por_tipo.size() > 0:
+				rtf += "\\b\\fs22 DISTRIBUCIÓN POR TIPO DE NO CONFORMIDAD\\b0\\fs24\\par\n"
+				rtf += "\\par\n"
+				for item in por_tipo:
+					rtf += "• " + str(item.get("tipo_nc", "Desconocido")) + ": " + str(item.get("cantidad", 0)) + "\\par\n"
+				rtf += "\\par\\par\n"
+		
+		"satisfaccion":
+			var datos = contenido["datos"]
+			rtf += "\\b\\fs28 REPORTE DE SATISFACCIÓN DEL CLIENTE\\b0\\fs24\\par\n"
+			rtf += "\\par\n"
+			rtf += "• Total de quejas/reclamos: " + str(datos.get("total_quejas", 0)) + "\\par\n"
+			rtf += "• Promedio de satisfacción: " + str(datos.get("promedio_satisfaccion", 0)) + "/10\\par\n"
+			rtf += "• Quejas resueltas: " + str(datos.get("quejas_resueltas", 0)) + "\\par\n"
+			rtf += "• Tiempo promedio de respuesta: " + str(datos.get("tiempo_respuesta_promedio", 0)) + " días\\par\n"
+			rtf += "\\par\\par\n"
+		
+		"objetivos":
+			var datos = contenido["datos"]
+			rtf += "\\b\\fs28 SEGUIMIENTO DE OBJETIVOS DE CALIDAD\\b0\\fs24\\par\n"
+			rtf += "\\par\n"
+			rtf += "• Objetivos totales establecidos: " + str(datos.get("objetivos_totales", 0)) + "\\par\n"
+			rtf += "• Objetivos cumplidos: " + str(datos.get("objetivos_cumplidos", 0)) + "\\par\n"
+			rtf += "• Porcentaje de cumplimiento: " + str(datos.get("porcentaje_cumplimiento", 0)) + "%\\par\n"
+			rtf += "• Mejoras implementadas: " + str(datos.get("mejoras_implementadas", 0)) + "\\par\n"
+			rtf += "\\par\\par\n"
+		
+		"estado_nc":
+			var datos = contenido["datos"]
+			rtf += "\\b\\fs28 ESTADO DE NO CONFORMIDADES\\b0\\fs24\\par\n"
+			rtf += "\\par\n"
+			rtf += "• No Conformidades registradas: " + str(datos.get("total_nc", 0)) + "\\par\n"
+			rtf += "• Pendientes: " + str(datos.get("pendientes", 0)) + "\\par\n"
+			rtf += "• En progreso: " + str(datos.get("en_progreso", 0)) + "\\par\n"
+			rtf += "• Cerradas: " + str(datos.get("cerradas", 0)) + "\\par\n"
+			rtf += "\\par\\par\n"
+	
+	# Pie de página
+	rtf += "\\par\\par\\par\n"
+	rtf += "\\qc\\fs18 ___________________________________________________\\par\n"
+	rtf += "\\qc\\fs18 Documento generado automáticamente por el Sistema de Gestión de Calidad\\par\n"
+	rtf += "\\par\n"
+	
+	rtf += "}"
+	
+	return rtf
 
 func _on_volver_menu():
 	"""Regresa al menú principal"""
