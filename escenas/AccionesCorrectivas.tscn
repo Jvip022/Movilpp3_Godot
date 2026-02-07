@@ -18,7 +18,7 @@ corner_radius_top_right = 15
 corner_radius_bottom_right = 15
 corner_radius_bottom_left = 15
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
 content_margin_left = 15.0
 content_margin_top = 10.0
 content_margin_right = 15.0
@@ -34,23 +34,23 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
 content_margin_left = 10.0
 content_margin_top = 8.0
 content_margin_right = 10.0
 content_margin_bottom = 8.0
-bg_color = Color(0.38, 0.38799998, 0.4, 0.6901961)
+bg_color = Color(1, 1, 1, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.8, 0.85, 0.9, 1)
+border_color = Color(0.7, 0.7, 0.7, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4"]
 content_margin_left = 20.0
 content_margin_top = 15.0
 content_margin_right = 20.0
@@ -66,7 +66,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5"]
 content_margin_left = 20.0
 content_margin_top = 15.0
 content_margin_right = 20.0
@@ -82,7 +82,19 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7"]
+bg_color = Color(0.9, 0.95, 1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.23, 0.53, 0.95, 0.5)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6"]
 content_margin_left = 10.0
 content_margin_top = 5.0
 content_margin_right = 10.0
@@ -153,12 +165,113 @@ text = "GESTIÓN DE ACCIONES CORRECTIVAS"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="FormContainer" type="Panel" parent="ContenedorPrincipal" unique_id=462484302]
-custom_minimum_size = Vector2(0, 250)
+[node name="PanelBusqueda" type="Panel" parent="ContenedorPrincipal" unique_id=181214320]
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_5")
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
+
+[node name="LabelBusqueda" type="Label" parent="ContenedorPrincipal/PanelBusqueda" unique_id=987654321]
+layout_mode = 1
+offset_left = 20.0
+offset_top = 3.0
+offset_right = 331.0
+offset_bottom = 33.0
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Buscar y Evaluar No Conformidades"
+vertical_alignment = 1
+
+[node name="HBoxBusqueda" type="HBoxContainer" parent="ContenedorPrincipal/PanelBusqueda" unique_id=112233445]
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -15.0
+offset_right = -20.0
+offset_bottom = 15.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InputBusqueda" type="LineEdit" parent="ContenedorPrincipal/PanelBusqueda/HBoxBusqueda" unique_id=556677889]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_placeholder_color = Color(0.05, 0.05, 0.05, 0.6)
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
+placeholder_text = "Buscar por código, descripción o responsable..."
+expand_to_text_length = true
+
+[node name="BtnBuscar" type="Button" parent="ContenedorPrincipal/PanelBusqueda/HBoxBusqueda" unique_id=990011223]
+custom_minimum_size = Vector2(100, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
+text = "🔍 BUSCAR"
+
+[node name="BtnEvaluarNC" type="Button" parent="ContenedorPrincipal/PanelBusqueda/HBoxBusqueda" unique_id=334455667]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
+text = "📊 EVALUAR NC"
+
+[node name="BtnToggleResultados" type="Button" parent="ContenedorPrincipal/PanelBusqueda/HBoxBusqueda" unique_id=999888777]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
+text = "▼ OCULTAR"
+
+[node name="ResultadosBusqueda" type="ItemList" parent="ContenedorPrincipal/PanelBusqueda" unique_id=778899001]
+visible = false
+light_mask = 3
+z_index = 3
+y_sort_enabled = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.374
+anchor_top = 0.86700004
+anchor_right = 0.731
+anchor_bottom = 1.5330001
+offset_top = -35.04001
+offset_right = 0.5
+offset_bottom = 149.04
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_7")
+select_mode = 1
+auto_height = true
+
+[node name="FormContainer" type="Panel" parent="ContenedorPrincipal" unique_id=462484302]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
+
+[node name="LabelTituloForm" type="Label" parent="ContenedorPrincipal/FormContainer" unique_id=123456789]
+layout_mode = 1
+offset_left = 20.0
+offset_top = -3.0
+offset_right = 316.0
+offset_bottom = 27.0
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "Registrar Nueva Acción Correctiva"
+vertical_alignment = 1
 
 [node name="GridForm" type="GridContainer" parent="ContenedorPrincipal/FormContainer" unique_id=1643803800]
 layout_mode = 1
@@ -166,34 +279,34 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = 20.0
+offset_top = 50.0
 offset_right = -20.0
-offset_bottom = -70.0
+offset_bottom = -80.0
 grow_horizontal = 2
 grow_vertical = 2
 columns = 2
 
-[node name="LabelNoConformidad" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1482437259]
+[node name="LabelNCSeleccionada" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=135792468]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 theme_override_font_sizes/font_size = 14
-text = "No Conformidad:"
+text = "No Conformidad Seleccionada:"
 vertical_alignment = 1
 
-[node name="SelectNoConformidad" type="OptionButton" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=870410660]
+[node name="InfoNCSeleccionada" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=246813579]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_6")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_6")
-theme_override_styles/hover = SubResource("StyleBoxFlat_6")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+theme_override_colors/font_color = Color(0.2, 0.4, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ninguna seleccionada"
+vertical_alignment = 1
 
 [node name="LabelDescripcion" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1014785942]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 theme_override_font_sizes/font_size = 14
-text = "Descripción Acción:"
+text = "Descripción Acción Correctiva:"
 vertical_alignment = 1
 
 [node name="InputDescripcion" type="TextEdit" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=2107937081]
@@ -201,8 +314,9 @@ custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_6")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+theme_override_colors/font_placeholder_color = Color(0.18, 0.18, 0.18, 0.6)
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
 placeholder_text = "Describa la acción correctiva a implementar..."
 
 [node name="LabelResponsable" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1171636158]
@@ -215,8 +329,9 @@ vertical_alignment = 1
 [node name="InputResponsable" type="LineEdit" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=907014101]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_6")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+theme_override_colors/font_placeholder_color = Color(0.18039216, 0.18039216, 0.18039216, 0.6)
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
 placeholder_text = "Nombre del responsable..."
 
 [node name="LabelFechaLimite" type="Label" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=1142410135]
@@ -229,8 +344,9 @@ vertical_alignment = 1
 [node name="InputFechaLimite" type="LineEdit" parent="ContenedorPrincipal/FormContainer/GridForm" unique_id=611066692]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_6")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+theme_override_colors/font_placeholder_color = Color(0.18039216, 0.18039216, 0.18039216, 0.6)
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
 placeholder_text = "DD/MM/AAAA"
 
 [node name="BotonesForm" type="HBoxContainer" parent="ContenedorPrincipal/FormContainer" unique_id=1495963698]
@@ -240,7 +356,7 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 20.0
-offset_top = -50.0
+offset_top = -60.0
 offset_right = -20.0
 offset_bottom = -10.0
 grow_horizontal = 2
@@ -252,9 +368,9 @@ custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
 text = "📝 REGISTRAR ACCIÓN"
 
 [node name="BtnLimpiarForm" type="Button" parent="ContenedorPrincipal/FormContainer/BotonesForm" unique_id=1034763329]
@@ -262,9 +378,9 @@ custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_4")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
-theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_6")
 text = "LIMPIAR FORMULARIO"
 
 [node name="PanelAcciones" type="Panel" parent="ContenedorPrincipal" unique_id=1132994062]
@@ -272,7 +388,7 @@ custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_5")
+theme_override_styles/panel = SubResource("StyleBoxFlat_2")
 
 [node name="LabelTituloTabla" type="Label" parent="ContenedorPrincipal/PanelAcciones" unique_id=964760716]
 layout_mode = 1
@@ -324,9 +440,9 @@ custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
 text = "📋 ASIGNAR TAREAS"
 
 [node name="BtnNotificarEstado" type="Button" parent="ContenedorPrincipal/PanelAcciones/BotonesAcciones" unique_id=2029148285]
@@ -334,9 +450,9 @@ custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
 text = "🔔 NOTIFICAR ESTADO"
 
 [node name="BtnActualizarTabla" type="Button" parent="ContenedorPrincipal/PanelAcciones/BotonesAcciones" unique_id=560239802]
@@ -344,17 +460,18 @@ custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_4")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
-theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_6")
 text = "🔄 ACTUALIZAR"
 
 [node name="BotonesInferiores" type="HBoxContainer" parent="ContenedorPrincipal" unique_id=1151659970]
+z_index = 1
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
-alignment = 1
+alignment = 2
 
 [node name="BtnVolverMenu" type="Button" parent="ContenedorPrincipal/BotonesInferiores" unique_id=1144855511]
 custom_minimum_size = Vector2(300, 45)
@@ -363,9 +480,9 @@ theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_colors/font_pressed_color = Color(0.15, 0.15, 0.15, 1)
 theme_override_colors/font_hover_color = Color(0.3, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_4")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
-theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_6")
 text = "← VOLVER AL MENÚ PRINCIPAL"
 
 [node name="Footer" type="Panel" parent="." unique_id=125169220]
@@ -395,7 +512,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 0.8)
 theme_override_font_sizes/font_size = 12
-text = "Sistema de Gestión de Calidad - Acciones Correctivas v1.0"
+text = "Sistema de Gestión de Calidad - Acciones Correctivas v2.0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -444,8 +561,8 @@ custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_6")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
 placeholder_text = "Describa la tarea específica..."
 
 [node name="LabelTareaResponsable" type="Label" parent="DialogoTareas/VBoxContainer" unique_id=578038128]
@@ -458,8 +575,8 @@ text = "Responsable de la Tarea:"
 [node name="InputTareaResponsable" type="LineEdit" parent="DialogoTareas/VBoxContainer" unique_id=439321191]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_6")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
 placeholder_text = "Nombre del responsable..."
 
 [node name="LabelTareaFechaLimite" type="Label" parent="DialogoTareas/VBoxContainer" unique_id=1571137473]
@@ -472,8 +589,8 @@ text = "Fecha Límite de la Tarea:"
 [node name="InputTareaFechaLimite" type="LineEdit" parent="DialogoTareas/VBoxContainer" unique_id=421975466]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_6")
-theme_override_styles/focus = SubResource("StyleBoxFlat_6")
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
 placeholder_text = "DD/MM/AAAA"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="DialogoTareas/VBoxContainer" unique_id=1401026243]
@@ -486,9 +603,9 @@ custom_minimum_size = Vector2(180, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+theme_override_styles/normal = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
 text = "💾 GUARDAR TAREA"
 
 [node name="BtnCancelar" type="Button" parent="DialogoTareas/VBoxContainer/HBoxContainer" unique_id=82594021]
@@ -496,7 +613,117 @@ custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_6")
+text = "CANCELAR"
+
+[node name="DialogoEvaluacion" type="Window" parent="." unique_id=215487963]
+title = "Evaluar No Conformidad"
+position = Vector2i(100, 100)
+size = Vector2i(500, 400)
+visible = false
+wrap_controls = true
+unresizable = true
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="DialogoEvaluacion" unique_id=483761803]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LabelTituloEvaluacion" type="Label" parent="DialogoEvaluacion/VBoxContainer2" unique_id=123987456]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 20
+text = "Evaluar No Conformidad"
+horizontal_alignment = 1
+
+[node name="InfoNCDetalle" type="Label" parent="DialogoEvaluacion/VBoxContainer2" unique_id=654987321]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "Detalles de la no conformidad seleccionada..."
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="DialogoEvaluacion/VBoxContainer2" unique_id=321654987]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelSeveridad" type="Label" parent="DialogoEvaluacion/VBoxContainer2" unique_id=789456123]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Nivel de Severidad:"
+
+[node name="OpcionesSeveridad" type="OptionButton" parent="DialogoEvaluacion/VBoxContainer2" unique_id=456123789]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
+
+[node name="LabelImpacto" type="Label" parent="DialogoEvaluacion/VBoxContainer2" unique_id=159753486]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Área de Impacto:"
+
+[node name="OpcionesImpacto" type="OptionButton" parent="DialogoEvaluacion/VBoxContainer2" unique_id=852741963]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
+
+[node name="LabelEvaluacion" type="Label" parent="DialogoEvaluacion/VBoxContainer2" unique_id=369258147]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Evaluación y Comentarios:"
+
+[node name="InputEvaluacion" type="TextEdit" parent="DialogoEvaluacion/VBoxContainer2" unique_id=147258369]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_3")
+theme_override_styles/focus = SubResource("StyleBoxFlat_3")
+placeholder_text = "Describa su evaluación de la no conformidad..."
+
+[node name="HBoxContainerBotones" type="HBoxContainer" parent="DialogoEvaluacion/VBoxContainer2" unique_id=258369147]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BtnGuardarEvaluacion" type="Button" parent="DialogoEvaluacion/VBoxContainer2/HBoxContainerBotones" unique_id=963852741]
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_4")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_4")
-theme_override_styles/hover = SubResource("StyleBoxFlat_4")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_5")
+theme_override_styles/hover = SubResource("StyleBoxFlat_5")
+text = "💾 GUARDAR EVALUACIÓN"
+
+[node name="BtnCancelarEvaluacion" type="Button" parent="DialogoEvaluacion/VBoxContainer2/HBoxContainerBotones" unique_id=741852963]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_6")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6")
+theme_override_styles/hover = SubResource("StyleBoxFlat_6")
 text = "CANCELAR"

@@ -611,7 +611,6 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_primary_btn_hover")
 text = "📋 Registrar Queja"
 
 [node name="SeguimientoTab" type="VBoxContainer" parent="LayoutPrincipal/MainContent/ContentArea" unique_id=22]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -709,6 +708,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 20
 
 [node name="ConfiguracionTab" type="VBoxContainer" parent="LayoutPrincipal/MainContent/ContentArea" unique_id=36]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

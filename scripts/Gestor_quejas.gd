@@ -46,6 +46,19 @@ var lbl_pendientes_valor: Label
 # Elementos de seguimiento
 var txt_buscar: LineEdit
 var opt_status_filter: OptionButton
+var quejas_tree: Tree  # NUEVO: Control para mostrar la lista de quejas
+
+# Botones de acción en seguimiento
+var btn_resolver: Button
+var btn_ver_detalles: Button
+var btn_cerrar_caso: Button
+
+# Variable para almacenar la queja seleccionada
+var queja_seleccionada_id: int = -1
+
+# Estadísticas de analíticas
+var lbl_resueltas_valor: Label
+var lbl_promedio_valor: Label
 
 # FUNCIÓN AUXILIAR PARA MANEJAR CONSULTAS DE FORMA SEGURA
 func query_safe(query: String, args: Array = []) -> Array:
@@ -112,14 +125,18 @@ func _ready():
 	# Mostrar pestaña de registro por defecto
 	mostrar_pestana("registro")
 	
+	# Verificar que las tablas existan
 	var db_info = Bd.get_database_info()
 	print("📊 Tablas en la base de datos: ", db_info["tables"])
 	if "quejas_reclamaciones" in db_info["tables"]:
 		print("✅ Tabla quejas_reclamaciones existe")
-		var structure = Bd.get_table_structure("quejas_reclamaciones")
-		print("📋 Estructura de quejas_reclamaciones: ", structure)
+		# Probar una consulta simple
+		var test_result = query_safe("SELECT COUNT(*) as count FROM quejas_reclamaciones")
+		if test_result and test_result.size() > 0:
+			print("📈 Total registros en tabla: ", test_result[0].get("count", 0))
 	else:
 		print("❌ Tabla quejas_reclamaciones NO existe")
+		crear_tabla_quejas()
 
 # ===== FUNCIONES DE INICIALIZACIÓN DE INTERFAZ =====
 
@@ -143,6 +160,11 @@ func inicializar_referencias_nodos():
 	btn_back_menu = get_node_or_null("LayoutPrincipal/Footer/FooterContent/BackButton")
 	btn_guardar_config = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/ConfiguracionTab/ConfigActions/SaveConfigButton")
 	
+	# Botones de acción en seguimiento
+	btn_resolver = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/QuejasList/BtnResolver")
+	btn_ver_detalles = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/QuejasList/BtnVerDetalles")
+	btn_cerrar_caso = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/QuejasList/BtnCerrarCaso")
+	
 	# Campos del formulario
 	opt_tipo_caso = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/CaseTypeDropdown")
 	txt_nombres = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/RegistroTab/FormGrid/NameInput")
@@ -165,8 +187,53 @@ func inicializar_referencias_nodos():
 	# Elementos de seguimiento
 	txt_buscar = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/Filters/SearchInput")
 	opt_status_filter = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/Filters/StatusFilter")
+	quejas_tree = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/SeguimientoTab/QuejasList/QuejasTree")
+	
+	# Estadísticas de analíticas
+	lbl_resueltas_valor = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/AnaliticasTab/AnalyticsContent/StatsGrid/StatResueltas/StatResueltasContent/StatResueltasValue")
+	lbl_promedio_valor = get_node_or_null("LayoutPrincipal/MainContent/ContentArea/AnaliticasTab/AnalyticsContent/StatsGrid/StatPromedio/StatPromedioContent/StatPromedioValue")
+	
+	if not quejas_tree:
+		print("⚠️ No se encontró el control Tree para mostrar quejas")
 	
 	print("✅ Referencias de interfaz inicializadas")
+
+func crear_tabla_quejas():
+	"""
+	Crea la tabla de quejas si no existe.
+	"""
+	var create_table_sql = """
+		CREATE TABLE IF NOT EXISTS quejas_reclamaciones (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			numero_caso TEXT UNIQUE,
+			tipo_caso TEXT,
+			tipo_reclamante TEXT,
+			nombres TEXT,
+			apellidos TEXT,
+			identificacion TEXT,
+			telefono TEXT,
+			email TEXT,
+			asunto TEXT,
+			descripcion_detallada TEXT,
+			producto_servicio TEXT,
+			numero_factura TEXT,
+			fecha_incidente TEXT,
+			categoria TEXT,
+			monto_reclamado REAL,
+			tipo_compensacion TEXT,
+			canal_entrada TEXT,
+			recibido_por TEXT,
+			prioridad TEXT,
+			estado TEXT,
+			fecha_limite_respuesta TEXT,
+			creado_por INTEGER,
+			fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+			fecha_modificacion DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	"""
+	
+	Bd.query(create_table_sql)
+	print("✅ Tabla 'quejas_reclamaciones' creada o ya existente")
 
 func configurar_navegacion():
 	print("Configurando navegación entre pestañas...")
@@ -229,7 +296,47 @@ func conectar_senales_ui():
 	if btn_guardar_config:
 		btn_guardar_config.pressed.connect(_on_btn_guardar_config_pressed)
 	
+	# Conectar botones de seguimiento
+	if btn_resolver:
+		btn_resolver.pressed.connect(_on_btn_resolver_pressed)
+	
+	if btn_ver_detalles:
+		btn_ver_detalles.pressed.connect(_on_btn_ver_detalles_pressed)
+	
+	if btn_cerrar_caso:
+		btn_cerrar_caso.pressed.connect(_on_btn_cerrar_caso_pressed)
+	
+	# Conectar filtros de seguimiento
+	if txt_buscar:
+		txt_buscar.text_changed.connect(_on_buscar_text_changed)
+	
+	if opt_status_filter:
+		opt_status_filter.item_selected.connect(_on_status_filter_changed)
+	
+	# Conectar señal de selección en el Tree
+	if quejas_tree:
+		quejas_tree.item_selected.connect(_on_queja_seleccionada)
+		quejas_tree.item_activated.connect(_on_queja_activada)  # Doble clic
+	
+	# Deshabilitar botones inicialmente
+	if btn_resolver:
+		btn_resolver.disabled = true
+	if btn_cerrar_caso:
+		btn_cerrar_caso.disabled = true
+	if btn_ver_detalles:
+		btn_ver_detalles.disabled = true
+	
 	print("✅ Señales de UI conectadas")
+
+func _on_buscar_text_changed(new_text: String):
+	# Actualizar lista después de un breve delay para evitar múltiples consultas
+	if seguimiento_tab and seguimiento_tab.visible:
+		call_deferred("actualizar_lista_quejas")
+
+func _on_status_filter_changed(index: int):
+	# Actualizar lista cuando cambia el filtro de estado
+	if seguimiento_tab and seguimiento_tab.visible:
+		actualizar_lista_quejas()
 
 func mostrar_pestana(nombre_pestana: String):
 	print("Mostrando pestaña: ", nombre_pestana)
@@ -254,11 +361,23 @@ func mostrar_pestana(nombre_pestana: String):
 		"seguimiento":
 			if seguimiento_tab:
 				seguimiento_tab.visible = true
-				actualizar_lista_quejas()
+				actualizar_lista_quejas()  # Actualizar al mostrar
+				# Deseleccionar cualquier queja previa
+				if quejas_tree:
+					quejas_tree.deselect_all()
+					queja_seleccionada_id = -1
+				# Deshabilitar botones de acción
+				if btn_resolver:
+					btn_resolver.disabled = true
+				if btn_cerrar_caso:
+					btn_cerrar_caso.disabled = true
+				if btn_ver_detalles:
+					btn_ver_detalles.disabled = true
 		
 		"analiticas":
 			if analiticas_tab:
 				analiticas_tab.visible = true
+				actualizar_estadisticas_detalladas()  # Actualizar al mostrar
 				actualizar_estadisticas()
 		
 		"configuracion":
@@ -310,8 +429,13 @@ func _on_btn_registrar_pressed():
 			# Mostrar mensaje de éxito
 			mostrar_mensaje_exito("Queja registrada exitosamente")
 			
-			# Actualizar estadísticas
+			# Actualizar estadísticas INMEDIATAMENTE
 			actualizar_estadisticas()
+			actualizar_estadisticas_detalladas()
+			
+			# Si estamos en seguimiento, actualizar lista también
+			if seguimiento_tab and seguimiento_tab.visible:
+				actualizar_lista_quejas()
 		else:
 			mostrar_mensaje_error("No se pudo registrar la queja en la base de datos")
 	else:
@@ -497,6 +621,7 @@ func _on_timer_timeout():
 	
 	# Actualizar interfaz
 	actualizar_estadisticas()
+	actualizar_estadisticas_detalladas()
 	
 	# Si estamos en la pestaña de seguimiento, actualizar lista
 	if seguimiento_tab and seguimiento_tab.visible:
@@ -509,23 +634,291 @@ func _on_tab_changed(tab_index):
 		1:  # Seguimiento
 			actualizar_lista_quejas()
 		2:  # Analíticas
+			actualizar_estadisticas_detalladas()
 			actualizar_estadisticas()
 		3:  # Configuración
 			cargar_configuracion_en_ui()
 		4:  # No Conformidades
 			actualizar_lista_no_conformidades()
 
+# ===== FUNCIONES DE GESTIÓN DE ESTADOS =====
+
+func _on_queja_seleccionada():
+	"""Maneja la selección de una queja en el Tree."""
+	var selected_item = quejas_tree.get_selected()
+	if selected_item:
+		# Obtener el ID de la queja seleccionada (columna 0)
+		queja_seleccionada_id = int(selected_item.get_text(0))
+		print("Queja seleccionada ID: ", queja_seleccionada_id)
+		
+		# Habilitar botones según el estado actual
+		actualizar_estado_botones(selected_item.get_text(4).to_lower())
+		
+		# Habilitar botón ver detalles
+		if btn_ver_detalles:
+			btn_ver_detalles.disabled = false
+
+func actualizar_estado_botones(estado_actual: String):
+	"""Habilita/deshabilita botones según el estado de la queja."""
+	if btn_resolver:
+		btn_resolver.disabled = (estado_actual == "resuelto" or estado_actual == "cerrado")
+		if not btn_resolver.disabled:
+			btn_resolver.text = "Marcar como Resuelta"
+	
+	if btn_cerrar_caso:
+		btn_cerrar_caso.disabled = (estado_actual != "resuelto")
+		if not btn_cerrar_caso.disabled:
+			btn_cerrar_caso.text = "Cerrar Caso"
+
+func _on_btn_resolver_pressed():
+	"""Marca la queja seleccionada como resuelta."""
+	if queja_seleccionada_id == -1:
+		mostrar_mensaje_error("Seleccione una queja primero")
+		return
+	
+	# Actualizar estado a "resuelto"
+	var query = "UPDATE quejas_reclamaciones SET estado = ?, fecha_modificacion = ? WHERE id = ?"
+	var result = bd.query_with_args(query, ["resuelto", Time.get_datetime_string_from_system(), queja_seleccionada_id])
+	
+	if result:
+		mostrar_mensaje_exito("✅ Queja marcada como resuelta")
+		
+		# Registrar en historial
+		registrar_historial_queja(queja_seleccionada_id, "queja_resuelta",
+			"Queja marcada como resuelta desde la interfaz")
+		
+		# Actualizar interfaz
+		actualizar_lista_quejas()
+		actualizar_estadisticas()
+		actualizar_estadisticas_detalladas()
+		
+		# Deseleccionar y deshabilitar botones
+		if quejas_tree:
+			quejas_tree.deselect_all()
+		queja_seleccionada_id = -1
+		
+		if btn_resolver:
+			btn_resolver.disabled = true
+		if btn_cerrar_caso:
+			btn_cerrar_caso.disabled = true
+		if btn_ver_detalles:
+			btn_ver_detalles.disabled = true
+	else:
+		mostrar_mensaje_error("❌ No se pudo actualizar la queja")
+
+func _on_btn_cerrar_caso_pressed():
+	"""Cierra completamente una queja resuelta."""
+	if queja_seleccionada_id == -1:
+		mostrar_mensaje_error("Seleccione una queja resuelta primero")
+		return
+	
+	# Actualizar estado a "cerrado"
+	var query = "UPDATE quejas_reclamaciones SET estado = ?, fecha_cierre = ?, fecha_modificacion = ? WHERE id = ?"
+	var result = bd.query_with_args(query, ["cerrado", Time.get_datetime_string_from_system(), 
+		Time.get_datetime_string_from_system(), queja_seleccionada_id])
+	
+	if result:
+		mostrar_mensaje_exito("✅ Caso cerrado exitosamente")
+		
+		# Registrar en historial
+		registrar_historial_queja(queja_seleccionada_id, "queja_cerrada",
+			"Caso cerrado desde la interfaz")
+		
+		# Calcular tiempo de respuesta
+		calcular_tiempo_respuesta(queja_seleccionada_id)
+		
+		# Actualizar interfaz
+		actualizar_lista_quejas()
+		actualizar_estadisticas()
+		actualizar_estadisticas_detalladas()
+		
+		# Deseleccionar y deshabilitar botones
+		if quejas_tree:
+			quejas_tree.deselect_all()
+		queja_seleccionada_id = -1
+		
+		if btn_resolver:
+			btn_resolver.disabled = true
+		if btn_cerrar_caso:
+			btn_cerrar_caso.disabled = true
+		if btn_ver_detalles:
+			btn_ver_detalles.disabled = true
+	else:
+		mostrar_mensaje_error("❌ No se pudo cerrar el caso")
+
+func _on_btn_ver_detalles_pressed():
+	"""Muestra los detalles completos de la queja seleccionada."""
+	if queja_seleccionada_id == -1:
+		mostrar_mensaje_error("Seleccione una queja primero")
+		return
+	
+	mostrar_detalles_queja(queja_seleccionada_id)
+
+func _on_queja_activada():
+	"""Maneja el doble clic en una queja (mostrar detalles)."""
+	_on_queja_seleccionada()
+	if queja_seleccionada_id != -1:
+		_on_btn_ver_detalles_pressed()
+
+func mostrar_detalles_queja(id_queja: int):
+	"""Muestra un diálogo con los detalles completos de la queja."""
+	var queja = obtener_queja_por_id(id_queja)
+	if not queja:
+		mostrar_mensaje_error("No se pudo cargar la queja")
+		return
+	
+	# Aquí podrías implementar un diálogo personalizado
+	# Por ahora, mostrar en consola
+	print("📋 DETALLES DE QUEJA #" + str(id_queja))
+	print("📄 Número Caso:", queja.get("numero_caso", "N/A"))
+	print("🏷️ Tipo:", queja.get("tipo_caso", "N/A").capitalize())
+	print("👤 Cliente:", queja.get("nombres", "N/A"))
+	print("🆔 Identificación:", queja.get("identificacion", "N/A"))
+	print("📞 Teléfono:", queja.get("telefono", "N/A"))
+	print("📧 Email:", queja.get("email", "N/A"))
+	print("📝 Asunto:", queja.get("asunto", "N/A"))
+	print("📋 Descripción:", queja.get("descripcion_detallada", "N/A"))
+	print("💰 Monto:", "$" + str(queja.get("monto_reclamado", 0)))
+	print("🚦 Estado:", queja.get("estado", "N/A").capitalize())
+	print("⚠️ Prioridad:", queja.get("prioridad", "N/A").capitalize())
+	print("📅 Fecha Registro:", queja.get("fecha_registro", "N/A"))
+	print("📅 Fecha Modificación:", queja.get("fecha_modificacion", "N/A"))
+
+	
+	# Mostrar mensaje en pantalla
+	mostrar_mensaje_info("📋 Detalles mostrados en consola (F8)")
+
 # ===== FUNCIONES DE SEGUIMIENTO =====
 
 func actualizar_lista_quejas(filtro: String = ""):
 	print("Actualizando lista de quejas...")
 	
-	# Esta función debería cargar las quejas desde la base de datos
-	# Por ahora, solo mostramos un mensaje
-	mostrar_mensaje_info("Lista de quejas actualizada")
+	if not quejas_tree:
+		print("❌ No se encontró el control Tree para mostrar quejas")
+		return
 	
-	# Si hay un campo de búsqueda, usar el filtro
-	if txt_buscar and filtro != "":
+	# Limpiar el Tree actual
+	quejas_tree.clear()
+	
+	# Configurar columnas
+	quejas_tree.set_columns(6)
+	quejas_tree.set_column_title(0, "ID")
+	quejas_tree.set_column_title(1, "Número Caso")
+	quejas_tree.set_column_title(2, "Asunto")
+	quejas_tree.set_column_title(3, "Cliente")
+	quejas_tree.set_column_title(4, "Estado")
+	quejas_tree.set_column_title(5, "Prioridad")
+	
+	# Configurar anchos de columna
+	quejas_tree.set_column_expand(0, false)  # ID no muy ancho
+	quejas_tree.set_column_min_width(0, 40)
+	
+	quejas_tree.set_column_expand(1, false)  # Número caso
+	quejas_tree.set_column_min_width(1, 80)
+	
+	quejas_tree.set_column_expand(2, true)   # Asunto más ancho
+	quejas_tree.set_column_min_width(2, 150)
+	
+	quejas_tree.set_column_expand(3, true)   # Cliente
+	quejas_tree.set_column_min_width(3, 120)
+	
+	quejas_tree.set_column_expand(4, false)  # Estado
+	quejas_tree.set_column_min_width(4, 80)
+	
+	quejas_tree.set_column_expand(5, false)  # Prioridad
+	quejas_tree.set_column_min_width(5, 70)
+	
+	# Construir consulta SQL con filtros
+	var query = "SELECT id, numero_caso, asunto, nombres, estado, prioridad FROM quejas_reclamaciones"
+	var args = []
+	
+	# Aplicar filtro de estado
+	if opt_status_filter and opt_status_filter.selected > 0:
+		var estado_filtro = opt_status_filter.get_item_text(opt_status_filter.selected).to_lower()
+		if estado_filtro != "todos":
+			if "WHERE" in query:
+				query += " AND estado = ?"
+			else:
+				query += " WHERE estado = ?"
+			args.append(estado_filtro)
+	
+	# Aplicar filtro de búsqueda si existe
+	var texto_buscar = ""
+	if txt_buscar:
+		texto_buscar = txt_buscar.text.strip_edges()
+	
+	if texto_buscar != "":
+		if "WHERE" in query:
+			query += " AND (numero_caso LIKE ? OR asunto LIKE ? OR nombres LIKE ? OR identificacion LIKE ?)"
+		else:
+			query += " WHERE (numero_caso LIKE ? OR asunto LIKE ? OR nombres LIKE ? OR identificacion LIKE ?)"
+		
+		var like_term = "%" + texto_buscar + "%"
+		args.append(like_term)
+		args.append(like_term)
+		args.append(like_term)
+		args.append(like_term)
+	
+	# Ordenar por fecha de registro descendente (las más recientes primero)
+	query += " ORDER BY fecha_registro DESC"
+	
+	# Ejecutar consulta
+	var quejas = query_safe(query, args)
+	
+	# Crear el nodo raíz
+	var root = quejas_tree.create_item()
+	
+	# Llenar el Tree con los datos
+	for queja in quejas:
+		var item = quejas_tree.create_item(root)
+		item.set_text(0, str(queja["id"]))
+		item.set_text(1, queja.get("numero_caso", "N/A"))
+		item.set_text(2, queja.get("asunto", "Sin asunto"))
+		item.set_text(3, queja.get("nombres", "Sin nombre"))
+		item.set_text(4, queja.get("estado", "desconocido").capitalize())
+		item.set_text(5, queja.get("prioridad", "media").capitalize())
+		
+		# Cambiar color según estado
+		var estado = queja.get("estado", "").to_lower()
+		match estado:
+			"pendiente":
+				item.set_custom_color(4, Color(1, 0.5, 0))  # Naranja
+			"en proceso":
+				item.set_custom_color(4, Color(0, 0.5, 1))  # Azul
+			"resuelto":
+				item.set_custom_color(4, Color(0, 0.8, 0))  # Verde
+			"cerrado":
+				item.set_custom_color(4, Color(0.5, 0.5, 0.5))  # Gris
+		
+		# Cambiar color según prioridad
+		var prioridad = queja.get("prioridad", "").to_lower()
+		match prioridad:
+			"urgente":
+				item.set_custom_color(5, Color(1, 0, 0))  # Rojo
+				item.set_text(5, "URGENTE")
+			"alta":
+				item.set_custom_color(5, Color(1, 0.5, 0))  # Naranja
+			"media":
+				item.set_custom_color(5, Color(1, 1, 0))  # Amarillo
+			"baja":
+				item.set_custom_color(5, Color(0, 1, 0))  # Verde
+	
+	print("📋 Lista actualizada: " + str(quejas.size()) + " quejas encontradas")
+	
+	# Deseleccionar cualquier elemento previo
+	quejas_tree.deselect_all()
+	queja_seleccionada_id = -1
+	
+	# Deshabilitar botones de acción
+	if btn_resolver:
+		btn_resolver.disabled = true
+	if btn_cerrar_caso:
+		btn_cerrar_caso.disabled = true
+	if btn_ver_detalles:
+		btn_ver_detalles.disabled = true
+	
+	# Si hay filtro en parámetro, establecerlo en el campo de búsqueda
+	if filtro != "" and txt_buscar:
 		txt_buscar.text = filtro
 
 func actualizar_notificaciones():
@@ -537,28 +930,76 @@ func actualizar_notificaciones():
 func actualizar_estadisticas():
 	print("Actualizando estadísticas...")
 	
-	# Esta función debería cargar estadísticas reales desde la base de datos
-	# Por ahora, actualizamos con valores de prueba
+	# Obtener total de quejas
+	var result_total = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones")
 	
 	if lbl_total_quejas:
-		# Obtener conteo real desde la base de datos
-		var result = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones")
-		if result and result.size() > 0:
-			var total = result[0].get("total", 0)
+		if result_total and result_total.size() > 0:
+			var total = result_total[0].get("total", 0)
+			print("📊 Total de quejas: ", total)
 			lbl_total_quejas.text = str(total)
 		else:
+			print("⚠️ No se pudo obtener total de quejas")
 			lbl_total_quejas.text = "0"
 	
+	# Obtener quejas pendientes
+	var result_pendientes = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones WHERE estado = 'pendiente'")
+	
 	if lbl_pendientes_valor:
-		# Obtener conteo de pendientes
-		var result = query_safe("SELECT COUNT(*) as total FROM quejas_reclamaciones WHERE estado = 'pendiente'")
-		if result and result.size() > 0:
-			var total = result[0].get("total", 0)
+		if result_pendientes and result_pendientes.size() > 0:
+			var total = result_pendientes[0].get("total", 0)
+			print("📊 Quejas pendientes: ", total)
 			lbl_pendientes_valor.text = str(total)
 		else:
+			print("⚠️ No se pudo obtener quejas pendientes")
 			lbl_pendientes_valor.text = "0"
 	
 	mostrar_mensaje_info("Estadísticas actualizadas")
+
+func actualizar_estadisticas_detalladas():
+	print("Actualizando estadísticas detalladas...")
+	
+	# Obtener estadísticas de resueltas (suma de resuelto + cerrado)
+	var result_resueltas = query_safe("""
+		SELECT COUNT(*) as total 
+		FROM quejas_reclamaciones 
+		WHERE estado = 'resuelto' OR estado = 'cerrado'
+	""")
+	
+	if lbl_resueltas_valor:
+		if result_resueltas and result_resueltas.size() > 0:
+			var total = result_resueltas[0].get("total", 0)
+			print("📊 Quejas resueltas/cerradas: ", total)
+			lbl_resueltas_valor.text = str(total)
+		else:
+			print("⚠️ No se pudo obtener quejas resueltas")
+			lbl_resueltas_valor.text = "0"
+	
+	# Obtener promedio de tiempo de respuesta de casos cerrados
+	if lbl_promedio_valor:
+		var result_promedio = query_safe("""
+			SELECT AVG(
+				julianday(fecha_modificacion) - julianday(fecha_registro)
+			) as promedio_dias 
+			FROM quejas_reclamaciones 
+			WHERE estado = 'cerrado' 
+			AND fecha_registro IS NOT NULL 
+			AND fecha_modificacion IS NOT NULL
+		""")
+		
+		if result_promedio and result_promedio.size() > 0:
+			var promedio = result_promedio[0].get("promedio_dias", 0)
+			if promedio:
+				promedio = round(promedio * 10) / 10.0  # Redondear a 1 decimal
+				lbl_promedio_valor.text = str(promedio) + " días"
+				print("📊 Tiempo promedio de resolución: ", promedio, " días")
+			else:
+				lbl_promedio_valor.text = "0 días"
+		else:
+			print("⚠️ No se pudo obtener promedio de respuesta")
+			lbl_promedio_valor.text = "0 días"
+	
+	print("📊 Estadísticas detalladas actualizadas")
 
 func actualizar_lista_no_conformidades():
 	# Lógica para actualizar lista de No Conformidades
@@ -677,6 +1118,12 @@ func actualizar_estadisticas_prueba():
 	
 	if lbl_pendientes_valor:
 		lbl_pendientes_valor.text = "5"
+	
+	if lbl_resueltas_valor:
+		lbl_resueltas_valor.text = "18"
+	
+	if lbl_promedio_valor:
+		lbl_promedio_valor.text = "3.5 días"
 
 # ===== FUNCIONES DE INICIALIZACIÓN =====
 
@@ -689,6 +1136,8 @@ func inicializar_interfaz():
 func cargar_datos_iniciales():
 	# Cargar datos necesarios al iniciar
 	print("Cargando datos iniciales del sistema...")
+	actualizar_estadisticas()  # NUEVO: Cargar estadísticas al iniciar
+	actualizar_estadisticas_detalladas()  # NUEVO: Cargar estadísticas detalladas
 
 # ============================================================
 # FUNCIONES DE NO CONFORMIDADES (MANTENIDAS DEL SCRIPT ORIGINAL)
@@ -1110,37 +1559,41 @@ func calcular_prioridad(datos: Dictionary) -> String:
 	
 	return prioridad
 
-# FUNCIÓN ORIGINAL - NO MODIFICAR NOMBRE
+# FUNCIÓN ORIGINAL - VERSIÓN SIMPLIFICADA
 func calcular_fecha_limite(dias: int = 7) -> String:
 	# Calcular fecha límite de respuesta (7 días naturales por defecto)
-	var hoy = Time.get_datetime_dict_from_system()
+	# Usar OS.get_unix_time() en lugar de Time
+	var fecha_actual_unix = OS.get_unix_time()
+	var dias_en_segundos = int(dias) * 24 * 60 * 60
+	var fecha_limite_unix = fecha_actual_unix + dias_en_segundos
 	
-	# Crear un objeto Time para manipular fechas
-	var fecha_limite = Time.get_unix_time_from_datetime_dict(hoy)
-	fecha_limite += dias * 24 * 60 * 60  # Agregar días en segundos
+	# Convertir a fecha legible
+	var fecha_limite = OS.get_datetime_from_unix_time(fecha_limite_unix)
 	
-	var fecha_dict = Time.get_datetime_dict_from_unix_time(fecha_limite)
-	
-	return "%04d-%02d-%02d" % [fecha_dict["year"], fecha_dict["month"], fecha_dict["day"]]
+	return "%04d-%02d-%02d" % [fecha_limite["year"], fecha_limite["month"], fecha_limite["day"]]
 
-# FUNCIÓN CORREGIDA: NUEVO NOMBRE PARA EVITAR CONFLICTO
+# FUNCIÓN CORREGIDA: VERSIÓN SIMPLIFICADA
 func calcular_fecha_limite_con_config(dias: int = -1) -> String:
 	# Intentar obtener el límite del config_manager si está disponible
 	if dias == -1 and config_manager and config_manager.has_method("get_limite_tiempo_respuesta"):
-		dias = config_manager.get_limite_tiempo_respuesta()
+		dias = int(config_manager.get_limite_tiempo_respuesta())
 	elif dias == -1:
 		dias = 7  # Valor por defecto
 	
-	var hoy = Time.get_datetime_dict_from_system()
+	# Asegurarse de que dias sea un entero
+	dias = int(dias)
 	
-	# Crear un objeto Time para manipular fechas
-	var fecha_limite = Time.get_unix_time_from_datetime_dict(hoy)
-	fecha_limite += dias * 24 * 60 * 60  # Agregar días en segundos
+	# Usar OS.get_unix_time() en lugar de Time
+	var fecha_actual_unix = OS.get_unix_time()
+	var dias_en_segundos = dias * 24 * 60 * 60
+	var fecha_limite_unix = fecha_actual_unix + dias_en_segundos
 	
-	var fecha_dict = Time.get_datetime_dict_from_unix_time(fecha_limite)
+	# Convertir a fecha legible
+	var fecha_limite = OS.get_datetime_from_unix_time(fecha_limite_unix)
 	
-	return "%04d-%02d-%02d" % [fecha_dict["year"], fecha_dict["month"], fecha_dict["day"]]
-
+	return "%04d-%02d-%02d" % [fecha_limite["year"], fecha_limite["month"], fecha_limite["day"]]
+	
+	
 func registrar_historial_queja(id_queja: int, evento: String, descripcion: String):
 	"""
 	Registra un evento en el historial de la queja.
