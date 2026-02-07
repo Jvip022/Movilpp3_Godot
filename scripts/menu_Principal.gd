@@ -212,7 +212,7 @@ func configurar_modo_invitado():
 func mapear_rol_bd_a_enum(rol_bd: String) -> int:
 	"""
     Convierte el rol de la base de datos (string) al enum del Dashboard.
-    """
+	"""
 	var rol_normalizado = rol_bd.to_lower().strip_edges()
 	
 	match rol_normalizado:
@@ -358,12 +358,25 @@ func _on_btn_salir_pressed():
 func _confirmar_salida():
 	print("Saliendo del sistema...")
 	
-	# Si hay sesión activa, cerrarla primero
-	if global_node and global_node.esta_autenticado():
-		global_node.cerrar_sesion()
+	# Verificar si el árbol de escenas existe
+	if not is_inside_tree():
+		print("⚠️ El nodo ya no está en el árbol de escenas")
+		return
 	
-	# Salir de la aplicación
-	get_tree().quit()
+	# Método 1: Cerrar sesión primero
+	if Global and Global.has_method("cerrar_sesion"):
+		print("🔒 Cerrando sesión...")
+		Global.cerrar_sesion()
+	
+	# Método 2: Esperar un frame antes de salir
+	await get_tree().process_frame
+	
+	# Método 3: Salir suavemente
+	if get_tree():
+		print("🔄 Redirigiendo a pantalla de login...")
+		get_tree().change_scene_to_file("res://escenas/autentificar.tscn")
+	else:
+		print("❌ No se puede acceder al árbol de escenas")
 
 func _cancelar_salida():
 	print("Salida cancelada")
