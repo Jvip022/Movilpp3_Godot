@@ -422,6 +422,7 @@ theme_override_constants/separation = 12
 [node name="BotonCargarDoc" type="Button" parent="ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/BotonesContainer" unique_id=310873694]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0.5019608)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_primary")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_primary_pressed")
@@ -433,6 +434,7 @@ text = "📁 CARGAR NUEVO DOCUMENTO"
 [node name="BotonClasificar" type="Button" parent="ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/BotonesContainer" unique_id=154608293]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0.5019608)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_warning")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_primary_pressed")
@@ -444,6 +446,8 @@ text = "📊 CLASIFICAR NO CONFORMIDAD"
 [node name="BotonAprobar" type="Button" parent="ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/BotonesContainer" unique_id=1432744101]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.47699997, 0.56864995, 0.9, 1)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0.5019608)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_success")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_primary_pressed")
@@ -455,6 +459,7 @@ text = "✅ APROBAR DICTAMEN"
 [node name="BotonCerrarExp" type="Button" parent="ContentContainer/PanelDerecho/PanelAcciones/AccionesContainer/BotonesContainer" unique_id=1015188620]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0.5019608)
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_danger")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_primary_pressed")
