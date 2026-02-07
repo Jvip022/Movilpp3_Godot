@@ -3,6 +3,54 @@ extends Node
 var bd = Bd.db
 var config_manager: Node = null  # Cambiado a Node
 
+# ===== SISTEMA DE AUTENTICACIÓN Y ROLES (COPIADO DE MENU_PRINCIPAL) =====
+
+# Definición de roles (idéntico al menu_Principal)
+enum Roles {
+	NO_AUTENTICADO,
+	ADMINISTRADOR,
+	SUPERVISOR_GENERAL,
+	ESPECIALISTA_CALIDAD_SUCURSAL,
+	AUDITOR,
+	USUARIO,
+	SISTEMA,
+	SUPER_ADMIN  # Nuevo rol con acceso a todo
+}
+
+# Variables de estado del usuario
+var usuario_actual = {
+	"nombre": "Invitado",
+	"rol": Roles.NO_AUTENTICADO,
+	"id": null,
+	"email": "",
+	"sucursal": "",
+	"departamento": "",
+	"cargo": ""
+}
+
+# Referencia a Global (autoload)
+var global_node
+
+# ===== PERMISOS BASADOS EN ROL PARA GESTOR_QUEJAS =====
+
+var permisos_elementos = {
+	# Elementos de navegación
+	"btn_seguimiento_nav": [Roles.SUPERVISOR_GENERAL, Roles.ESPECIALISTA_CALIDAD_SUCURSAL, Roles.AUDITOR, Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
+	"btn_analiticas_nav": [Roles.SUPERVISOR_GENERAL, Roles.ESPECIALISTA_CALIDAD_SUCURSAL, Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
+	"btn_configuracion_nav": [Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
+	
+	# Funcionalidades específicas
+	"btn_registrar": [Roles.ESPECIALISTA_CALIDAD_SUCURSAL, Roles.SUPERVISOR_GENERAL, Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
+	"btn_guardar_config": [Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
+	
+	# Campos sensibles
+	"opt_prioridad": [Roles.SUPERVISOR_GENERAL, Roles.ESPECIALISTA_CALIDAD_SUCURSAL, Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
+	"txt_monto": [Roles.ESPECIALISTA_CALIDAD_SUCURSAL, Roles.SUPERVISOR_GENERAL, Roles.ADMINISTRADOR, Roles.SUPER_ADMIN],
+	
+	# Botones de acción especial
+	"btn_back_menu": [Roles.ADMINISTRADOR, Roles.SUPERVISOR_GENERAL, Roles.ESPECIALISTA_CALIDAD_SUCURSAL, Roles.AUDITOR, Roles.USUARIO, Roles.SUPER_ADMIN]
+}
+
 # Señales del InterfaceManager
 signal queja_registrada(datos: Dictionary)
 signal configuracion_guardada(config: Dictionary)
@@ -47,6 +95,12 @@ var lbl_pendientes_valor: Label
 var txt_buscar: LineEdit
 var opt_status_filter: OptionButton
 
+# ===== NODOS DE USER PROFILE (AGREGADOS) =====
+var user_profile_container: Control
+var user_name_label: Label
+var user_role_label: Label
+var user_sucursal_label: Label
+
 # FUNCIÓN AUXILIAR PARA MANEJAR CONSULTAS DE FORMA SEGURA
 func query_safe(query: String, args: Array = []) -> Array:
 	"""
@@ -61,6 +115,12 @@ func query_safe(query: String, args: Array = []) -> Array:
 	return result
 
 func _ready():
+	# Obtener referencia a Global (autoload)
+	global_node = get_node("/root/Global") if has_node("/root/Global") else null
+	
+	# Verificar sesión y cargar datos del usuario
+	verificar_sesion()
+	
 	# Inicializar referencias a los nodos de la interfaz
 	inicializar_referencias_nodos()
 	
@@ -121,10 +181,252 @@ func _ready():
 	else:
 		print("❌ Tabla quejas_reclamaciones NO existe")
 
+# ===== FUNCIONES DE AUTENTICACIÓN Y ROLES (COPIADAS DE MENU_PRINCIPAL) =====
+
+func verificar_sesion():
+	print("DEBUG: Verificando sesión en GestorQuejas...")
+	
+	if not global_node:
+		print("❌ Global no está disponible")
+		configurar_modo_invitado()
+		return
+	
+	print("DEBUG: Global encontrado: %s" % global_node.name)
+	print("DEBUG: Usuario en Global: %s" % str(global_node.usuario_actual))
+	
+	# Verificar si hay usuario autenticado en Global
+	if global_node.esta_autenticado():
+		var usuario_global = global_node.usuario_actual
+		
+		# Debug detallado
+		print("=== DATOS DE USUARIO DESDE GLOBAL ===")
+		print("  ID: %s" % usuario_global.get('id', 'N/A'))
+		print("  Username: %s" % usuario_global.get('username', 'N/A'))
+		print("  Nombre: %s" % usuario_global.get('nombre', 'N/A'))
+		print("  Rol (raw): %s" % usuario_global.get('rol', 'N/A'))
+		print("  Email: %s" % usuario_global.get('email', 'N/A'))
+		print("  Sucursal: %s" % usuario_global.get('sucursal', 'N/A'))
+		print("=====================================")
+		
+		# Mapear el rol de BD al enum de Dashboard
+		var rol_bd = str(usuario_global.get("rol", ""))
+		var rol_enum = mapear_rol_bd_a_enum(rol_bd)
+		
+		usuario_actual = {
+			"nombre": usuario_global.get("nombre", usuario_global.get("nombre_completo", "Usuario")),
+			"rol": rol_enum,
+			"id": usuario_global.get("id", -1),
+			"email": usuario_global.get("email", ""),
+			"sucursal": usuario_global.get("sucursal", ""),
+			"departamento": usuario_global.get("departamento", ""),
+			"cargo": usuario_global.get("cargo", "")
+		}
+		
+		# Actualizar UI del UserProfile
+		actualizar_user_profile_ui()
+		
+		print("✅ Sesión activa para: %s (Rol: %s)" % [usuario_actual["nombre"], obtener_nombre_rol(rol_enum)])
+	else:
+		print("DEBUG: No hay sesión activa en Global")
+		configurar_modo_invitado()
+	
+	# Actualizar permisos y visibilidad según el rol
+	actualizar_permisos_por_rol()
+
+func mapear_rol_bd_a_enum(rol_bd: String) -> int:
+	"""
+    Convierte el rol de la base de datos (string) al enum del Dashboard.
+	"""
+	var rol_normalizado = rol_bd.to_lower().strip_edges()
+	
+	match rol_normalizado:
+		"super_admin", "superadmin", "admin_super":
+			return Roles.SUPER_ADMIN
+		"admin", "administrador":
+			return Roles.ADMINISTRADOR
+		"supervisor", "supervisor_general":
+			return Roles.SUPERVISOR_GENERAL
+		"especialista", "especialista_calidad", "analista":
+			return Roles.ESPECIALISTA_CALIDAD_SUCURSAL
+		"auditor":
+			return Roles.AUDITOR
+		"sistema":
+			return Roles.SISTEMA
+		"usuario", "operador", "user":
+			return Roles.USUARIO
+		_:
+			return Roles.NO_AUTENTICADO
+
+func obtener_nombre_rol(rol_enum: int) -> String:
+	"""Convierte el enum de rol a nombre legible"""
+	match rol_enum:
+		Roles.SUPER_ADMIN: return "Super Administrador"
+		Roles.ADMINISTRADOR: return "Administrador"
+		Roles.SUPERVISOR_GENERAL: return "Supervisor General"
+		Roles.ESPECIALISTA_CALIDAD_SUCURSAL: return "Especialista de Calidad"
+		Roles.AUDITOR: return "Auditor"
+		Roles.USUARIO: return "Usuario"
+		Roles.SISTEMA: return "Sistema"
+		_: return "No autenticado"
+
+func configurar_modo_invitado():
+	usuario_actual = {
+		"nombre": "Invitado",
+		"rol": Roles.NO_AUTENTICADO,
+		"id": null,
+		"email": "",
+		"sucursal": ""
+	}
+	
+	# Actualizar UI del UserProfile
+	if user_name_label:
+		user_name_label.text = "Usuario: Invitado"
+	if user_role_label:
+		user_role_label.text = "Rol: No autenticado"
+	if user_sucursal_label:
+		user_sucursal_label.text = "Sucursal: No disponible"
+	
+	# Mostrar mensaje de advertencia
+	print("⚠️ Usuario no autenticado. Algunas funcionalidades estarán limitadas.")
+
+func actualizar_user_profile_ui():
+	"""Actualiza la interfaz del perfil de usuario"""
+	if user_name_label:
+		user_name_label.text = "Usuario: " + usuario_actual["nombre"]
+	
+	if user_role_label:
+		user_role_label.text = "Rol: " + obtener_nombre_rol(usuario_actual["rol"])
+	
+	if user_sucursal_label:
+		var sucursal_text = "Sucursal: " + (usuario_actual.get("sucursal", "No disponible") if usuario_actual.get("sucursal") else "No disponible")
+		user_sucursal_label.text = sucursal_text
+
+func actualizar_permisos_por_rol():
+	"""Actualiza la visibilidad y estado de los elementos según el rol del usuario"""
+	print("Actualizando permisos para rol: %s" % obtener_nombre_rol(usuario_actual["rol"]))
+	
+	# Si no está autenticado, ocultar elementos sensibles
+	if usuario_actual["rol"] == Roles.NO_AUTENTICADO:
+		ocultar_elementos_no_autorizados()
+		return
+	
+	# Si es SUPER_ADMIN, mostrar todos los elementos
+	if usuario_actual["rol"] == Roles.SUPER_ADMIN:
+		mostrar_todos_elementos()
+		return
+	
+	# Para otros roles, verificar permisos elemento por elemento
+	actualizar_elementos_segun_permisos()
+
+func ocultar_elementos_no_autorizados():
+	"""Oculta elementos para usuarios no autenticados"""
+	print("Ocultando elementos no autorizados para invitados...")
+	
+	# Ocultar navegación avanzada
+	if btn_seguimiento_nav:
+		btn_seguimiento_nav.visible = false
+	if btn_analiticas_nav:
+		btn_analiticas_nav.visible = false
+	if btn_configuracion_nav:
+		btn_configuracion_nav.visible = false
+	
+	# Deshabilitar funcionalidades sensibles
+	if btn_registrar:
+		btn_registrar.disabled = true
+		btn_registrar.text = "Registrar (Invitado)"
+	
+	if opt_prioridad:
+		opt_prioridad.disabled = true
+	
+	if txt_monto:
+		txt_monto.editable = false
+		txt_monto.placeholder_text = "Requiere autenticación"
+
+func mostrar_todos_elementos():
+	"""Muestra todos los elementos para SUPER_ADMIN"""
+	print("Mostrando todos los elementos para SUPER_ADMIN...")
+	
+	# Mostrar toda la navegación
+	if btn_seguimiento_nav:
+		btn_seguimiento_nav.visible = true
+	if btn_analiticas_nav:
+		btn_analiticas_nav.visible = true
+	if btn_configuracion_nav:
+		btn_configuracion_nav.visible = true
+	
+	# Habilitar todas las funcionalidades
+	if btn_registrar:
+		btn_registrar.disabled = false
+		btn_registrar.text = "Registrar Queja"
+	
+	if opt_prioridad:
+		opt_prioridad.disabled = false
+	
+	if txt_monto:
+		txt_monto.editable = true
+		txt_monto.placeholder_text = "0.00"
+
+func actualizar_elementos_segun_permisos():
+	"""Actualiza cada elemento según los permisos del rol"""
+	
+	# Función auxiliar para verificar permiso
+	func tiene_permiso(elemento_id: String) -> bool:
+		var roles_permitidos = permisos_elementos.get(elemento_id, [])
+		return usuario_actual["rol"] in roles_permitidos
+	
+	# Actualizar elementos de navegación
+	if btn_seguimiento_nav:
+		btn_seguimiento_nav.visible = tiene_permiso("btn_seguimiento_nav")
+	
+	if btn_analiticas_nav:
+		btn_analiticas_nav.visible = tiene_permiso("btn_analiticas_nav")
+	
+	if btn_configuracion_nav:
+		btn_configuracion_nav.visible = tiene_permiso("btn_configuracion_nav")
+	
+	# Actualizar funcionalidades
+	if btn_registrar:
+		var puede_registrar = tiene_permiso("btn_registrar")
+		btn_registrar.disabled = !puede_registrar
+		if !puede_registrar:
+			btn_registrar.text = "Registrar (No autorizado)"
+	
+	if opt_prioridad:
+		opt_prioridad.disabled = !tiene_permiso("opt_prioridad")
+	
+	if txt_monto:
+		txt_monto.editable = tiene_permiso("txt_monto")
+		if !txt_monto.editable:
+			txt_monto.placeholder_text = "No autorizado"
+
 # ===== FUNCIONES DE INICIALIZACIÓN DE INTERFAZ =====
 
 func inicializar_referencias_nodos():
 	print("Inicializando referencias de nodos de interfaz...")
+	
+	# ===== NODOS DE USER PROFILE (AGREGADOS) =====
+	user_profile_container = get_node_or_null("LayoutPrincipal/Header/UserProfile")
+	if user_profile_container:
+		print("✅ UserProfile encontrado")
+		
+		# Intentar diferentes rutas posibles para los labels
+		user_name_label = get_node_or_null("LayoutPrincipal/Header/UserProfile/UserName")
+		if not user_name_label:
+			user_name_label = get_node_or_null("LayoutPrincipal/Header/UserProfile/UserInfo/UserName")
+		
+		user_role_label = get_node_or_null("LayoutPrincipal/Header/UserProfile/UserRole")
+		if not user_role_label:
+			user_role_label = get_node_or_null("LayoutPrincipal/Header/UserProfile/UserInfo/UserRole")
+		
+		user_sucursal_label = get_node_or_null("LayoutPrincipal/Header/UserProfile/UserSucursal")
+		if not user_sucursal_label:
+			user_sucursal_label = get_node_or_null("LayoutPrincipal/Header/UserProfile/UserInfo/UserSucursal")
+		
+		print("   UserName Label: %s" % ("✅" if user_name_label else "❌"))
+		print("   UserRole Label: %s" % ("✅" if user_role_label else "❌"))
+		print("   UserSucursal Label: %s" % ("✅" if user_sucursal_label else "❌"))
+	else:
+		print("❌ UserProfile no encontrado")
 	
 	# Botones de navegación en sidebar
 	btn_registro_nav = get_node_or_null("LayoutPrincipal/MainContent/Sidebar/Navigation/BtnRegistro")
@@ -211,7 +513,6 @@ func inicializar_option_buttons():
 		opt_status_filter.add_item("Pendiente")
 		opt_status_filter.add_item("En proceso")
 		opt_status_filter.add_item("Resuelto")
-		opt_status_filter.add_item("Cerrado")
 		opt_status_filter.selected = 0
 	
 	print("✅ OptionButtons inicializados")
@@ -233,6 +534,30 @@ func conectar_senales_ui():
 
 func mostrar_pestana(nombre_pestana: String):
 	print("Mostrando pestaña: ", nombre_pestana)
+	
+	# Verificar permisos antes de mostrar pestañas
+	if usuario_actual["rol"] == Roles.NO_AUTENTICADO:
+		# Invitados solo pueden ver registro
+		if nombre_pestana != "registro":
+			mostrar_mensaje_error("Requiere autenticación para acceder a esta funcionalidad")
+			nombre_pestana = "registro"
+	
+	# Verificar permisos específicos
+	match nombre_pestana:
+		"seguimiento":
+			if usuario_actual["rol"] not in permisos_elementos["btn_seguimiento_nav"]:
+				mostrar_mensaje_error("No tiene permisos para acceder al seguimiento")
+				nombre_pestana = "registro"
+		
+		"analiticas":
+			if usuario_actual["rol"] not in permisos_elementos["btn_analiticas_nav"]:
+				mostrar_mensaje_error("No tiene permisos para acceder a las analíticas")
+				nombre_pestana = "registro"
+		
+		"configuracion":
+			if usuario_actual["rol"] not in permisos_elementos["btn_configuracion_nav"]:
+				mostrar_mensaje_error("No tiene permisos para acceder a la configuración")
+				nombre_pestana = "registro"
 	
 	# Ocultar todas las pestañas
 	if registro_tab:
@@ -271,6 +596,15 @@ func mostrar_pestana(nombre_pestana: String):
 func _on_btn_registrar_pressed():
 	print("Botón Registrar presionado")
 	
+	# Verificar permisos
+	if usuario_actual["rol"] == Roles.NO_AUTENTICADO:
+		mostrar_mensaje_error("Debe iniciar sesión para registrar quejas")
+		return
+	
+	if usuario_actual["rol"] not in permisos_elementos["btn_registrar"]:
+		mostrar_mensaje_error("No tiene permisos para registrar quejas")
+		return
+	
 	# Obtener y validar datos del formulario
 	var datos_formulario = obtener_datos_formulario()
 	
@@ -281,6 +615,11 @@ func _on_btn_registrar_pressed():
 		print("Datos normalizados para BD:")
 		for key in datos_normalizados:
 			print("  %s: %s" % [key, datos_normalizados[key]])
+		
+		# Agregar datos del usuario que registra
+		datos_normalizados["creado_por"] = usuario_actual["id"]
+		datos_normalizados["usuario_registro"] = usuario_actual["nombre"]
+		datos_normalizados["sucursal_registro"] = usuario_actual.get("sucursal", "Desconocida")
 		
 		# Agregar datos adicionales de configuración
 		if config_manager and config_manager.has_method("get_prioridad_por_defecto"):
@@ -319,6 +658,12 @@ func _on_btn_registrar_pressed():
 
 func _on_btn_back_menu_pressed():
 	print("Botón Volver al Menú presionado")
+	
+	# Verificar permisos
+	if usuario_actual["rol"] not in permisos_elementos["btn_back_menu"]:
+		mostrar_mensaje_error("No tiene permisos para esta acción")
+		return
+	
 	emit_signal("cancelar_pressed")
 	
 	# Limpiar formulario antes de salir
@@ -329,6 +674,11 @@ func _on_btn_back_menu_pressed():
 
 func _on_btn_guardar_config_pressed():
 	print("Botón Guardar Configuración presionado")
+	
+	# Verificar permisos
+	if usuario_actual["rol"] not in permisos_elementos["btn_guardar_config"]:
+		mostrar_mensaje_error("No tiene permisos para modificar la configuración")
+		return
 	
 	var config = obtener_datos_configuracion()
 	
@@ -394,7 +744,7 @@ func obtener_datos_formulario() -> Dictionary:
 	# Datos adicionales por defecto
 	datos["tipo_reclamante"] = "cliente"
 	datos["canal_entrada"] = "sistema"
-	datos["recibido_por"] = "usuario"
+	datos["recibido_por"] = usuario_actual["nombre"]
 	datos["fecha_registro"] = Time.get_datetime_string_from_system()
 	datos["estado"] = "pendiente"
 	

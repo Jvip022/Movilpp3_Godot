@@ -476,6 +476,14 @@ func crear_tablas_calidad() -> bool:
 		push_error("ERROR: No se pudo crear la tabla 'incidencias_calidad'")
 		return false
 	
+	# AGREGAR AQUÍ: Añadir columna id_no_conformidad si no existe
+	print("Verificando columna 'id_no_conformidad' en 'incidencias_calidad'...")
+	if not _columna_existe("incidencias_calidad", "id_no_conformidad"):
+		print("Agregando columna 'id_no_conformidad' a tabla 'incidencias_calidad'...")
+		if not query("ALTER TABLE incidencias_calidad ADD COLUMN id_no_conformidad INTEGER"):
+			push_error("ERROR: No se pudo agregar columna 'id_no_conformidad'")
+			# No retornar false, solo marcar error y continuar
+	
 	# Tabla de TRAZAS
 	print("Creando tabla 'trazas_calidad'...")
 	if not query("""
@@ -1614,6 +1622,79 @@ func generar_reporte_estadisticas(_desde: String = "", _hasta: String = "") -> D
 		reporte["nc_por_tipo"][fila["tipo_nc"]] = fila["total"]
 	
 	return reporte
+
+func obtener_incidencia_con_nc(codigo_incidencia: String) -> Dictionary:
+	"""
+	Obtiene una incidencia con información de su NC asociada.
+	"""
+	var sql = """
+		SELECT i.*, n.codigo_expediente as nc_codigo, n.estado as nc_estado
+		FROM incidencias_calidad i
+		LEFT JOIN no_conformidades n ON i.id_no_conformidad = n.id_nc
+		WHERE i.codigo_incidencia = ?
+	"""
+	return select_one(sql, [codigo_incidencia])
+
+func cerrar_no_conformidad(nc_id: int, usuario_cierre: int) -> bool:
+	"""
+	Cierra una no conformidad y actualiza la incidencia asociada.
+	"""
+	var data = {
+		"estado": "cerrada",
+		"expediente_cerrado": 1,
+		"fecha_cierre": Time.get_datetime_string_from_system(),
+		"usuario_cierre": usuario_cierre
+	}
+	
+	if update("no_conformidades", data, "id_nc = ?", [nc_id]):
+		# Actualizar incidencia asociada
+		query("""
+			UPDATE incidencias_calidad 
+			SET estado = 'cerrada' 
+			WHERE id_no_conformidad = ?
+		""", [nc_id])
+		
+		# Registrar traza
+		var traza_data = {
+			"id_nc": nc_id,
+			"usuario_id": usuario_cierre,
+			"accion": "CIERRE_NC",
+			"detalles": "No conformidad cerrada por usuario",
+			"ip_address": ""
+		}
+		insert("trazas_nc", traza_data)
+		
+		return true
+	return false
+
+func obtener_incidencias_abiertas_con_nc() -> Array:
+	"""
+	Obtiene incidencias abiertas que tienen NC asociada.
+	"""
+	var sql = """
+		SELECT i.*, n.codigo_expediente, n.estado as nc_estado
+		FROM incidencias_calidad i
+		INNER JOIN no_conformidades n ON i.id_no_conformidad = n.id_nc
+		WHERE i.estado = 'abierta' AND n.estado != 'cerrada'
+		ORDER BY i.fecha_registro DESC
+	"""
+	return select_query(sql)
+
+func actualizar_estado_incidencia(incidencia_id: int, nuevo_estado: String, usuario_id: int) -> bool:
+	"""
+	Actualiza el estado de una incidencia.
+	"""
+	var data = {
+		"estado": nuevo_estado,
+		"fecha_modificacion": Time.get_datetime_string_from_system()
+	}
+	
+	if update("incidencias_calidad", data, "id = ?", [incidencia_id]):
+		# Registrar en auditoría
+		registrar_auditoria(usuario_id, "ACTUALIZAR_INCIDENCIA", "calidad", 
+			"Incidencia ID: %d, Nuevo estado: %s" % [incidencia_id, nuevo_estado])
+		return true
+	return false
 
 # =========================
 # FUNCIONES DE MIGRACIÓN

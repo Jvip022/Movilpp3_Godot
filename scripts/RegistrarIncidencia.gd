@@ -242,7 +242,7 @@ func buscar_cliente_bd_safe():
 	await get_tree().create_timer(0.05).timeout
 	
 	# Realizar búsqueda en la base de datos REAL
-	var clientes = buscar_cliente_bd(termino)  # CORRECCIÓN: Sin await
+	var clientes = buscar_cliente_bd(termino)
 	
 	# Mostrar resultados
 	mostrar_clientes_en_tabla(clientes)
@@ -272,7 +272,6 @@ func buscar_cliente_bd(termino: String) -> Array:
 	var busqueda = "%" + termino + "%"
 	var params = [busqueda, busqueda, busqueda, busqueda, busqueda]
 	
-	# CORRECCIÓN: Sin await
 	var resultados = Bd.select_query(query, params)
 	
 	if resultados == null:
@@ -470,7 +469,6 @@ func generar_codigo_incidencia() -> String:
 	# Obtener el siguiente número de incidencia del día
 	var query = "SELECT COUNT(*) + 1 as siguiente FROM incidencias_calidad WHERE DATE(fecha_registro) = DATE('now')"
 	
-	# CORRECCIÓN: Sin await
 	var resultado = Bd.select_query(query)
 	var numero = 1
 	if resultado and resultado.size() > 0:
@@ -511,11 +509,11 @@ func registrar_incidencia_bd(datos: Dictionary) -> int:
 		Time.get_datetime_string_from_system()
 	]
 	
-	# CORRECCIÓN: Usar Bd.query para insert
+	# Usar Bd.query para insert
 	var resultado = db.query(query, params)
 	
 	if resultado:
-		# Obtener el ID insertado - CORRECCIÓN: Sin await
+		# Obtener el ID insertado
 		var resultado_id = Bd.select_query("SELECT last_insert_rowid() as id")
 		if resultado_id and resultado_id.size() > 0:
 			var id_insertado = resultado_id[0].get("id", -1)
@@ -528,7 +526,6 @@ func registrar_incidencia_bd(datos: Dictionary) -> int:
 		print("❌ Error registrando incidencia")
 		return -1
 
-# Línea ~583, reemplazar toda la función con:
 func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 	print("🔄 Convirtiendo incidencia a no conformidad...")
 	
@@ -588,7 +585,7 @@ func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 			nc_id = resultado_id[0].get("id", -1)
 		
 		if nc_id > 0:
-			# Registrar traza de la conversión
+			# Registrar traza de la conversión en trazas_nc
 			var query_traza = """
 				INSERT INTO trazas_nc (id_nc, usuario_id, accion, detalles, ip_address)
 				VALUES (?, ?, ?, ?, ?)
@@ -599,12 +596,17 @@ func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 				datos_incidencia.get("supervisor_id", 0),
 				"CREACION",
 				"No conformidad creada automáticamente desde incidencia: " + datos_incidencia.get("codigo_incidencia", ""),
-				""  # ip_address
+				""  # ip_address vacío
 			]
 			
 			db.query(query_traza, params_traza)
 			
 			print("✅ No Conformidad creada: " + codigo_expediente + " (ID: " + str(nc_id) + ")")
+			
+			# Actualizar la incidencia para vincularla con la NC
+			var query_update = "UPDATE incidencias_calidad SET id_no_conformidad = ? WHERE codigo_incidencia = ?"
+			var params_update = [nc_id, datos_incidencia.get("codigo_incidencia", "")]
+			db.query(query_update, params_update)
 			
 			return nc_id
 		else:
@@ -613,10 +615,10 @@ func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 	else:
 		print("❌ Error al crear no conformidad")
 		return -1
-		
+
 func registrar_incidencia_con_estado(estado: String):
 	# Generar código de incidencia
-	var codigo_incidencia = generar_codigo_incidencia()  # CORRECCIÓN: Sin await
+	var codigo_incidencia = generar_codigo_incidencia()
 	
 	# Obtener datos del formulario
 	var datos_incidencia = obtener_datos_formulario()
@@ -630,13 +632,13 @@ func registrar_incidencia_con_estado(estado: String):
 	
 	mostrar_carga("Registrando incidencia...")
 	
-	# Registrar en base de datos - CORRECCIÓN: Sin await
+	# Registrar en base de datos
 	var incidencia_id = registrar_incidencia_bd(datos_incidencia)
 	
 	if incidencia_id > 0:
-		# Registrar traza en sistema de calidad
+		# Registrar traza en sistema de calidad (CORRECTO: usa detalles, no descripcion)
 		var query_traza = """
-			INSERT INTO trazas_calidad (usuario_id, accion, modulo, descripcion, fecha)
+			INSERT INTO trazas_calidad (usuario_id, accion, modulo, detalles, ip_address)
 			VALUES (?, ?, ?, ?, ?)
 		"""
 		
@@ -645,7 +647,7 @@ func registrar_incidencia_con_estado(estado: String):
 			"REGISTRAR_INCIDENCIA",
 			"Incidencias",
 			"Incidente registrado: " + codigo_incidencia + " - " + datos_incidencia.get("titulo", ""),
-			Time.get_datetime_string_from_system()
+			""  # ip_address vacío
 		]
 		
 		db.query(query_traza, params_traza)
@@ -653,7 +655,7 @@ func registrar_incidencia_con_estado(estado: String):
 		# Si la incidencia requiere investigación, convertir a No Conformidad
 		if estado == "abierta" and requiere_investigacion:
 			print("🔍 Incidencia requiere investigación, convirtiendo a No Conformidad...")
-			var nc_id = convertir_a_no_conformidad(datos_incidencia)  # CORRECCIÓN: Sin await
+			var nc_id = convertir_a_no_conformidad(datos_incidencia)
 			
 			if nc_id > 0:
 				datos_incidencia["id_no_conformidad"] = nc_id

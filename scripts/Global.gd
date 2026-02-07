@@ -168,7 +168,7 @@ func cerrar_sesion():
 	var current_scene = get_tree().current_scene
 	if current_scene and current_scene.get_name() != "Login":
 		print("🔄 Redirigiendo a pantalla de login...")
-		get_tree().change_scene_to_file("res://escenas/login.tscn")
+		get_tree().change_scene_to_file("res://escenas/autentificar.tscn")
 
 # Función para verificar permisos
 func tiene_permiso(permiso: String) -> bool:
