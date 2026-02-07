@@ -262,13 +262,19 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="MensajeExito" type="AcceptDialog" parent="." unique_id=1642895206]
+oversampling_override = 1.0
 title = "NC Registrada"
+size = Vector2i(405, 100)
 dialog_text = "La no conformidad se ha registrado exitosamente."
 
 [node name="MensajeError" type="AcceptDialog" parent="." unique_id=1573124898]
+oversampling_override = 1.0
 title = "Error"
+size = Vector2i(382, 100)
 dialog_text = "Ocurrió un error al registrar la no conformidad."
 
 [node name="ValidacionCampos" type="AcceptDialog" parent="." unique_id=1244348717]
+oversampling_override = 1.0
 title = "Campos Incompletos"
+size = Vector2i(430, 100)
 dialog_text = "Por favor, complete todos los campos obligatorios (*)."

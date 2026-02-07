@@ -262,31 +262,6 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.85)
 theme_override_font_sizes/font_size = 14
 text = "Sistema de gestión de reclamaciones y atención al cliente"
 
-[node name="UserProfile" type="HBoxContainer" parent="LayoutPrincipal/Header/HeaderContent" unique_id=1766168854]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-alignment = 2
-
-[node name="UserInfo" type="VBoxContainer" parent="LayoutPrincipal/Header/HeaderContent/UserProfile" unique_id=1766168855]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="UserName" type="Label" parent="LayoutPrincipal/Header/HeaderContent/UserProfile/UserInfo" unique_id=1766168856]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = "Usuario: Invitado"
-horizontal_alignment = 2
-
-[node name="UserRole" type="Label" parent="LayoutPrincipal/Header/HeaderContent/UserProfile/UserInfo" unique_id=1766168857]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.85)
-theme_override_font_sizes/font_size = 12
-text = "Rol: No autenticado"
-horizontal_alignment = 2
-
 [node name="Spacer" type="Control" parent="LayoutPrincipal/Header/HeaderContent" unique_id=2046554644]
 layout_mode = 2
 size_flags_horizontal = 3

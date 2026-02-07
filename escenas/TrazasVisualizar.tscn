@@ -98,7 +98,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.95, 0.96, 0.98, 1)
+color = Color(0.8245, 0.83300006, 0.85, 0.5803922)
 
 [node name="ContenedorPrincipal" type="VBoxContainer" parent="." unique_id=100000003]
 layout_mode = 1
@@ -106,7 +106,7 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 30.0
-offset_top = 20.0
+offset_top = 16.0
 offset_right = -30.0
 offset_bottom = -100.0
 grow_horizontal = 2
@@ -119,6 +119,7 @@ size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_header")
 
 [node name="Titulo" type="Label" parent="ContenedorPrincipal/TituloPanel" unique_id=100000005]
+z_as_relative = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -129,10 +130,10 @@ offset_right = -20.0
 offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_color = Color(0.38, 0.38, 0.38, 1)
 theme_override_font_sizes/font_size = 24
 text = "VISUALIZACIÓN DE TRAZAS DE USUARIO"
-horizontal_alignment = 1
+horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="PanelInfoUsuario" type="Panel" parent="ContenedorPrincipal" unique_id=100000006]
@@ -146,10 +147,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 15.0
-offset_right = -20.0
-offset_bottom = -15.0
+offset_left = 11.0
+offset_top = 566.0
+offset_right = -29.0
+offset_bottom = 670.0
 grow_horizontal = 2
 grow_vertical = 2
 columns = 2
@@ -203,20 +204,22 @@ theme_override_font_sizes/font_size = 16
 text = "[Cargando...]"
 
 [node name="PanelFiltros" type="Panel" parent="ContenedorPrincipal" unique_id=100000016]
+z_index = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_filter_panel")
 
 [node name="Filtros" type="HBoxContainer" parent="ContenedorPrincipal/PanelFiltros" unique_id=100000017]
+z_index = 2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 15.0
-offset_top = 10.0
+offset_top = -17.0
 offset_right = -15.0
-offset_bottom = -10.0
+offset_bottom = 23.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -226,14 +229,17 @@ theme_override_font_sizes/font_size = 14
 text = "Filtrar por:"
 
 [node name="ComboTipoAccion" type="OptionButton" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000019]
+z_index = 2
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 
 [node name="ComboPeriodo" type="OptionButton" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000020]
+z_index = 2
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 
 [node name="BtnAplicarFiltro" type="Button" parent="ContenedorPrincipal/PanelFiltros/Filtros" unique_id=100000021]
+z_index = 2
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
@@ -260,11 +266,16 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="LabelTrazas" type="Label" parent="ContenedorPrincipal/ContenedorTrazas" unique_id=100000025]
+z_as_relative = false
 layout_mode = 2
+localize_numeral_system = false
+theme_override_colors/font_color = Color(0.35, 0.35, 0.35, 1)
 theme_override_font_sizes/font_size = 18
 text = "Historial de Actividades:"
+horizontal_alignment = 2
 
 [node name="ScrollTrazas" type="ScrollContainer" parent="ContenedorPrincipal/ContenedorTrazas" unique_id=100000026]
+z_as_relative = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -284,6 +295,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 0
 
 [node name="BtnVolver" type="Button" parent="ContenedorPrincipal/PanelControles" unique_id=100000030]
+z_index = 1
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)

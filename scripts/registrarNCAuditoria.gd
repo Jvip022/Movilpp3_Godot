@@ -1,6 +1,6 @@
 extends Control
 
-class_name RegistrarNCAuditoriaScene
+class_name RegistrarNCAuditoriaForm
 
 # Variables del formulario
 @onready var codigo_nc_label = $ContentContainer/FormContainer/CodigoNCLabel
@@ -20,7 +20,6 @@ class_name RegistrarNCAuditoriaScene
 
 # Referencias globales
 var bd: BD
-var global_node: Global
 var usuario_actual_id: int = 0
 var usuario_actual_nombre: String = ""
 var sucursal_actual: String = "Central"
@@ -38,81 +37,94 @@ var auditor_autenticado = false
 func _ready():
 	print("=== REGISTRAR NC AUDITORÍA - INICIO ===")
 	
-	# INICIALIZACIÓN INDEPENDIENTE - SIN GLOBAL
-	print("🔧 Inicializando en modo autónomo...")
+	# Llamar a la inicialización asíncrona
+	call_deferred("_iniciar_sistema_async")
+
+func _iniciar_sistema_async():
+	"""Inicializa el sistema de manera asíncrona"""
+	print("🔧 Iniciando sistema de forma asíncrona...")
 	
-	# 1. Inicializar BD directamente
-	_inicializar_bd_autonoma()
+	# Inicialización robusta sin dependencias
+	_inicializar_sistema()
 	
-	# 2. Si BD no se pudo inicializar, mostrar error
 	if bd == null:
 		mostrar_error_fatal("Base de datos no disponible")
 		registrar_button.disabled = true
 		return
 	
-	# 3. Configurar usuario de prueba (puedes cambiarlo después)
+	# Configurar usuario por defecto
 	usuario_actual_id = 1
-	usuario_actual_nombre = "Auditor del Sistema"
+	usuario_actual_nombre = "Auditor Sistema"
 	sucursal_actual = "Central"
 	auditor_autenticado = true
 	
-	print("✅ Modo autónomo activado")
 	print("✅ Usuario: ", usuario_actual_nombre)
 	print("✅ Sucursal: ", sucursal_actual)
 	
-	# 4. Configurar interfaz
+	# Configurar interfaz
 	setup_ui()
 	
-	# 5. Obtener contador actual desde BD
+	# Obtener contador actual desde BD
 	_obtener_contador_actual()
+	
+	print("✅ Sistema inicializado correctamente")
 
-func _inicializar_bd_autonoma():
-	"""Inicializa BD sin depender de Global - Versión corregida"""
-	print("🔧 Inicializando BD autónoma...")
+func _inicializar_sistema():
+	"""Inicializa el sistema de manera robusta"""
+	print("🔧 Inicializando sistema...")
 	
-	# Método 1: Buscar BD en el árbol de escenas actual
-	var bd_node = get_node("/root/BD")
-	if bd_node and bd_node is BD:
-		bd = bd_node
-		print("✅ BD encontrada en /root/BD")
-		return
+	# 1. Inicializar BD
+	bd = _obtener_instancia_bd()
 	
-	# Método 2: Buscar en todos los nodos
-	for child in get_tree().root.get_children():
-		if child is BD:
-			bd = child
-			print("✅ BD encontrada en hijo de root")
-			return
+	# 2. Verificar que BD esté operativa
+	if bd and bd.has_method("probar_conexion_bd"):
+		if not bd.probar_conexion_bd():
+			print("❌ BD no responde")
+			bd = null
+		else:
+			print("✅ BD operativa")
+
+func _obtener_instancia_bd():
+	"""Obtiene o crea una instancia de BD - VERSIÓN SÍNCRONA"""
+	# Buscar BD en el árbol
+	var bd_en_arbol = get_node("/root/BD")
+	if bd_en_arbol and bd_en_arbol is BD:
+		print("✅ BD encontrada en árbol")
+		return bd_en_arbol
 	
-	# Método 3: Crear nueva instancia
-	print("⚠️ BD no encontrada, creando nueva instancia...")
+	# Buscar por tipo
+	for nodo in get_tree().root.get_children():
+		if nodo is BD:
+			print("✅ BD encontrada como hijo de root")
+			return nodo
 	
+	# Crear nueva instancia
+	print("🔧 Creando nueva instancia de BD...")
 	var BDClass = load("res://scripts/BD.gd")
 	if BDClass:
-		bd = BDClass.new()
-		bd.name = "BD_Autonoma"
+		var nueva_bd = BDClass.new()
+		nueva_bd.name = "BD"
 		
-		# Añadir al árbol
-		get_tree().root.add_child(bd)
+		# Añadir al árbol y inicializar
+		get_tree().root.add_child(nueva_bd)
 		
-		# Inicializar
-		if bd.has_method("_ready"):
-			# Esperar un frame para asegurar inicialización
-			await get_tree().process_frame
-			bd._ready()
+		# Inicializar si tiene método _ready
+		if nueva_bd.has_method("_ready"):
+			# Llamar directamente sin await
+			nueva_bd._ready()
 		
-		print("✅ BD autónoma creada e inicializada")
-		return true
+		print("✅ Nueva instancia de BD creada")
+		return nueva_bd
 	
-	print("❌ No se pudo crear BD")
-	return false
-	
+	print("❌ No se pudo cargar BD.gd")
+	return null
+
 func mostrar_error_fatal(mensaje: String):
 	"""Muestra un error fatal y deshabilita la interfaz."""
 	mensaje_error.dialog_text = mensaje
 	mensaje_error.popup_centered()
 	registrar_button.disabled = true
-	btn_regresar.disabled = false  # Permitir regresar al menú
+	btn_regresar.disabled = false
 
 func setup_ui():
 	# Configurar opciones de tipo de NC
@@ -196,12 +208,15 @@ func _generar_codigo_nc():
 	# Generar código con prefijo, número secuencial y fecha
 	var codigo = "%s-%04d-%s" % [prefijo, contador_nc, fecha_formateada]
 	codigo_nc_label.text = "Código NC: " + codigo
+	print("🔢 Código generado: ", codigo)
 	return codigo
 
 func _on_tipo_nc_changed(_index):
+	print("📝 Tipo de NC cambiado")
 	_generar_codigo_nc()
 
 func _on_auditoria_changed(index):
+	print("📝 Auditoría cambiada")
 	# Actualizar tipo según auditoría seleccionada (opcional)
 	match index:
 		0: # Interna
@@ -211,7 +226,7 @@ func _on_auditoria_changed(index):
 		2: # Proveedor
 			tipo_nc_dropdown.select(2)
 		_:
-			tipo_nc_dropdown.select(0)  # Por defecto interna
+			tipo_nc_dropdown.select(0)
 	
 	_generar_codigo_nc()
 
@@ -219,80 +234,106 @@ func _on_regresar_pressed():
 	"""Regresa al menú principal"""
 	print("🏠 Regresando al menú principal...")
 	
-	# Registrar en auditoría si es posible
+	# Intentar registrar auditoría (pero no bloquear si falla)
 	if bd and bd.has_method("registrar_auditoria"):
-		bd.registrar_auditoria(usuario_actual_id, "SALIR_FORMULARIO", 
-							  "RegistrarNCAuditoriaScene", "Regresó al menú principal")
+		_registrar_auditoria_sistema("SALIR_FORMULARIO", "Regresó al menú principal desde RegistrarNCAuditoriaForm")
 	
-	# Cambiar a la escena del menú principal
+	# Cambiar escena
 	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
 
 func _on_registrar_pressed():
 	"""Registra una nueva No Conformidad en la base de datos"""
-	if not auditor_autenticado:
-		mostrar_error("Auditor no autenticado")
-		return
+	print("📝 Iniciando registro de NC...")
 	
-	if bd == null:
-		mostrar_error("Base de datos no disponible")
-		return
-	
-	# Validar campos obligatorios
-	if descripcion_text.text.strip_edges().is_empty():
-		validacion_campos.popup_centered()
-		mostrar_error("La descripción es obligatoria")
-		return
-	
-	# Validar longitud mínima
-	if descripcion_text.text.strip_edges().length() < 10:
-		validacion_campos.popup_centered()
-		mostrar_error("La descripción debe tener al menos 10 caracteres")
+	# Validación mejorada
+	if not _validar_formulario_completo():
 		return
 	
 	# Deshabilitar botón para evitar doble clic
 	registrar_button.disabled = true
 	registrar_button.text = "Registrando..."
 	
-	# Obtener datos del formulario
+	# Obtener datos
 	var codigo = codigo_nc_label.text.replace("Código NC: ", "")
 	var tipo = tipo_nc_dropdown.get_item_text(tipo_nc_dropdown.selected)
-	var descripcion = descripcion_text.text
+	var descripcion = descripcion_text.text.strip_edges()
 	var auditoria = auditoria_dropdown.get_item_text(auditoria_dropdown.selected)
 	var severidad = severidad_dropdown.get_item_text(severidad_dropdown.selected)
 	
-	# Mapear severidad a prioridad numérica
+	print("📊 Datos del formulario:")
+	print("  - Código:", codigo)
+	print("  - Tipo:", tipo)
+	print("  - Descripción:", descripcion.substr(0, 50) + "..." if descripcion.length() > 50 else descripcion)
+	print("  - Auditoría:", auditoria)
+	print("  - Severidad:", severidad)
+	
+	# Mapear severidad
 	var prioridad = _mapear_severidad_a_prioridad(severidad)
 	
-	# Registrar NC en base de datos
+	# Registrar - Versión síncrona
 	var resultado = registrar_no_conformidad_bd(codigo, tipo, descripcion, auditoria, prioridad)
 	
-	if resultado > 0:  # Éxito: ID insertado
-		mostrar_exito("NC registrada exitosamente (ID: " + str(resultado) + ")")
-		mensaje_exito.get_node("MensajeLabel").text = "✅ No Conformidad registrada exitosamente\nCódigo: " + codigo
-		mensaje_exito.popup_centered()
+	if resultado > 0:
+		_mostrar_exito_registro(codigo, tipo)
 		
-		# Registrar en auditoría
-		if bd and bd.has_method("registrar_auditoria"):
-			bd.registrar_auditoria(usuario_actual_id, "REGISTRAR_NC", 
-								  "RegistrarNCAuditoriaScene", 
-								  "NC registrada: " + codigo + " - Tipo: " + tipo)
-		
-		# Notificar partes interesadas
-		notificar_partes_interesadas(codigo, tipo, severidad)
-		
-		# Limpiar formulario y generar nuevo código
-		await get_tree().create_timer(1.5).timeout
+		# Limpiar después de éxito
+		await get_tree().create_timer(2.0).timeout
 		_limpiar_formulario()
 		_generar_codigo_nc()
-		
-	else:  # Error
-		mensaje_error.get_node("MensajeLabel").text = "❌ Error al registrar No Conformidad\nVerifique la conexión a la base de datos"
-		mensaje_error.popup_centered()
-		mostrar_error("No se pudo registrar en la base de datos")
+	else:
+		_mostrar_error_registro()
 	
 	# Rehabilitar botón
 	registrar_button.disabled = false
 	registrar_button.text = "Registrar NC"
+
+func _validar_formulario_completo() -> bool:
+	"""Valida todos los campos del formulario"""
+	print("🔍 Validando formulario completo...")
+	
+	# Lista de errores
+	var errores = []
+	
+	# Validar descripción
+	var descripcion_limpia = descripcion_text.text.strip_edges()
+	
+	if descripcion_limpia.is_empty():
+		errores.append("La descripción es obligatoria")
+	elif descripcion_limpia.strip_edges(true, true).is_empty():
+		errores.append("La descripción no puede contener solo espacios")
+	elif descripcion_limpia.length() < 10:
+		errores.append("La descripción debe tener al menos 10 caracteres")
+	elif descripcion_limpia.length() > 5000:
+		errores.append("La descripción es demasiado larga (máximo 5000 caracteres)")
+	
+	# Validar selecciones
+	if tipo_nc_dropdown.selected < 0:
+		errores.append("Debe seleccionar un tipo de NC")
+	
+	if auditoria_dropdown.selected < 0:
+		errores.append("Debe seleccionar una auditoría")
+	
+	if severidad_dropdown.selected < 0:
+		errores.append("Debe seleccionar una severidad")
+	
+	# Mostrar errores si hay
+	if errores.size() > 0:
+		print("❌ Errores de validación:", errores)
+		
+		# Construir mensaje
+		var mensaje = "Por favor, corrija los siguientes errores:\n\n"
+		for error in errores:
+			mensaje += "• " + error + "\n"
+		
+		# Mostrar diálogo
+		validacion_campos.dialog_text = mensaje
+		validacion_campos.popup_centered()
+		mostrar_error("Hay errores en el formulario")
+		
+		return false
+	
+	print("✅ Validación exitosa")
+	return true
 
 func _mapear_severidad_a_prioridad(severidad: String) -> int:
 	"""Convierte la severidad textual a prioridad numérica"""
@@ -308,9 +349,12 @@ func _mapear_severidad_a_prioridad(severidad: String) -> int:
 
 func registrar_no_conformidad_bd(codigo: String, tipo: String, descripcion: String, auditoria: String, prioridad: int) -> int:
 	"""
-	Registra la NC en la base de datos real.
-	Retorna el ID insertado o -1 si hay error.
+	Registra la NC en la base de datos - VERSIÓN COMPLETAMENTE SÍNCRONA.
 	"""
+	if bd == null:
+		print("❌ BD no disponible para registrar")
+		return -1
+	
 	# Preparar descripción completa
 	var descripcion_completa = descripcion
 	descripcion_completa += "\n\n--- DATOS DE AUDITORÍA ---"
@@ -320,10 +364,10 @@ func registrar_no_conformidad_bd(codigo: String, tipo: String, descripcion: Stri
 	descripcion_completa += "\nSucursal: " + sucursal_actual
 	descripcion_completa += "\nSeveridad: " + severidad_dropdown.get_item_text(severidad_dropdown.selected)
 	
-	# Preparar datos para la tabla no_conformidades
+	# Preparar datos
 	var datos_nc = {
 		"codigo_expediente": codigo,
-		"tipo_nc": "Auditoría",  # Usamos "Auditoría" como tipo fijo para NC de auditoría
+		"tipo_nc": "Auditoría",
 		"estado": "pendiente",
 		"descripcion": descripcion_completa,
 		"fecha_ocurrencia": Time.get_date_string_from_system(),
@@ -334,27 +378,57 @@ func registrar_no_conformidad_bd(codigo: String, tipo: String, descripcion: Stri
 		"creado_por": usuario_actual_id
 	}
 	
-	print("📝 Insertando NC en BD con datos:", datos_nc)
+	print("📝 Intentando insertar NC...")
 	
-	# Insertar en base de datos
-	var nc_id = bd.insert("no_conformidades", datos_nc)
+	# Intentar insertar - Versión síncrona (SIN TIMERS, SIN AWAIT)
+	var nc_id = -1
+	for intento in range(3):  # Reintentar 3 veces
+		print("  Intento", intento + 1, "...")
+		nc_id = bd.insert("no_conformidades", datos_nc)
+		
+		if nc_id > 0:
+			print("✅ NC insertada con ID:", nc_id)
+			break
+		else:
+			print("⚠️ Intento", intento + 1, "fallido")
+			# NO usar await, simplemente continuar con el siguiente intento
 	
 	if nc_id > 0:
-		print("✅ NC registrada en BD con ID: ", nc_id)
+		# Intentar registrar traza (pero no fallar si no puede)
+		_registrar_traza_nc(nc_id, codigo)
 		
-		# Insertar traza en tabla de trazas_nc si existe
-		if bd and bd.table_exists("trazas_nc"):
-			var traza_data = {
-				"id_nc": nc_id,
-				"usuario_id": usuario_actual_id,
-				"accion": "CREACION",
-				"detalles": "NC creada desde formulario de auditoría: " + codigo,
-				"ip_address": "SISTEMA"
-			}
-			bd.insert("trazas_nc", traza_data)
-			print("✅ Traza registrada para NC ID:", nc_id)
+		# Intentar registrar en auditoría
+		_registrar_auditoria_sistema("REGISTRAR_NC", "NC registrada: " + codigo)
 	
 	return nc_id
+
+func _registrar_traza_nc(nc_id: int, codigo: String):
+	"""Intenta registrar traza de NC (no crítico)"""
+	if bd and bd.has_method("table_exists") and bd.table_exists("trazas_nc"):
+		var traza_data = {
+			"id_nc": nc_id,
+			"usuario_id": usuario_actual_id,
+			"accion": "CREACION",
+			"detalles": "NC creada desde formulario de auditoría: " + codigo,
+			"ip_address": "SISTEMA"
+		}
+		
+		if bd.insert("trazas_nc", traza_data) > 0:
+			print("✅ Traza registrada")
+		else:
+			print("⚠️ No se pudo registrar traza")
+
+func _registrar_auditoria_sistema(accion: String, detalles: String):
+	"""Intenta registrar auditoría (no crítico)"""
+	if bd and bd.has_method("registrar_auditoria"):
+		# Verificar que la tabla auditoria existe
+		if bd.has_method("table_exists") and bd.table_exists("auditoria"):
+			bd.registrar_auditoria(usuario_actual_id, accion, "RegistrarNCAuditoriaForm", detalles)
+			print("✅ Auditoría registrada")
+		else:
+			print("⚠️ Tabla 'auditoria' no disponible para registro")
+	else:
+		print("⚠️ Método 'registrar_auditoria' no disponible en BD")
 
 func notificar_partes_interesadas(codigo: String, tipo: String, severidad: String):
 	"""
@@ -417,6 +491,23 @@ func _limpiar_formulario():
 	descripcion_text.text = ""
 	severidad_dropdown.select(0)
 	# No limpiar tipo y auditoría para mantener coherencia
+	print("🧹 Formulario limpiado")
+
+func _mostrar_exito_registro(codigo: String, tipo: String):
+	"""Muestra mensaje de éxito de registro"""
+	mostrar_exito("NC registrada exitosamente")
+	
+	mensaje_exito.dialog_text = "✅ No Conformidad registrada exitosamente\n\nCódigo: " + codigo + "\nTipo: " + tipo
+	mensaje_exito.popup_centered()
+	
+	# Notificar
+	notificar_partes_interesadas(codigo, tipo, severidad_dropdown.get_item_text(severidad_dropdown.selected))
+
+func _mostrar_error_registro():
+	"""Muestra mensaje de error de registro"""
+	mensaje_error.dialog_text = "❌ Error al registrar No Conformidad\n\nVerifique:\n1. Conexión a la base de datos\n2. Que el código no esté duplicado\n3. Que todos los campos sean válidos"
+	mensaje_error.popup_centered()
+	mostrar_error("No se pudo registrar en la base de datos")
 
 # =========================
 # FUNCIONES DE PRUEBA Y DIAGNÓSTICO
@@ -529,9 +620,8 @@ func registrar_auditoria_sistema(accion: String, detalles: String):
 
 func verificar_permisos_usuario() -> bool:
 	"""Verifica si el usuario actual tiene permisos para registrar NC."""
-	if global_node and global_node.has_method("tiene_permiso"):
-		return global_node.tiene_permiso("REGISTRAR_NC")
-	return false
+	# En modo standalone, siempre permitir
+	return true
 
 func obtener_info_sistema() -> Dictionary:
 	"""Obtiene información del sistema para depuración."""
@@ -540,9 +630,9 @@ func obtener_info_sistema() -> Dictionary:
 		"usuario_nombre": usuario_actual_nombre,
 		"sucursal": sucursal_actual,
 		"bd_disponible": bd != null,
-		"global_disponible": global_node != null,
 		"contador_nc": contador_nc,
-		"auditor_autenticado": auditor_autenticado
+		"auditor_autenticado": auditor_autenticado,
+		"modo": "standalone"
 	}
 
 # =========================
@@ -596,5 +686,3 @@ func _verificar_estado_sistema():
 	for key in info:
 		print("  " + key + ": " + str(info[key]))
 	print("=== FIN ESTADO ===")
-	
-	

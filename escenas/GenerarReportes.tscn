@@ -2,22 +2,6 @@
 
 [ext_resource type="Script" uid="uid://l66toq0dm38c" path="res://scripts/generar_reportes.gd" id="1_4k9x3"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_user_panel"]
-content_margin_left = 15.0
-content_margin_top = 10.0
-content_margin_right = 15.0
-content_margin_bottom = 10.0
-bg_color = Color(0.23, 0.53, 0.95, 0.1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.23, 0.53, 0.95, 0.3)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sidebar"]
 content_margin_left = 15.0
 content_margin_top = 15.0
@@ -246,37 +230,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
 theme_override_font_sizes/font_size = 16
 text = "Análisis empresarial y visualización de datos de calidad"
-
-[node name="UserInfoPanel" type="Panel" parent="ContenedorPrincipal/Header" unique_id=1766168854]
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_user_panel")
-
-[node name="UserInfoContainer" type="VBoxContainer" parent="ContenedorPrincipal/Header/UserInfoPanel" unique_id=1766168855]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -197.0
-offset_top = 10.0
-offset_right = -63.0
-offset_bottom = -10.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="UserName" type="Label" parent="ContenedorPrincipal/Header/UserInfoPanel/UserInfoContainer" unique_id=1766168856]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 16
-text = "Usuario: Invitado"
-horizontal_alignment = 2
-
-[node name="UserRole" type="Label" parent="ContenedorPrincipal/Header/UserInfoPanel/UserInfoContainer" unique_id=1766168857]
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 14
-text = "Rol: No autenticado"
-horizontal_alignment = 2
 
 [node name="Separator" type="HSeparator" parent="ContenedorPrincipal" unique_id=2046554644]
 layout_mode = 2

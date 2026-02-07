@@ -362,16 +362,9 @@ func filtrar_por_periodo(trazas: Array, periodo_id: int) -> Array:
 	if periodo_id == PERIODO_FILTRO.TODO_EL_TIEMPO:
 		return trazas
 	
-	# Calcular la fecha de inicio según el período
-	var dias_atras = 0
-	match periodo_id:
-		PERIODO_FILTRO.ULTIMOS_7_DIAS: dias_atras = 7
-		PERIODO_FILTRO.ULTIMOS_30_DIAS: dias_atras = 30
-		PERIODO_FILTRO.ULTIMOS_90_DIAS: dias_atras = 90
-	
-	# Obtener la fecha actual
-	var ahora = Time.get_date_string_from_system() + " " + Time.get_time_string_from_system()
-	var fecha_limite = calcular_fecha_limite(ahora, dias_atras)
+	# Obtener fecha actual
+	var ahora = Time.get_datetime_dict_from_system()
+	var fecha_limite = calcular_fecha_limite_real(ahora, periodo_id)
 	
 	# Filtrar las trazas
 	return trazas.filter(func(t):
@@ -379,39 +372,102 @@ func filtrar_por_periodo(trazas: Array, periodo_id: int) -> Array:
 		if fecha_traza == "":
 			return false
 		
-		# Comparar fechas (esto es simplificado, en un sistema real usarías Time)
-		return es_fecha_mas_reciente_o_igual(fecha_traza, fecha_limite)
+		# Convertir string a diccionario de fecha
+		var dict_traza = convertir_fecha_string_a_dict(fecha_traza)
+		if dict_traza.is_empty():
+			return false
+		
+		# Comparar fechas
+		return es_fecha_mas_reciente_o_igual_real(dict_traza, fecha_limite)
 	)
 
-func calcular_fecha_limite(fecha_actual: String, dias_atras: int) -> String:
-	# Esta es una implementación simplificada
-	# En un sistema real, usarías Time o DateTime para calcular esto correctamente
+func calcular_fecha_limite_real(fecha_actual: Dictionary, periodo_id: int) -> Dictionary:
+	var fecha_limite = fecha_actual.duplicate()
+	var dias_atras = 0
 	
-	# Para el ejemplo, simplemente restamos días de la fecha
-	# Nota: Esto no maneja cambios de mes/año correctamente
-	var partes = fecha_actual.split(" ")
-	if partes.size() < 2:
-		return ""
+	match periodo_id:
+		PERIODO_FILTRO.ULTIMOS_7_DIAS: dias_atras = 7
+		PERIODO_FILTRO.ULTIMOS_30_DIAS: dias_atras = 30
+		PERIODO_FILTRO.ULTIMOS_90_DIAS: dias_atras = 90
 	
-	var fecha_parts = partes[0].split("-")
-	if fecha_parts.size() < 3:
-		return ""
-	
-	var dia = int(fecha_parts[2])
-	dia -= dias_atras
+	# Restar días
+	fecha_limite["day"] -= dias_atras
 	
 	# Ajustar si el día es menor que 1
-	while dia < 1:
-		dia += 30  # Simplificación, deberías manejar meses reales
+	while fecha_limite["day"] < 1:
+		fecha_limite["month"] -= 1
+		if fecha_limite["month"] < 1:
+			fecha_limite["month"] = 12
+			fecha_limite["year"] -= 1
+		
+		# Obtener días del mes anterior
+		var dias_en_mes = obtener_dias_en_mes_real(fecha_limite["month"], fecha_limite["year"])
+		fecha_limite["day"] += dias_en_mes
 	
-	# Crear nueva fecha string
-	return "%s-%02d-%02d %s" % [fecha_parts[0], fecha_parts[1], dia, partes[1]]
+	return fecha_limite
 
-func es_fecha_mas_reciente_o_igual(fecha1: String, fecha2: String) -> bool:
-	# Comparación simplificada de fechas
-	# En un sistema real, convertirías a timestamp y compararías
-	return fecha1 >= fecha2
+func obtener_dias_en_mes_real(mes: int, anio: int) -> int:
+	# Lista de días por mes
+	var dias_por_mes = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+	
+	# Ajustar febrero para años bisiestos
+	if mes == 2:
+		if (anio % 400 == 0) or (anio % 4 == 0 and anio % 100 != 0):
+			return 29
+	
+	return dias_por_mes[mes - 1]
 
+func convertir_fecha_string_a_dict(fecha_str: String) -> Dictionary:
+	# Convertir formato "YYYY-MM-DD HH:MM:SS" a diccionario
+	if fecha_str == "":
+		return {}
+	
+	var partes = fecha_str.split(" ")
+	if partes.size() < 2:
+		return {}
+	
+	var fecha_parts = partes[0].split("-")
+	var tiempo_parts = partes[1].split(":")
+	
+	if fecha_parts.size() < 3:
+		return {}
+	
+	return {
+		"year": int(fecha_parts[0]),
+		"month": int(fecha_parts[1]),
+		"day": int(fecha_parts[2]),
+		"hour": int(tiempo_parts[0]) if tiempo_parts.size() > 0 else 0,
+		"minute": int(tiempo_parts[1]) if tiempo_parts.size() > 1 else 0,
+		"second": int(tiempo_parts[2]) if tiempo_parts.size() > 2 else 0
+	}
+
+func es_fecha_mas_reciente_o_igual_real(fecha1: Dictionary, fecha2: Dictionary) -> bool:
+	# Comparar año
+	if fecha1["year"] != fecha2["year"]:
+		return fecha1["year"] > fecha2["year"]
+	
+	# Comparar mes
+	if fecha1["month"] != fecha2["month"]:
+		return fecha1["month"] > fecha2["month"]
+	
+	# Comparar día
+	if fecha1["day"] != fecha2["day"]:
+		return fecha1["day"] > fecha2["day"]
+	
+	# Si es el mismo día, comparar hora, minuto, segundo
+	var hora1 = fecha1.get("hour", 0)
+	var min1 = fecha1.get("minute", 0)
+	var sec1 = fecha1.get("second", 0)
+	
+	var hora2 = fecha2.get("hour", 0)
+	var min2 = fecha2.get("minute", 0)
+	var sec2 = fecha2.get("second", 0)
+	
+	if hora1 != hora2:
+		return hora1 > hora2
+	if min1 != min2:
+		return min1 > min2
+	return sec1 >= sec2
 func solicitar_exportacion():
 	$DialogoConfirmacion.dialog_text = "¿Exportar las trazas filtradas a archivo CSV?"
 	$DialogoConfirmacion.popup_centered()
