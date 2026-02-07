@@ -37,6 +37,7 @@ var sucursales_disponibles = [
 # Variable para almacenar usuarios (simulación de base de datos)
 var usuario_seleccionado: Dictionary = {}
 var modo_edicion: bool = false
+var usuario_actual: Dictionary = {}  # Para almacenar datos del usuario actual (si es necesario)
 
 func _ready():
 	# Quitar despues
@@ -99,6 +100,14 @@ func _ready():
 	
 	# Cargar usuarios iniciales
 	actualizar_tabla_usuarios()
+	
+	# Inicializar usuario actual (simulado)
+	usuario_actual = {
+		"id": 1,
+		"username": "admin",
+		"nombre": "Administrador",
+		"rol": "admin"
+	}
 
 func inicializar_tabla():
 	var tabla = $ContentContainer/UserTableContainer/TablaUsuarios
@@ -450,8 +459,8 @@ func limpiar_formulario_usuario():
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckConfiguracion.button_pressed = false
 	
 	# Limpiar mensajes de error
-	$DialogoUsuario/VBoxContainer/MensajeError.text = ""
-
+	$MensajeError.text = ""
+	
 func llenar_formulario_usuario(usuario: Dictionary):
 	# Separar nombre y apellido (simulación)
 	# Usar .get() con valor por defecto
@@ -530,7 +539,7 @@ func obtener_permisos_seleccionados() -> Array:
 
 func validar_formulario_usuario() -> bool:
 	# Limpiar mensaje de error
-	$DialogoUsuario/VBoxContainer/MensajeError.text = ""
+	$DialogoUsuario/VBoxContainer/MensajeError.dialog_text = ""
 	
 	var campos_requeridos = [
 		$DialogoUsuario/VBoxContainer/InputNombre.text.strip_edges(),
@@ -657,17 +666,15 @@ func crear_nuevo_usuario():
 		usuario_creado.emit(datos_usuario)
 		
 		# Registrar en trazas la creación del usuario
-		var usuario_actual = Sistema.get_usuario_actual() if Sistema and Sistema.has_method("get_usuario_actual") else null
-		if usuario_actual:
-			var datos_traza = {
-				"usuario_id": usuario_actual.get("id", 0),
-				"accion": "CREACION",
-				"descripcion": "Creación de nuevo usuario: " + username,
-				"modulo": "Administración de Usuarios",
-				"ip": "localhost",
-				"detalles": "Rol: " + rol_bd + ", Sucursal: " + sucursal
-			}
-			registrar_traza_bd(datos_traza)
+		var datos_traza = {
+			"usuario_id": usuario_actual.get("id", 0),
+			"accion": "CREACION",
+			"descripcion": "Creación de nuevo usuario: " + username,
+			"modulo": "Administración de Usuarios",
+			"ip": "localhost",
+			"detalles": "Rol: " + rol_bd + ", Sucursal: " + sucursal
+		}
+		registrar_traza_bd(datos_traza)
 		
 		mostrar_exito("Usuario creado exitosamente en la base de datos")
 		return true
@@ -725,17 +732,15 @@ func modificar_usuario_existente() -> bool:
 		usuario_modificado.emit(str(usuario_seleccionado.get("id", 0)), datos_actualizados)
 		
 		# Registrar en trazas la modificación del usuario
-		var usuario_actual = Sistema.get_usuario_actual() if Sistema and Sistema.has_method("get_usuario_actual") else null
-		if usuario_actual:
-			var datos_traza = {
-				"usuario_id": usuario_actual.get("id", 0),
-				"accion": "MODIFICACION",
-				"descripcion": "Modificación de usuario: " + usuario_seleccionado.get("username", ""),
-				"modulo": "Administración de Usuarios",
-				"ip": "localhost",
-				"detalles": "Nuevo rol: " + rol_bd + ", Nuevo nombre: " + nombre_completo
-			}
-			registrar_traza_bd(datos_traza)
+		var datos_traza = {
+			"usuario_id": usuario_actual.get("id", 0),
+			"accion": "MODIFICACION",
+			"descripcion": "Modificación de usuario: " + usuario_seleccionado.get("username", ""),
+			"modulo": "Administración de Usuarios",
+			"ip": "localhost",
+			"detalles": "Nuevo rol: " + rol_bd + ", Nuevo nombre: " + nombre_completo
+		}
+		registrar_traza_bd(datos_traza)
 		
 		mostrar_exito("Usuario modificado exitosamente")
 		return true
@@ -785,17 +790,15 @@ func confirmar_operacion():
 		usuario_desactivado.emit(str(usuario_seleccionado.get("id", 0)))
 		
 		# Registrar en trazas la desactivación del usuario
-		var usuario_actual = Sistema.get_usuario_actual() if Sistema and Sistema.has_method("get_usuario_actual") else null
-		if usuario_actual:
-			var datos_traza = {
-				"usuario_id": usuario_actual.get("id", 0),
-				"accion": "MODIFICACION",
-				"descripcion": "Desactivación de usuario: " + usuario_seleccionado.get("username", ""),
-				"modulo": "Administración de Usuarios",
-				"ip": "localhost",
-				"detalles": "Usuario desactivado por administrador"
-			}
-			registrar_traza_bd(datos_traza)
+		var datos_traza = {
+			"usuario_id": usuario_actual.get("id", 0),
+			"accion": "MODIFICACION",
+			"descripcion": "Desactivación de usuario: " + usuario_seleccionado.get("username", ""),
+			"modulo": "Administración de Usuarios",
+			"ip": "localhost",
+			"detalles": "Usuario desactivado por administrador"
+		}
+		registrar_traza_bd(datos_traza)
 		
 		mostrar_exito("Usuario desactivado exitosamente")
 		
@@ -877,17 +880,15 @@ func asignar_nuevo_rol(rol_id: int):
 	
 	if exito:
 		# Registrar en trazas el cambio de rol
-		var usuario_actual = Sistema.get_usuario_actual() if Sistema and Sistema.has_method("get_usuario_actual") else null
-		if usuario_actual:
-			var datos_traza = {
-				"usuario_id": usuario_actual.get("id", 0),
-				"accion": "MODIFICACION",
-				"descripcion": "Cambio de rol para usuario: " + usuario_seleccionado.get("username", ""),
-				"modulo": "Administración de Usuarios",
-				"ip": "localhost",
-				"detalles": "Nuevo rol: " + rol_bd + ", Rol anterior: " + usuario_seleccionado.get("rol", "")
-			}
-			registrar_traza_bd(datos_traza)
+		var datos_traza = {
+			"usuario_id": usuario_actual.get("id", 0),
+			"accion": "MODIFICACION",
+			"descripcion": "Cambio de rol para usuario: " + usuario_seleccionado.get("username", ""),
+			"modulo": "Administración de Usuarios",
+			"ip": "localhost",
+			"detalles": "Nuevo rol: " + rol_bd + ", Rol anterior: " + usuario_seleccionado.get("rol", "")
+		}
+		registrar_traza_bd(datos_traza)
 		
 		mostrar_exito("Rol actualizado exitosamente")
 		actualizar_tabla_usuarios()
@@ -902,17 +903,15 @@ func ver_trazas_usuario():
 	mostrar_carga("Cargando trazas del usuario...")
 	
 	# Registrar en trazas que se está viendo las trazas de otro usuario
-	var usuario_actual = Sistema.get_usuario_actual() if Sistema and Sistema.has_method("get_usuario_actual") else null
-	if usuario_actual:
-		var datos_traza = {
-			"usuario_id": usuario_actual.get("id", 0),
-			"accion": "CONSULTA",
-			"descripcion": "Visualización de trazas del usuario: " + usuario_seleccionado.get("username", ""),
-			"modulo": "Administración de Usuarios",
-			"ip": "localhost",
-			"detalles": "Usuario ID: " + str(usuario_seleccionado.get("id", 0))
-		}
-		registrar_traza_bd(datos_traza)
+	var datos_traza = {
+		"usuario_id": usuario_actual.get("id", 0),
+		"accion": "CONSULTA",
+		"descripcion": "Visualización de trazas del usuario: " + usuario_seleccionado.get("username", ""),
+		"modulo": "Administración de Usuarios",
+		"ip": "localhost",
+		"detalles": "Usuario ID: " + str(usuario_seleccionado.get("id", 0))
+	}
+	registrar_traza_bd(datos_traza)
 	
 	# Cargar la escena de visualización de trazas
 	var escena_trazas = load("res://escenas/TrazasVisualizar.tscn")
@@ -973,17 +972,15 @@ func exportar_lista_usuarios():
 		archivo.close()
 		
 		# Registrar en trazas la exportación
-		var usuario_actual = Sistema.get_usuario_actual() if Sistema and Sistema.has_method("get_usuario_actual") else null
-		if usuario_actual:
-			var datos_traza = {
-				"usuario_id": usuario_actual.get("id", 0),
-				"accion": "EXPORTACION",
-				"descripcion": "Exportación de lista de usuarios",
-				"modulo": "Administración de Usuarios",
-				"ip": "localhost",
-				"detalles": "Archivo: " + nombre_archivo + ", Registros: " + str(usuarios_db.size())
-			}
-			registrar_traza_bd(datos_traza)
+		var datos_traza = {
+			"usuario_id": usuario_actual.get("id", 0),
+			"accion": "EXPORTACION",
+			"descripcion": "Exportación de lista de usuarios",
+			"modulo": "Administración de Usuarios",
+			"ip": "localhost",
+			"detalles": "Archivo: " + nombre_archivo + ", Registros: " + str(usuarios_db.size())
+		}
+		registrar_traza_bd(datos_traza)
 		
 		print("✅ Exportados %d usuarios a: %s" % [usuarios_db.size(), nombre_archivo])
 		ocultar_carga()

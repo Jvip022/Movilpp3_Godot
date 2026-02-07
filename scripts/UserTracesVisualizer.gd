@@ -249,8 +249,8 @@ func cargar_trazas_usuario():
 func actualizar_contador_trazas():
 	var total = trazas_usuario.size()
 	var mostrando = trazas_filtradas_actuales.size()
-	$ContenedorPrincipal/PanelFiltros/ContadorTrazas.text = "Mostrando %d de %d trazas" % [mostrando, total]
-
+	$ContenedorPrincipal/ContenedorTrazas.text = "Mostrando %d de %d trazas" % [mostrando, total]
+	
 func mostrar_trazas(trazas: Array):
 	var lista_trazas = $ContenedorPrincipal/ContenedorTrazas/ScrollTrazas/ListaTrazas
 	
@@ -273,7 +273,7 @@ func mostrar_trazas(trazas: Array):
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 		label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		label.valign = Label.HORIZONTAL_ALIGNMENT_LEFT
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER  # CORREGIDO: Cambiado de HORIZONTAL_ALIGNMENT_LEFT
 		lista_trazas.add_child(label)
 	
 	# Actualizar contador
@@ -626,7 +626,15 @@ func exportar_trazas():
 
 func registrar_traza_exportacion():
 	# Registrar esta acción como una traza en el sistema
-	var datos_usuario_actual = Sistema.get_usuario_actual()  # Asumiendo que tienes un singleton Sistema
+	var datos_usuario_actual = null
+	var ip_usuario = "Desconocida"
+	
+	# Intentar obtener el singleton Sistema si existe
+	# CORREGIDO: Verificar si el singleton Sistema existe antes de usarlo
+	if Engine.has_singleton("Sistema"):
+		var Sistema = Engine.get_singleton("Sistema")
+		datos_usuario_actual = Sistema.get_usuario_actual() if Sistema.has_method("get_usuario_actual") else null
+		ip_usuario = Sistema.get_ip_usuario() if Sistema.has_method("get_ip_usuario") else "Desconocida"
 	
 	if datos_usuario_actual:
 		var datos_traza = {
@@ -634,7 +642,7 @@ func registrar_traza_exportacion():
 			"accion": "EXPORTACION",
 			"descripcion": "Exportación de trazas del usuario ID: " + str(usuario_id),
 			"modulo": "Visualización de Trazas",
-			"ip": Sistema.get_ip_usuario() if Sistema.has_method("get_ip_usuario") else "Desconocida",
+			"ip": ip_usuario,
 			"detalles": "Total de trazas exportadas: " + str(trazas_filtradas_actuales.size())
 		}
 		
