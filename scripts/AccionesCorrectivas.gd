@@ -23,7 +23,6 @@ func _ready():
 	$ContenedorPrincipal/PanelBusqueda/HBoxBusqueda/BtnEvaluarNC.connect("pressed", _on_evaluar_nc)
 	$ContenedorPrincipal/PanelBusqueda/HBoxBusqueda/BtnToggleResultados.connect("pressed", _on_toggle_resultados)
 	
-	
 	# Conectar selección en resultados de búsqueda
 	$ContenedorPrincipal/PanelBusqueda/ResultadosBusqueda.item_selected.connect(_on_nc_seleccionada)
 	
@@ -42,17 +41,45 @@ func _ready():
 	# Conectar entrada de búsqueda para buscar al presionar Enter
 	$ContenedorPrincipal/PanelBusqueda/HBoxBusqueda/InputBusqueda.text_submitted.connect(_on_buscar_enter)
 	
+	# Configurar opciones de evaluación
+	_configurar_opciones_evaluacion()
+	
 	# Cargar datos iniciales
 	_cargar_no_conformidades()
 	_configurar_tabla()
 	_on_limpiar_formulario()
+	
+	# Ajustar el contenedor de resultados
+	#$ContenedorPrincipal/PanelBusqueda/ResultadosBusqueda.anchors_preset = Control.PRESET_VCENTER_WIDE
+	$ContenedorPrincipal/PanelBusqueda/ResultadosBusqueda.anchor_top = 1.0
+	$ContenedorPrincipal/PanelBusqueda/ResultadosBusqueda.anchor_bottom = 1.0
+	$ContenedorPrincipal/PanelBusqueda/ResultadosBusqueda.offset_top = -120
+	$ContenedorPrincipal/PanelBusqueda/ResultadosBusqueda.offset_bottom = -10
 	
 	# Mostrar todas las no conformidades inicialmente
 	_actualizar_resultados_busqueda()
 	
 	# Configurar estado inicial de los botones de toggle
 	_actualizar_boton_toggle()
+
+func _configurar_opciones_evaluacion():
+	# Configurar opciones de severidad
+	var severidad = $DialogoEvaluacion/VBoxContainer2/OpcionesSeveridad
+	severidad.clear()
+	severidad.add_item("Baja", 0)
+	severidad.add_item("Media", 1)
+	severidad.add_item("Alta", 2)
+	severidad.add_item("Crítica", 3)
 	
+	# Configurar opciones de impacto
+	var impacto = $DialogoEvaluacion/VBoxContainer2/OpcionesImpacto
+	impacto.clear()
+	impacto.add_item("Calidad", 0)
+	impacto.add_item("Seguridad", 1)
+	impacto.add_item("Medio Ambiente", 2)
+	impacto.add_item("Costos", 3)
+	impacto.add_item("Tiempo", 4)
+	impacto.add_item("Cliente", 5)
 
 func _configurar_tabla():
 	# Configurar columnas de la tabla
@@ -135,27 +162,9 @@ func _cargar_no_conformidades():
 	
 	no_conformidades_filtradas = no_conformidades_pendientes.duplicate(true)
 
+# Eliminar o completar esta función si no se usa
 func _on_toggle_panel_busqueda():
-	# Alternar visibilidad del panel de búsqueda completo
-	panel_busqueda_visible = !panel_busqueda_visible
-	
-	var panel = $ContenedorPrincipal/PanelBusqueda
-	
-	if panel_busqueda_visible:
-		# Mostrar el panel completo
-		panel.visible = true
-		panel.custom_minimum_size = Vector2(0, 120)
-		panel.size_flags_vertical = 0
-	else:
-		# Ocultar el panel completo
-		panel.visible = false
-		panel.custom_minimum_size = Vector2(0, 0)
-		panel.size_flags_vertical = 0
-	
-	# Actualizar texto del botón
-	
-
-
+	pass  # Esta función no se usa en la escena actual
 
 func _on_toggle_resultados():
 	# Alternar visibilidad de los resultados
@@ -241,8 +250,6 @@ func _activar_modo_centrado():
 	# Cambiar botón de toggle resultados
 	var btn_toggle_resultados = $ContenedorPrincipal/PanelBusqueda/HBoxBusqueda/BtnToggleResultados
 	btn_toggle_resultados.visible = false
-	
-	
 	
 	# Agregar mensaje informativo
 	$ContenedorPrincipal/PanelBusqueda/LabelBusqueda.text = "Resultados de Búsqueda (Modo Centrado)"

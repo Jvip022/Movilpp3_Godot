@@ -1559,20 +1559,20 @@ func calcular_prioridad(datos: Dictionary) -> String:
 	
 	return prioridad
 
-# FUNCIÓN ORIGINAL - VERSIÓN SIMPLIFICADA
+# FUNCIÓN ORIGINAL - VERSIÓN SIMPLIFICADA PARA GODOT 4
 func calcular_fecha_limite(dias: int = 7) -> String:
 	# Calcular fecha límite de respuesta (7 días naturales por defecto)
-	# Usar OS.get_unix_time() en lugar de Time
-	var fecha_actual_unix = OS.get_unix_time()
+	# En Godot 4, usar get_unix_time_from_system()
+	var fecha_actual_unix = Time.get_unix_time_from_system()
 	var dias_en_segundos = int(dias) * 24 * 60 * 60
 	var fecha_limite_unix = fecha_actual_unix + dias_en_segundos
 	
 	# Convertir a fecha legible
-	var fecha_limite = OS.get_datetime_from_unix_time(fecha_limite_unix)
+	var fecha_limite = Time.get_datetime_dict_from_unix_time(fecha_limite_unix)
 	
 	return "%04d-%02d-%02d" % [fecha_limite["year"], fecha_limite["month"], fecha_limite["day"]]
 
-# FUNCIÓN CORREGIDA: VERSIÓN SIMPLIFICADA
+# FUNCIÓN CORREGIDA: VERSIÓN SIMPLIFICADA PARA GODOT 4
 func calcular_fecha_limite_con_config(dias: int = -1) -> String:
 	# Intentar obtener el límite del config_manager si está disponible
 	if dias == -1 and config_manager and config_manager.has_method("get_limite_tiempo_respuesta"):
@@ -1583,13 +1583,13 @@ func calcular_fecha_limite_con_config(dias: int = -1) -> String:
 	# Asegurarse de que dias sea un entero
 	dias = int(dias)
 	
-	# Usar OS.get_unix_time() en lugar de Time
-	var fecha_actual_unix = OS.get_unix_time()
+	# En Godot 4, usar get_unix_time_from_system()
+	var fecha_actual_unix = Time.get_unix_time_from_system()
 	var dias_en_segundos = dias * 24 * 60 * 60
 	var fecha_limite_unix = fecha_actual_unix + dias_en_segundos
 	
 	# Convertir a fecha legible
-	var fecha_limite = OS.get_datetime_from_unix_time(fecha_limite_unix)
+	var fecha_limite = Time.get_datetime_dict_from_unix_time(fecha_limite_unix)
 	
 	return "%04d-%02d-%02d" % [fecha_limite["year"], fecha_limite["month"], fecha_limite["day"]]
 	
