@@ -528,71 +528,69 @@ func registrar_incidencia_bd(datos: Dictionary) -> int:
 		print("❌ Error registrando incidencia")
 		return -1
 
+# Línea ~583, reemplazar toda la función con:
 func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 	print("🔄 Convirtiendo incidencia a no conformidad...")
 	
-	# Generar código de NC
+	# Generar código único para NC
 	var fecha_actual = Time.get_datetime_dict_from_system()
 	var query_count = "SELECT COUNT(*) + 1 as siguiente FROM no_conformidades WHERE DATE(fecha_registro) = DATE('now')"
 	
-	# CORRECCIÓN: Sin await
 	var resultado_count = Bd.select_query(query_count)
-	
 	var numero_nc = 1
 	if resultado_count and resultado_count.size() > 0:
 		numero_nc = resultado_count[0].get("siguiente", 1)
 	
-	var codigo_nc = "NC-%04d%02d%02d-%04d" % [
+	var codigo_expediente = "NC-%04d%02d%02d-%04d" % [
 		fecha_actual["year"],
 		fecha_actual["month"],
 		fecha_actual["day"],
 		numero_nc
 	]
 	
-	# Insertar en tabla no_conformidades
+	# Mapear nivel de gravedad a prioridad
+	var prioridad = 3  # Baja por defecto
+	var nivel_gravedad = datos_incidencia.get("nivel_gravedad", "")
+	if "Crítico" in nivel_gravedad or "Grave" in nivel_gravedad:
+		prioridad = 1
+	elif "Moderado" in nivel_gravedad:
+		prioridad = 2
+	
+	# Insertar en tabla no_conformidades con columnas correctas
 	var query = """
 		INSERT INTO no_conformidades 
-		(codigo_nc, origen, codigo_origen, titulo, descripcion, tipo, 
-		 producto_servicio, sucursal, fecha_deteccion, nivel_gravedad,
-		 cliente_id, registrado_por, estado, fecha_registro, fuente_deteccion, 
-		 proceso_afectado, impacto_calidad)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		(codigo_expediente, tipo_nc, estado, descripcion, fecha_ocurrencia,
+		 sucursal, producto_servicio, cliente_id, responsable_id, prioridad,
+		 creado_por)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	"""
 	
 	var params = [
-		codigo_nc,
-		"INCIDENCIA",
-		datos_incidencia.get("codigo_incidencia", ""),
-		datos_incidencia.get("titulo", ""),
-		datos_incidencia.get("descripcion", ""),
-		datos_incidencia.get("tipo_hallazgo", ""),
-		datos_incidencia.get("producto_servicio", ""),
-		datos_incidencia.get("sucursal", ""),
-		datos_incidencia.get("fecha_ocurrencia", ""),
-		datos_incidencia.get("nivel_gravedad", ""),
-		datos_incidencia.get("cliente_id", 0),
-		datos_incidencia.get("supervisor_id", 0),
-		"ABIERTA",
-		Time.get_datetime_string_from_system(),
-		"Cliente",
-		"SERVICIO AL CLIENTE",
-		"PÉRDIDA DE CLIENTE POTENCIAL"
+		codigo_expediente,          # codigo_expediente
+		"Incidencia Diaria",        # tipo_nc
+		"pendiente",                # estado
+		datos_incidencia.get("descripcion", ""),      # descripcion
+		datos_incidencia.get("fecha_ocurrencia", ""), # fecha_ocurrencia
+		datos_incidencia.get("sucursal", ""),         # sucursal
+		datos_incidencia.get("producto_servicio", ""),# producto_servicio
+		datos_incidencia.get("cliente_id", 0),        # cliente_id
+		datos_incidencia.get("supervisor_id", 0),     # responsable_id
+		prioridad,                  # prioridad
+		datos_incidencia.get("supervisor_id", 0)      # creado_por
 	]
 	
-	# CORRECCIÓN: Usar Bd.query para insert
 	var resultado_insert = db.query(query, params)
 	
 	if resultado_insert:
-		# Obtener el ID insertado - CORRECCIÓN: Sin await
-		var resultado_id = Bd.select_query("SELECT last_insert_rowid() as id_nc")
+		var resultado_id = Bd.select_query("SELECT last_insert_rowid() as id")
 		var nc_id = -1
 		if resultado_id and resultado_id.size() > 0:
-			nc_id = resultado_id[0].get("id_nc", -1)
+			nc_id = resultado_id[0].get("id", -1)
 		
 		if nc_id > 0:
 			# Registrar traza de la conversión
 			var query_traza = """
-				INSERT INTO trazas_nc (id_nc, usuario_id, accion, descripcion, fecha)
+				INSERT INTO trazas_nc (id_nc, usuario_id, accion, detalles, ip_address)
 				VALUES (?, ?, ?, ?, ?)
 			"""
 			
@@ -601,17 +599,12 @@ func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 				datos_incidencia.get("supervisor_id", 0),
 				"CREACION",
 				"No conformidad creada automáticamente desde incidencia: " + datos_incidencia.get("codigo_incidencia", ""),
-				Time.get_datetime_string_from_system()
+				""  # ip_address
 			]
 			
 			db.query(query_traza, params_traza)
 			
-			print("✅ No Conformidad creada: " + codigo_nc + " (ID: " + str(nc_id) + ")")
-			
-			# Actualizar la incidencia para indicar que fue convertida
-			var query_update = "UPDATE incidencias_calidad SET id_no_conformidad = ? WHERE codigo_incidencia = ?"
-			var params_update = [nc_id, datos_incidencia.get("codigo_incidencia", "")]
-			db.query(query_update, params_update)
+			print("✅ No Conformidad creada: " + codigo_expediente + " (ID: " + str(nc_id) + ")")
 			
 			return nc_id
 		else:
@@ -620,7 +613,7 @@ func convertir_a_no_conformidad(datos_incidencia: Dictionary) -> int:
 	else:
 		print("❌ Error al crear no conformidad")
 		return -1
-
+		
 func registrar_incidencia_con_estado(estado: String):
 	# Generar código de incidencia
 	var codigo_incidencia = generar_codigo_incidencia()  # CORRECCIÓN: Sin await

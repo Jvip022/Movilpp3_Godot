@@ -546,10 +546,16 @@ file_mode = 1
 filters = PackedStringArray("*.png, *.jpg, *.jpeg ; Imágenes", "*.pdf ; Documentos PDF", "*.txt ; Archivos de texto")
 
 [node name="DialogoConfirmacion" type="AcceptDialog" parent="." unique_id=223688924]
+oversampling_override = 1.0
+size = Vector2i(297, 100)
 dialog_text = "¿Está seguro de realizar esta acción?"
 
 [node name="MensajeExito" type="AcceptDialog" parent="." unique_id=426464478]
+oversampling_override = 1.0
+size = Vector2i(165, 100)
 dialog_text = "¡Operación exitosa!"
 
 [node name="MensajeError" type="AcceptDialog" parent="." unique_id=2145520230]
+oversampling_override = 1.0
+size = Vector2i(188, 100)
 dialog_text = "¡Error en la operación!"

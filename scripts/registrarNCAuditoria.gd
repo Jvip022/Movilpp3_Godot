@@ -38,56 +38,75 @@ var auditor_autenticado = false
 func _ready():
 	print("=== REGISTRAR NC AUDITORÍA - INICIO ===")
 	
-	# Obtener referencia a Global (AutoLoad)
-	if not Engine.has_singleton("Global"):
-		push_error("❌ Global no está configurado como AutoLoad")
-		mostrar_error_fatal("Error de configuración del sistema")
-		return
+	# INICIALIZACIÓN INDEPENDIENTE - SIN GLOBAL
+	print("🔧 Inicializando en modo autónomo...")
 	
-	global_node = Engine.get_singleton("Global")
+	# 1. Inicializar BD directamente
+	_inicializar_bd_autonoma()
 	
-	# Obtener BD desde Global
-	if global_node and global_node.has_method("get_bd_reference"):
-		bd = global_node.get_bd_reference()
-	elif global_node and global_node.has("db"):
-		bd = global_node.db
-	
-	if bd == null:
-		push_error("❌ No se pudo obtener referencia a BD")
-		# Intentar crear instancia directa como fallback
-		var BDClass = load("res://BD.gd")
-		if BDClass:
-			bd = BDClass.new()
-			if bd and bd.has_method("_ready"):
-				bd.call_deferred("_ready")
-	
+	# 2. Si BD no se pudo inicializar, mostrar error
 	if bd == null:
 		mostrar_error_fatal("Base de datos no disponible")
 		registrar_button.disabled = true
 		return
 	
-	# Configurar usuario actual desde Global
-	if global_node and global_node.has_method("esta_autenticado") and global_node.esta_autenticado():
-		usuario_actual_id = global_node.obtener_id_usuario()
-		usuario_actual_nombre = global_node.obtener_nombre_usuario()
-		sucursal_actual = global_node.obtener_sucursal()
-		auditor_autenticado = true
-		print("✅ Usuario autenticado: ", usuario_actual_nombre)
-		print("✅ Sucursal: ", sucursal_actual)
-	else:
-		# Usuario por defecto para pruebas
-		usuario_actual_id = 1
-		usuario_actual_nombre = "Auditor Sistema"
-		sucursal_actual = "Central"
-		auditor_autenticado = true  # Permitir pruebas
-		print("⚠️ Usando usuario de prueba (ID: 1)")
+	# 3. Configurar usuario de prueba (puedes cambiarlo después)
+	usuario_actual_id = 1
+	usuario_actual_nombre = "Auditor del Sistema"
+	sucursal_actual = "Central"
+	auditor_autenticado = true
 	
-	# Configurar interfaz
+	print("✅ Modo autónomo activado")
+	print("✅ Usuario: ", usuario_actual_nombre)
+	print("✅ Sucursal: ", sucursal_actual)
+	
+	# 4. Configurar interfaz
 	setup_ui()
 	
-	# Obtener contador actual desde BD
+	# 5. Obtener contador actual desde BD
 	_obtener_contador_actual()
 
+func _inicializar_bd_autonoma():
+	"""Inicializa BD sin depender de Global - Versión corregida"""
+	print("🔧 Inicializando BD autónoma...")
+	
+	# Método 1: Buscar BD en el árbol de escenas actual
+	var bd_node = get_node("/root/BD")
+	if bd_node and bd_node is BD:
+		bd = bd_node
+		print("✅ BD encontrada en /root/BD")
+		return
+	
+	# Método 2: Buscar en todos los nodos
+	for child in get_tree().root.get_children():
+		if child is BD:
+			bd = child
+			print("✅ BD encontrada en hijo de root")
+			return
+	
+	# Método 3: Crear nueva instancia
+	print("⚠️ BD no encontrada, creando nueva instancia...")
+	
+	var BDClass = load("res://scripts/BD.gd")
+	if BDClass:
+		bd = BDClass.new()
+		bd.name = "BD_Autonoma"
+		
+		# Añadir al árbol
+		get_tree().root.add_child(bd)
+		
+		# Inicializar
+		if bd.has_method("_ready"):
+			# Esperar un frame para asegurar inicialización
+			await get_tree().process_frame
+			bd._ready()
+		
+		print("✅ BD autónoma creada e inicializada")
+		return true
+	
+	print("❌ No se pudo crear BD")
+	return false
+	
 func mostrar_error_fatal(mensaje: String):
 	"""Muestra un error fatal y deshabilita la interfaz."""
 	mensaje_error.dialog_text = mensaje

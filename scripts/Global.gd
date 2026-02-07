@@ -1,5 +1,5 @@
 extends Node
-class_name global
+class_name GB
 
 # Datos del usuario actual
 var usuario_actual: Dictionary = {}
@@ -294,7 +294,7 @@ func mostrar_mensaje(titulo: String, mensaje: String, tipo: String = "info"):
 			print(mensaje)
 
 # Singleton pattern - asegurar única instancia
-static var instance: global
+static var instance: GB
 
 func _enter_tree():
 	# Implementación de singleton simple
