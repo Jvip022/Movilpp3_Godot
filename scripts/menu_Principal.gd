@@ -74,6 +74,10 @@ var botones = {}
 # Referencia a Global
 var global_node
 
+# Variables para mensajes temporales
+var mensaje_temporal_label: Label = null
+var dialogos_temporales = []
+
 func _ready():
 	# Obtener referencia a Global
 	global_node = get_node("/root/Global") if has_node("/root/Global") else null
@@ -211,7 +215,7 @@ func configurar_modo_invitado():
 
 func mapear_rol_bd_a_enum(rol_bd: String) -> int:
 	"""
-    Convierte el rol de la base de datos (string) al enum del Dashboard.
+	Convierte el rol de la base de datos (string) al enum del Dashboard.
 	"""
 	var rol_normalizado = rol_bd.to_lower().strip_edges()
 	
@@ -313,8 +317,12 @@ func _on_btn_cerrar_sesion_pressed():
 func _confirmar_cerrar_sesion():
 	print("Sesión cerrada")
 	
+	# SOLUCIÓN: No mostrar mensaje aquí, ya que el nodo puede estar siendo removido
+	# En su lugar, solo mostrar en consola
+	print("Sesión cerrada correctamente")
+	
 	# Cerrar sesión en Global si está disponible
-	if global_node:
+	if global_node and global_node.has_method("cerrar_sesion"):
 		global_node.cerrar_sesion()
 	else:
 		# Resetear usuario local si Global no está disponible
@@ -333,11 +341,9 @@ func _confirmar_cerrar_sesion():
 		# Actualizar visibilidad de botones
 		actualizar_visibilidad_botones()
 	
-	# Mostrar mensaje
-	mostrar_mensaje_temporal("Sesión cerrada", "Se ha cerrado la sesión correctamente.")
-	
-	# Redirigir a pantalla de login
-	get_tree().change_scene_to_file("res://escenas/login.tscn")
+	# Redirigir a pantalla de login inmediatamente
+	if is_inside_tree() and get_tree():
+		get_tree().change_scene_to_file("res://escenas/login.tscn")
 
 func _cancelar_cerrar_sesion():
 	print("Cierre de sesión cancelado")
@@ -364,12 +370,9 @@ func _confirmar_salida():
 		return
 	
 	# Método 1: Cerrar sesión primero
-	if Global and Global.has_method("cerrar_sesion"):
+	if global_node and global_node.has_method("cerrar_sesion"):
 		print("🔒 Cerrando sesión...")
-		Global.cerrar_sesion()
-	
-	# Método 2: Esperar un frame antes de salir
-	await get_tree().process_frame
+		global_node.cerrar_sesion()
 	
 	# Método 3: Salir suavemente
 	if get_tree():
@@ -383,22 +386,50 @@ func _cancelar_salida():
 
 # Funciones de utilidad
 func mostrar_mensaje_error(mensaje: String):
+	# Verificar si el nodo está en el árbol
+	if not is_inside_tree() or not is_instance_valid(self):
+		print("Error (no se puede mostrar diálogo): " + mensaje)
+		return
+	
 	var dialog = AcceptDialog.new()
 	dialog.title = "Error"
 	dialog.dialog_text = mensaje
 	add_child(dialog)
 	dialog.popup_centered()
+	dialogos_temporales.append(dialog)
 
 func mostrar_mensaje_temporal(titulo: String, mensaje: String):
+	# Verificar si el nodo está en el árbol y es válido
+	if not is_inside_tree() or not is_instance_valid(self):
+		print("No se puede mostrar mensaje temporal: " + titulo + " - " + mensaje)
+		return
+	
+	# Verificar si el árbol de escena es válido
+	var tree = get_tree()
+	if not tree:
+		print("No se puede mostrar mensaje: árbol de escena no disponible")
+		return
+	
 	var dialog = AcceptDialog.new()
 	dialog.title = titulo
 	dialog.dialog_text = mensaje
 	add_child(dialog)
 	dialog.popup_centered()
+	dialogos_temporales.append(dialog)
 	
-	# Cerrar automáticamente después de 3 segundos
-	await get_tree().create_timer(3.0).timeout
-	dialog.queue_free()
+	# Cerrar automáticamente después de 3 segundos usando un timer local
+	var timer = Timer.new()
+	dialog.add_child(timer)
+	timer.wait_time = 3.0
+	timer.one_shot = true
+	timer.start()
+	timer.timeout.connect(_cerrar_dialogo_temporal.bind(dialog))
+
+func _cerrar_dialogo_temporal(dialog: AcceptDialog):
+	if is_instance_valid(dialog):
+		dialog.queue_free()
+		if dialog in dialogos_temporales:
+			dialogos_temporales.erase(dialog)
 
 # Función para manejar la tecla ESC para salir
 func _input(event):
@@ -425,7 +456,7 @@ func _unhandled_input(event):
 							"cargo": "Administrador"
 						}
 						verificar_sesion()
-						mostrar_mensaje_temporal("Debug", "Ahora eres: Admin Debug")
+						print("Debug: Ahora eres Admin Debug")
 				KEY_S:  # Cambiar a Super Admin
 					if global_node:
 						global_node.usuario_actual = {
@@ -439,12 +470,12 @@ func _unhandled_input(event):
 							"cargo": "Super Administrador"
 						}
 						verificar_sesion()
-						mostrar_mensaje_temporal("Debug", "Ahora eres: Super Admin Debug")
+						print("Debug: Ahora eres Super Admin Debug")
 				KEY_I:  # Cambiar a Invitado
 					if global_node:
 						global_node.usuario_actual = {}
 						verificar_sesion()
-						mostrar_mensaje_temporal("Debug", "Ahora eres: Invitado")
+						print("Debug: Ahora eres Invitado")
 				KEY_R:  # Recargar interfaz
 					verificar_sesion()
 				KEY_L:  # Listar usuarios en consola
@@ -537,6 +568,10 @@ func aplicar_tema_usuario():
 
 # Función para mostrar información del sistema
 func mostrar_info_sistema():
+	# Verificar si el nodo está en el árbol
+	if not is_inside_tree() or not is_instance_valid(self):
+		return
+	
 	var info = {
 		"usuario": usuario_actual["nombre"],
 		"rol": user_role_label.text,
@@ -578,3 +613,11 @@ func verificar_nodos_ui():
 		print("user_role_label path: %s" % user_role_label.get_path())
 	
 	print("===========================")
+
+func _exit_tree():
+	# Limpiar recursos al salir
+	# Limpiar diálogos temporales
+	for dialog in dialogos_temporales:
+		if is_instance_valid(dialog):
+			dialog.queue_free()
+	dialogos_temporales.clear()
