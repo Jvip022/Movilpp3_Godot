@@ -35,9 +35,9 @@ var sucursales_disponibles = [
 ]
 
 # Variable para almacenar usuarios (simulación de base de datos)
+
 var usuario_seleccionado: Dictionary = {}
 var modo_edicion: bool = false
-var usuario_actual: Dictionary = {}  # Para almacenar datos del usuario actual (si es necesario)
 
 func _ready():
 	# Quitar despues
@@ -97,17 +97,6 @@ func _ready():
 	
 	# Deshabilitar botones de acción inicialmente
 	actualizar_botones_accion(false)
-	
-	# Cargar usuarios iniciales
-	actualizar_tabla_usuarios()
-	
-	# Inicializar usuario actual (simulado)
-	usuario_actual = {
-		"id": 1,
-		"username": "admin",
-		"nombre": "Administrador",
-		"rol": "admin"
-	}
 
 func inicializar_tabla():
 	var tabla = $ContentContainer/UserTableContainer/TablaUsuarios
@@ -160,6 +149,8 @@ func inicializar_combo_sucursales():
 	combo.add_item("Seleccionar Sucursal*")
 	for i in range(sucursales_disponibles.size()):
 		combo.add_item(sucursales_disponibles[i])
+
+
 
 func actualizar_tabla_usuarios():
 	var tabla = $ContentContainer/UserTableContainer/TablaUsuarios
@@ -220,9 +211,8 @@ func actualizar_tabla_usuarios():
 		# Almacenar ID del usuario para referencia
 		item.set_metadata(0, usuario.get("id", 0))
 		
-		# Botones de acción (iconos)
+		# Botones de acción
 		item.set_text(6, "🔍 ✏️ ⚠️")
-		item.set_tooltip_text(6, "Ver trazas | Modificar | Desactivar")
 	
 	# Limpiar selección
 	usuario_seleccionado = {}
@@ -251,7 +241,6 @@ func obtener_texto_estado_string(estado_string: String) -> String:
 		"pendiente": return "Pendiente"
 		"bloqueado": return "Bloqueado"
 		_: return estado_string.capitalize()
-
 func obtener_texto_rol(rol_id: int) -> String:
 	match rol_id:
 		ROLES_USUARIO.SUPERVISOR_GENERAL: return "Supervisor General"
@@ -295,10 +284,6 @@ func parse_date(fecha_string: String) -> String:
 	# La fecha viene en formato SQLite: "2024-01-15 14:30:00"
 	var partes = fecha_string.split(" ")
 	if partes.size() > 0:
-		var fecha_parts = partes[0].split("-")
-		if fecha_parts.size() >= 3:
-			# Formatear como DD/MM/YYYY
-			return "%s/%s/%s" % [fecha_parts[2], fecha_parts[1], fecha_parts[0]]
 		return partes[0]  # Retornar solo la fecha (YYYY-MM-DD)
 	return fecha_string
 
@@ -326,18 +311,13 @@ func on_usuario_seleccionado():
 				# Habilitar botones según estado
 				var estado = usuario_seleccionado.get("estado", "activo")
 				$ContentContainer/ActionButtons/BtnDesactivar.disabled = (estado.to_lower() == "inactivo")
-				
-				# Actualizar información en la barra de estado
-				$ContentContainer/EstadoSeleccion/TextoEstado.text = "Usuario seleccionado: " + usuario_seleccionado.get("nombre", "Sin nombre")
 			else:
 				usuario_seleccionado = {}
 				actualizar_botones_accion(false)
-				$ContentContainer/EstadoSeleccion/TextoEstado.text = "Ningún usuario seleccionado"
 				
 func on_nada_seleccionado():
 	usuario_seleccionado = {}
 	actualizar_botones_accion(false)
-	$ContentContainer/EstadoSeleccion/TextoEstado.text = "Ningún usuario seleccionado"
 
 func actualizar_botones_accion(habilitar: bool):
 	$ContentContainer/ActionButtons/BtnModificar.disabled = not habilitar
@@ -374,7 +354,6 @@ func buscar_usuarios():
 	else:
 		print("❌ Error al buscar usuarios")
 		mostrar_usuarios_filtrados([])
-		
 func on_busqueda_cambio(_nuevo_texto: String):
 	# Búsqueda en tiempo real
 	buscar_usuarios()
@@ -421,7 +400,6 @@ func mostrar_usuarios_filtrados(usuarios_filtrados: Array):
 		
 		# Botones de acción
 		item.set_text(6, "🔍 ✏️ ⚠️")
-		item.set_tooltip_text(6, "Ver trazas | Modificar | Desactivar")
 		
 func abrir_dialogo_nuevo_usuario():
 	modo_edicion = false
@@ -437,7 +415,7 @@ func abrir_dialogo_modificar_usuario():
 	
 	modo_edicion = true
 	llenar_formulario_usuario(usuario_seleccionado)
-	$DialogoUsuario.title = "Modificar Usuario: " + usuario_seleccionado.get("nombre", "Sin nombre")
+	$DialogoUsuario.title = "Modificar Usuario: " + usuario_seleccionado["nombre"]
 	$DialogoUsuario/VBoxContainer/HBoxContainer/BtnGenerarPass.visible = false
 	$DialogoUsuario.popup_centered()
 
@@ -457,10 +435,7 @@ func limpiar_formulario_usuario():
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckAdministrarUsuarios.button_pressed = false
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckVerTrazas.button_pressed = false
 	$DialogoUsuario/VBoxContainer/PermisosContainer/CheckConfiguracion.button_pressed = false
-	
-	# Limpiar mensajes de error
-	$MensajeError.text = ""
-	
+
 func llenar_formulario_usuario(usuario: Dictionary):
 	# Separar nombre y apellido (simulación)
 	# Usar .get() con valor por defecto
@@ -538,40 +513,34 @@ func obtener_permisos_seleccionados() -> Array:
 	return permisos
 
 func validar_formulario_usuario() -> bool:
-	# Limpiar mensaje de error
-	$DialogoUsuario/VBoxContainer/MensajeError.dialog_text = ""
-	
 	var campos_requeridos = [
 		$DialogoUsuario/VBoxContainer/InputNombre.text.strip_edges(),
 		$DialogoUsuario/VBoxContainer/InputApellido.text.strip_edges(),
 		$DialogoUsuario/VBoxContainer/InputEmail.text.strip_edges(),
-		$DialogoUsuario/VBoxContainer/InputUsuario.text.strip_edges()
+		$DialogoUsuario/VBoxContainer/InputUsuario.text.strip_edges(),
+		$DialogoUsuario/VBoxContainer/HBoxContainer/InputPassword.text.strip_edges()
 	]
-	
-	# En modo creación, validar contraseña también
-	if not modo_edicion:
-		campos_requeridos.append($DialogoUsuario/VBoxContainer/HBoxContainer/InputPassword.text.strip_edges())
 	
 	# Verificar que ningún campo requerido esté vacío
 	for campo in campos_requeridos:
 		if campo == "":
-			$DialogoUsuario/VBoxContainer/MensajeError.text = "Todos los campos marcados con * son obligatorios"
+			mostrar_error("Todos los campos marcados con * son obligatorios")
 			return false
 	
 	# Validar email
 	var email = $DialogoUsuario/VBoxContainer/InputEmail.text.strip_edges()
 	if not "@" in email or not "." in email:
-		$DialogoUsuario/VBoxContainer/MensajeError.text = "Ingrese un email válido"
+		mostrar_error("Ingrese un email válido")
 		return false
 	
 	# Validar que se haya seleccionado un rol
 	if $DialogoUsuario/VBoxContainer/ComboRol.selected == -1:
-		$DialogoUsuario/VBoxContainer/MensajeError.text = "Debe seleccionar un rol"
+		mostrar_error("Debe seleccionar un rol")
 		return false
 	
 	# Validar que se haya seleccionado una sucursal
 	if $DialogoUsuario/VBoxContainer/ComboSucursal.selected == 0:
-		$DialogoUsuario/VBoxContainer/MensajeError.text = "Debe seleccionar una sucursal"
+		mostrar_error("Debe seleccionar una sucursal")
 		return false
 	
 	# Validar nombre de usuario único (solo en modo creación)
@@ -580,7 +549,7 @@ func validar_formulario_usuario() -> bool:
 		var existe = Bd.select_query("SELECT COUNT(*) as count FROM usuarios WHERE username = ?", [nuevo_usuario])
 		
 		if existe and existe[0]["count"] > 0:
-			$DialogoUsuario/VBoxContainer/MensajeError.text = "El nombre de usuario ya existe"
+			mostrar_error("El nombre de usuario ya existe")
 			return false
 	
 	return true
@@ -664,18 +633,6 @@ func crear_nuevo_usuario():
 	if id_insertado > 0:
 		print("✅ Usuario creado en BD con ID: ", id_insertado)
 		usuario_creado.emit(datos_usuario)
-		
-		# Registrar en trazas la creación del usuario
-		var datos_traza = {
-			"usuario_id": usuario_actual.get("id", 0),
-			"accion": "CREACION",
-			"descripcion": "Creación de nuevo usuario: " + username,
-			"modulo": "Administración de Usuarios",
-			"ip": "localhost",
-			"detalles": "Rol: " + rol_bd + ", Sucursal: " + sucursal
-		}
-		registrar_traza_bd(datos_traza)
-		
 		mostrar_exito("Usuario creado exitosamente en la base de datos")
 		return true
 	else:
@@ -730,18 +687,6 @@ func modificar_usuario_existente() -> bool:
 	if exito:
 		print("✅ Usuario actualizado en BD, ID: ", usuario_seleccionado.get("id", 0))
 		usuario_modificado.emit(str(usuario_seleccionado.get("id", 0)), datos_actualizados)
-		
-		# Registrar en trazas la modificación del usuario
-		var datos_traza = {
-			"usuario_id": usuario_actual.get("id", 0),
-			"accion": "MODIFICACION",
-			"descripcion": "Modificación de usuario: " + usuario_seleccionado.get("username", ""),
-			"modulo": "Administración de Usuarios",
-			"ip": "localhost",
-			"detalles": "Nuevo rol: " + rol_bd + ", Nuevo nombre: " + nombre_completo
-		}
-		registrar_traza_bd(datos_traza)
-		
 		mostrar_exito("Usuario modificado exitosamente")
 		return true
 	else:
@@ -788,18 +733,6 @@ func confirmar_operacion():
 	if exito:
 		print("✅ Usuario desactivado en BD, ID: ", usuario_seleccionado.get("id", 0))
 		usuario_desactivado.emit(str(usuario_seleccionado.get("id", 0)))
-		
-		# Registrar en trazas la desactivación del usuario
-		var datos_traza = {
-			"usuario_id": usuario_actual.get("id", 0),
-			"accion": "MODIFICACION",
-			"descripcion": "Desactivación de usuario: " + usuario_seleccionado.get("username", ""),
-			"modulo": "Administración de Usuarios",
-			"ip": "localhost",
-			"detalles": "Usuario desactivado por administrador"
-		}
-		registrar_traza_bd(datos_traza)
-		
 		mostrar_exito("Usuario desactivado exitosamente")
 		
 		# Actualizar la tabla
@@ -879,17 +812,6 @@ func asignar_nuevo_rol(rol_id: int):
 		exito = resultado > 0
 	
 	if exito:
-		# Registrar en trazas el cambio de rol
-		var datos_traza = {
-			"usuario_id": usuario_actual.get("id", 0),
-			"accion": "MODIFICACION",
-			"descripcion": "Cambio de rol para usuario: " + usuario_seleccionado.get("username", ""),
-			"modulo": "Administración de Usuarios",
-			"ip": "localhost",
-			"detalles": "Nuevo rol: " + rol_bd + ", Rol anterior: " + usuario_seleccionado.get("rol", "")
-		}
-		registrar_traza_bd(datos_traza)
-		
 		mostrar_exito("Rol actualizado exitosamente")
 		actualizar_tabla_usuarios()
 	else:
@@ -902,100 +824,53 @@ func ver_trazas_usuario():
 	
 	mostrar_carga("Cargando trazas del usuario...")
 	
-	# Registrar en trazas que se está viendo las trazas de otro usuario
-	var datos_traza = {
-		"usuario_id": usuario_actual.get("id", 0),
-		"accion": "CONSULTA",
-		"descripcion": "Visualización de trazas del usuario: " + usuario_seleccionado.get("username", ""),
-		"modulo": "Administración de Usuarios",
-		"ip": "localhost",
-		"detalles": "Usuario ID: " + str(usuario_seleccionado.get("id", 0))
-	}
-	registrar_traza_bd(datos_traza)
+	# Simular carga de trazas
+	await get_tree().create_timer(1.5).timeout
+	ocultar_carga()
 	
-	# Cargar la escena de visualización de trazas
-	var escena_trazas = load("res://escenas/TrazasVisualizar.tscn")
-	if escena_trazas:
-		var instancia_trazas = escena_trazas.instantiate()
-		
-		# Pasar datos del usuario seleccionado a la escena de trazas
-		if instancia_trazas.has_method("set_usuario"):
-			instancia_trazas.set_usuario(
-				usuario_seleccionado.get("id", 0),
-				usuario_seleccionado
-			)
-		
-		# Cambiar a la escena de trazas
-		get_tree().root.add_child(instancia_trazas)
-		get_tree().root.remove_child(self)
-		self.queue_free()
-		ocultar_carga()
-	else:
-		ocultar_carga()
-		mostrar_error("No se pudo cargar la escena de visualización de trazas")
+	# Usar .get() con valor por defecto
+	mostrar_exito("Trazas cargadas para: " + usuario_seleccionado.get("nombre", "Usuario") )
+	get_tree().change_scene_to_file("res://escenas/TrazasVisualizar.tscn")
 				
 func exportar_lista_usuarios():
-	mostrar_carga("Exportando lista de usuarios...")
-	
 	# Obtener usuarios de la base de datos - CAMBIAR NOMBRE DE VARIABLE
 	var usuarios_db = Bd.select_query("""
-		SELECT username, email, nombre_completo, rol, estado_empleado, departamento
+		SELECT username, email, nombre_completo, rol 
 		FROM usuarios 
 		ORDER BY username
 	""")
 	
 	if usuarios_db == null or usuarios_db.size() == 0:
-		ocultar_carga()
-		mostrar_error("No hay usuarios para exportar")
+		print("❌ No hay usuarios para exportar")
 		return
 	
 	# Crear CSV simple
-	var csv = "Usuario,Email,Nombre,Rol,Estado,Sucursal\n"
+	var csv = "Usuario,Email,Nombre,Rol\n"
 	for usuario in usuarios_db:  # Usar la variable renombrada
-		csv += "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" % [
+		csv += "%s,%s,%s,%s\n" % [
 			usuario.get("username", ""),
 			usuario.get("email", ""),
 			usuario.get("nombre_completo", ""),
-			usuario.get("rol", ""),
-			usuario.get("estado_empleado", ""),
-			usuario.get("departamento", "")
+			usuario.get("rol", "")
 		]
 	
 	# Guardar en archivo
-	var fecha_actual = Time.get_datetime_string_from_system()
-	fecha_actual = fecha_actual.replace(":", "-").replace(" ", "_")
-	var nombre_archivo = "usuarios_%s.csv" % [fecha_actual]
+	var nombre_archivo = "usuarios_" + str(Time.get_unix_time_from_system()) + ".csv"
 	var archivo = FileAccess.open("user://" + nombre_archivo, FileAccess.WRITE)
 	
 	if archivo:
 		archivo.store_string(csv)
 		archivo.close()
-		
-		# Registrar en trazas la exportación
-		var datos_traza = {
-			"usuario_id": usuario_actual.get("id", 0),
-			"accion": "EXPORTACION",
-			"descripcion": "Exportación de lista de usuarios",
-			"modulo": "Administración de Usuarios",
-			"ip": "localhost",
-			"detalles": "Archivo: " + nombre_archivo + ", Registros: " + str(usuarios_db.size())
-		}
-		registrar_traza_bd(datos_traza)
-		
 		print("✅ Exportados %d usuarios a: %s" % [usuarios_db.size(), nombre_archivo])
-		ocultar_carga()
-		mostrar_exito("Lista de usuarios exportada exitosamente:\n%s" % nombre_archivo)
 	else:
-		ocultar_carga()
 		print("❌ Error al guardar archivo")
-		mostrar_error("Error al guardar el archivo CSV")
 		
 		
 func actualizar_lista_usuarios():
 	mostrar_carga("Actualizando lista de usuarios...")
 	
 	# Simular actualización
-	await get_tree().create_timer(0.5).timeout
+	await get_tree().create_timer(1.0).timeout
 	actualizar_tabla_usuarios()
 	ocultar_carga()
 	
@@ -1044,8 +919,9 @@ func regresar_menu_principal():
 
 func hay_cambios_sin_guardar() -> bool:
 	# Esta función debería verificar si hay cambios pendientes
-	# Por ahora, retornamos false si no hay diálogos abiertos
-	return $DialogoUsuario.visible
+	# Por ahora, siempre retornamos false para simplificar
+	# En una implementación real, verificarías si hay formularios abiertos o datos modificados
+	return false
 
 func confirmar_regreso(confirmado: bool):
 	$DialogoConfirmacion.hide()
@@ -1063,6 +939,8 @@ func cambiar_a_menu_principal():
 	# Cerrar cualquier diálogo abierto
 	if $DialogoUsuario.visible:
 		$DialogoUsuario.hide()
+	if $DialogoAsignarRol.visible:
+		$DialogoAsignarRol.hide()
 	
 	# Cambiar a la escena del menú principal
 	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
@@ -1194,24 +1072,3 @@ func mapear_rol_a_bd(rol_combo_id: int) -> String:
 		5: return "legal"      # Legal
 		6: return "gerente"    # Gerente
 		_: return "operador"   # Valor por defecto
-
-func registrar_traza_bd(datos_traza: Dictionary):
-	# Verificar si la tabla de trazas existe
-	var tabla_existe = Bd.select_query("""
-		SELECT name FROM sqlite_master 
-		WHERE type='table' AND name='trazas_usuario'
-	""")
-	
-	if tabla_existe and tabla_existe.size() > 0:
-		# Agregar fecha actual si no existe
-		if not datos_traza.has("fecha"):
-			datos_traza["fecha"] = Time.get_datetime_string_from_system()
-		
-		# Insertar la traza
-		var id_insertado = Bd.insert("trazas_usuario", datos_traza)
-		if id_insertado > 0:
-			print("✅ Traza registrada en BD, ID: ", id_insertado)
-		else:
-			print("❌ Error al registrar traza en BD")
-	else:
-		print("⚠️ Tabla 'trazas_usuario' no existe. Traza no registrada.")

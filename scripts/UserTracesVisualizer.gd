@@ -5,7 +5,6 @@ class_name UserTracesVisualizer
 var usuario_id: int = 0
 var datos_usuario: Dictionary = {}
 var trazas_usuario: Array = []
-var trazas_filtradas_actuales: Array = []
 
 # Tipos de acciones para filtrar
 enum TIPO_ACCION {
@@ -90,28 +89,18 @@ func cargar_datos_usuario():
 	# Mostrar mensaje de carga
 	$MensajeCarga.visible = true
 	
-	# Si ya tenemos datos del usuario (pasados por set_usuario), los usamos
-	if datos_usuario.is_empty() or not datos_usuario.has("id") or datos_usuario["id"] != usuario_id:
-		# Cargar datos reales del usuario desde la BD
-		var usuario_db = Bd.select_query("""
-			SELECT id, username, email, nombre_completo as nombre, 
-				   rol, estado_empleado as estado, departamento, 
-				   ultimo_login, permisos, telefono, cargo
-			FROM usuarios 
-			WHERE id = ?
-		""", [usuario_id])
-		
-		if usuario_db and usuario_db.size() > 0:
-			datos_usuario = usuario_db[0]
-		else:
-			# Si no se encuentra, usar datos por defecto
-			datos_usuario = {
-				"id": usuario_id,
-				"nombre": "Usuario no encontrado",
-				"rol": "Desconocido",
-				"estado": "No disponible",
-				"ultimo_login": ""
-			}
+	# Simular carga de datos (en un sistema real, esto vendría de la BD)
+	await get_tree().create_timer(0.5).timeout
+	
+	# Aquí deberías cargar los datos reales del usuario desde la BD
+	# Por ahora, usamos datos de ejemplo
+	datos_usuario = {
+		"id": usuario_id,
+		"nombre": "Usuario de Prueba",
+		"rol": "Administrador",
+		"estado": "Activo",
+		"ultimo_login": "2024-02-15 14:30:00"
+	}
 	
 	# Actualizar la información del usuario
 	actualizar_info_usuario()
@@ -132,134 +121,67 @@ func actualizar_info_usuario():
 
 func cargar_trazas_usuario():
 	# Obtener trazas del usuario desde la base de datos
-	# Primero verificar si la tabla de trazas existe
-	var tabla_existe = Bd.select_query("""
-		SELECT name FROM sqlite_master 
-		WHERE type='table' AND name='trazas_usuario'
-	""")
-	
-	if tabla_existe and tabla_existe.size() > 0:
-		# Tabla existe, consultar trazas del usuario
-		var consulta = """
-			SELECT fecha, accion, descripcion, modulo, ip, detalles
-			FROM trazas_usuario 
-			WHERE usuario_id = ?
-			ORDER BY fecha DESC
-			LIMIT 100
-		"""
-		
-		var trazas_db = Bd.select_query(consulta, [usuario_id])
-		
-		if trazas_db:
-			trazas_usuario.clear()
-			for traza in trazas_db:
-				trazas_usuario.append({
-					"fecha": traza.get("fecha", ""),
-					"accion": traza.get("accion", ""),
-					"descripcion": traza.get("descripcion", ""),
-					"modulo": traza.get("modulo", ""),
-					"ip": traza.get("ip", ""),
-					"detalles": traza.get("detalles", "")
-				})
-	
-	# Si no hay trazas en la BD, usar datos de ejemplo (para desarrollo)
-	if trazas_usuario.size() == 0:
-		trazas_usuario = [
-			{
-				"fecha": "2024-02-15 14:30:00",
-				"accion": "LOGIN",
-				"descripcion": "Inicio de sesión exitoso",
-				"modulo": "Autenticación",
-				"ip": "192.168.1.100",
-				"detalles": "Navegador: Chrome, Sistema: Windows 10"
-			},
-			{
-				"fecha": "2024-02-15 14:35:00",
-				"accion": "CONSULTA",
-				"descripcion": "Consulta de usuarios del sistema",
-				"modulo": "Administración de Usuarios",
-				"ip": "192.168.1.100",
-				"detalles": "Filtros aplicados: Estado=Activo"
-			},
-			{
-				"fecha": "2024-02-15 14:40:00",
-				"accion": "MODIFICACION",
-				"descripcion": "Modificación de permisos del usuario 'jperez'",
-				"modulo": "Administración de Usuarios",
-				"ip": "192.168.1.100",
-				"detalles": "Permisos añadidos: VER_TRAZAS, ADMINISTRAR_USUARIOS"
-			},
-			{
-				"fecha": "2024-02-14 10:15:00",
-				"accion": "CREACION",
-				"descripcion": "Creación de nuevo usuario 'mrodriguez'",
-				"modulo": "Administración de Usuarios",
-				"ip": "192.168.1.101",
-				"detalles": "Rol: Operador, Sucursal: La Habana"
-			},
-			{
-				"fecha": "2024-02-13 09:20:00",
-				"accion": "EXPORTACION",
-				"descripcion": "Exportación de lista de usuarios a CSV",
-				"modulo": "Administración de Usuarios",
-				"ip": "192.168.1.102",
-				"detalles": "Archivo: usuarios_2024-02-13.csv, Registros: 45"
-			},
-			{
-				"fecha": "2024-02-10 16:45:00",
-				"accion": "LOGIN",
-				"descripcion": "Inicio de sesión exitoso",
-				"modulo": "Autenticación",
-				"ip": "192.168.1.103",
-				"detalles": "Navegador: Firefox, Sistema: Linux"
-			},
-			{
-				"fecha": "2024-02-08 11:20:00",
-				"accion": "LOGOUT",
-				"descripcion": "Cierre de sesión",
-				"modulo": "Autenticación",
-				"ip": "192.168.1.100",
-				"detalles": "Sesión de 2 horas 15 minutos"
-			},
-			{
-				"fecha": "2024-02-05 09:10:00",
-				"accion": "ELIMINACION",
-				"descripcion": "Eliminación de usuario inactivo",
-				"modulo": "Administración de Usuarios",
-				"ip": "192.168.1.104",
-				"detalles": "Usuario eliminado: aprodriguez (ID: 45)"
-			}
-		]
+	# Por ahora, usamos datos de ejemplo
+	trazas_usuario = [
+		{
+			"fecha": "2024-02-15 14:30:00",
+			"accion": "LOGIN",
+			"descripcion": "Inicio de sesión exitoso",
+			"modulo": "Autenticación",
+			"ip": "192.168.1.100"
+		},
+		{
+			"fecha": "2024-02-15 14:35:00",
+			"accion": "CONSULTA",
+			"descripcion": "Consulta de usuarios del sistema",
+			"modulo": "Administración de Usuarios",
+			"ip": "192.168.1.100"
+		},
+		{
+			"fecha": "2024-02-15 14:40:00",
+			"accion": "MODIFICACION",
+			"descripcion": "Modificación de permisos del usuario 'jperez'",
+			"modulo": "Administración de Usuarios",
+			"ip": "192.168.1.100"
+		},
+		{
+			"fecha": "2024-02-14 10:15:00",
+			"accion": "CREACION",
+			"descripcion": "Creación de nuevo usuario 'mrodriguez'",
+			"modulo": "Administración de Usuarios",
+			"ip": "192.168.1.101"
+		},
+		{
+			"fecha": "2024-02-13 09:20:00",
+			"accion": "EXPORTACION",
+			"descripcion": "Exportación de lista de usuarios a CSV",
+			"modulo": "Administración de Usuarios",
+			"ip": "192.168.1.102"
+		},
+		{
+			"fecha": "2024-02-10 16:45:00",
+			"accion": "LOGIN",
+			"descripcion": "Inicio de sesión exitoso",
+			"modulo": "Autenticación",
+			"ip": "192.168.1.103"
+		}
+	]
 	
 	# Ordenar por fecha (más reciente primero)
 	trazas_usuario.sort_custom(func(a, b): return a.fecha > b.fecha)
 	
-	# Inicializar trazas filtradas con todas las trazas
-	trazas_filtradas_actuales = trazas_usuario.duplicate()
-	
 	# Mostrar las trazas
-	mostrar_trazas(trazas_filtradas_actuales)
+	mostrar_trazas(trazas_usuario)
 	
 	# Ocultar mensaje de carga
 	$MensajeCarga.visible = false
-	
-	# Actualizar contador
-	actualizar_contador_trazas()
 
-func actualizar_contador_trazas():
-	var total = trazas_usuario.size()
-	var mostrando = trazas_filtradas_actuales.size()
-	$ContenedorPrincipal/ContenedorTrazas.text = "Mostrando %d de %d trazas" % [mostrando, total]
-	
 func mostrar_trazas(trazas: Array):
 	var lista_trazas = $ContenedorPrincipal/ContenedorTrazas/ScrollTrazas/ListaTrazas
 	
 	# Limpiar lista actual
 	for hijo in lista_trazas.get_children():
 		hijo.queue_free()
-	
-	# Actualizar trazas filtradas actuales
-	trazas_filtradas_actuales = trazas.duplicate()
 	
 	# Agregar nuevas trazas
 	for traza in trazas:
@@ -272,16 +194,11 @@ func mostrar_trazas(trazas: Array):
 		label.text = "No se encontraron trazas para este usuario en el período seleccionado."
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
-		label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER  # CORREGIDO: Cambiado de HORIZONTAL_ALIGNMENT_LEFT
 		lista_trazas.add_child(label)
-	
-	# Actualizar contador
-	actualizar_contador_trazas()
 
 func crear_item_traza(traza: Dictionary) -> Panel:
 	var panel = Panel.new()
-	panel.custom_minimum_size = Vector2(0, 100)
+	panel.custom_minimum_size = Vector2(0, 80)
 	
 	# Estilo del panel
 	var estilo = StyleBoxFlat.new()
@@ -295,10 +212,10 @@ func crear_item_traza(traza: Dictionary) -> Panel:
 	estilo.corner_radius_top_right = 8
 	estilo.corner_radius_bottom_right = 8
 	estilo.corner_radius_bottom_left = 8
-	estilo.content_margin_left = 12.0
-	estilo.content_margin_top = 12.0
-	estilo.content_margin_right = 12.0
-	estilo.content_margin_bottom = 12.0
+	estilo.content_margin_left = 10.0
+	estilo.content_margin_top = 10.0
+	estilo.content_margin_right = 10.0
+	estilo.content_margin_bottom = 10.0
 	
 	panel.add_theme_stylebox_override("panel", estilo)
 	
@@ -310,16 +227,10 @@ func crear_item_traza(traza: Dictionary) -> Panel:
 	# Ícono de acción
 	var icono = Label.new()
 	icono.text = obtener_icono_accion(traza.get("accion", ""))
-	icono.custom_minimum_size = Vector2(50, 0)
+	icono.custom_minimum_size = Vector2(40, 0)
 	icono.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icono.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	icono.add_theme_font_size_override("font_size", 24)
+	icono.add_theme_font_size_override("font_size", 20)
 	hbox.add_child(icono)
-	
-	# Separador
-	var separator = VSeparator.new()
-	separator.custom_minimum_size = Vector2(2, 0)
-	hbox.add_child(separator)
 	
 	# Información de la traza
 	var vbox_info = VBoxContainer.new()
@@ -331,7 +242,6 @@ func crear_item_traza(traza: Dictionary) -> Panel:
 	var label_fecha = Label.new()
 	label_fecha.text = formatear_fecha(traza.get("fecha", ""))
 	label_fecha.add_theme_color_override("font_color", Color(0.3, 0.3, 0.3, 1))
-	label_fecha.add_theme_font_size_override("font_size", 13)
 	hbox_header.add_child(label_fecha)
 	
 	var spacer = Control.new()
@@ -342,7 +252,6 @@ func crear_item_traza(traza: Dictionary) -> Panel:
 	label_accion.text = traza.get("accion", "Desconocido")
 	label_accion.add_theme_color_override("font_color", obtener_color_accion(traza.get("accion", "")))
 	label_accion.add_theme_font_size_override("font_size", 14)
-	label_accion.add_theme_font_override("font", load("res://fuentes/fuente_bold.tres"))
 	hbox_header.add_child(label_accion)
 	
 	vbox_info.add_child(hbox_header)
@@ -351,19 +260,7 @@ func crear_item_traza(traza: Dictionary) -> Panel:
 	var label_desc = Label.new()
 	label_desc.text = traza.get("descripcion", "Sin descripción")
 	label_desc.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 1))
-	label_desc.add_theme_font_size_override("font_size", 14)
-	label_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox_info.add_child(label_desc)
-	
-	# Detalles adicionales
-	var detalles = traza.get("detalles", "")
-	if detalles and detalles != "":
-		var label_detalles = Label.new()
-		label_detalles.text = "Detalles: " + detalles
-		label_detalles.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4, 1))
-		label_detalles.add_theme_font_size_override("font_size", 12)
-		label_detalles.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		vbox_info.add_child(label_detalles)
 	
 	# Módulo e IP
 	var hbox_footer = HBoxContainer.new()
@@ -395,8 +292,7 @@ func crear_item_traza(traza: Dictionary) -> Panel:
 
 func obtener_icono_accion(accion: String) -> String:
 	match accion:
-		"LOGIN": return "🔐"
-		"LOGOUT": return "🚪"
+		"LOGIN", "LOGOUT": return "🔐"
 		"CREACION": return "➕"
 		"MODIFICACION": return "✏️"
 		"ELIMINACION": return "🗑️"
@@ -406,8 +302,7 @@ func obtener_icono_accion(accion: String) -> String:
 
 func obtener_color_accion(accion: String) -> Color:
 	match accion:
-		"LOGIN": return Color(0.2, 0.6, 0.2)  # Verde
-		"LOGOUT": return Color(0.6, 0.2, 0.2)  # Rojo oscuro
+		"LOGIN", "LOGOUT": return Color(0.2, 0.6, 0.2)  # Verde
 		"CREACION": return Color(0.2, 0.4, 0.8)         # Azul
 		"MODIFICACION": return Color(0.8, 0.6, 0.2)     # Naranja
 		"ELIMINACION": return Color(0.8, 0.2, 0.2)      # Rojo
@@ -419,15 +314,11 @@ func formatear_fecha(fecha_str: String) -> String:
 	if fecha_str == "":
 		return "Fecha desconocida"
 	
-	# Intentar parsear la fecha en formato "YYYY-MM-DD HH:MM:SS"
+	# Intentar parsear la fecha
+	# En un sistema real, usarías Time o DateTime
 	var partes = fecha_str.split(" ")
-	if partes.size() >= 2:
-		var fecha_parts = partes[0].split("-")
-		var tiempo_parts = partes[1].split(":")
-		
-		if fecha_parts.size() >= 3 and tiempo_parts.size() >= 2:
-			# Formatear como "DD/MM/YYYY HH:MM"
-			return "%s/%s/%s %s:%s" % [fecha_parts[2], fecha_parts[1], fecha_parts[0], tiempo_parts[0], tiempo_parts[1]]
+	if partes.size() > 0:
+		return partes[0] + " " + (partes[1] if partes.size() > 1 else "")
 	
 	return fecha_str
 
@@ -577,7 +468,6 @@ func es_fecha_mas_reciente_o_igual_real(fecha1: Dictionary, fecha2: Dictionary) 
 	if min1 != min2:
 		return min1 > min2
 	return sec1 >= sec2
-
 func solicitar_exportacion():
 	$DialogoConfirmacion.dialog_text = "¿Exportar las trazas filtradas a archivo CSV?"
 	$DialogoConfirmacion.popup_centered()
@@ -591,21 +481,18 @@ func exportar_trazas():
 		return
 	
 	# Crear contenido CSV
-	var csv = "Fecha,Acción,Descripción,Módulo,IP,Detalles\n"
+	var csv = "Fecha,Acción,Descripción,Módulo,IP\n"
 	for traza in trazas_actuales:
-		csv += "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" % [
+		csv += "%s,%s,%s,%s,%s\n" % [
 			traza.get("fecha", ""),
 			traza.get("accion", ""),
 			traza.get("descripcion", ""),
 			traza.get("modulo", ""),
-			traza.get("ip", ""),
-			traza.get("detalles", "").replace("\"", "'")
+			traza.get("ip", "")
 		]
 	
-	# Generar nombre de archivo con fecha y hora actual
-	var fecha_actual = Time.get_datetime_string_from_system()
-	fecha_actual = fecha_actual.replace(":", "-").replace(" ", "_")
-	var nombre_archivo = "trazas_usuario_%d_%s.csv" % [usuario_id, fecha_actual]
+	# Guardar archivo
+	var nombre_archivo = "trazas_usuario_%d_%d.csv" % [usuario_id, Time.get_unix_time_from_system()]
 	var ruta = "user://" + nombre_archivo
 	
 	var archivo = FileAccess.open(ruta, FileAccess.WRITE)
@@ -615,52 +502,18 @@ func exportar_trazas():
 		
 		# Mostrar mensaje de éxito
 		var ruta_completa = ProjectSettings.globalize_path(ruta)
-		$MensajeExito.dialog_text = "Trazas exportadas exitosamente:\n%s" % nombre_archivo
+		$MensajeExito.dialog_text = "Trazas exportadas exitosamente:\n%s" % ruta_completa
 		$MensajeExito.popup_centered()
-		
-		# Registrar en trazas que se exportó
-		registrar_traza_exportacion()
 	else:
-		$MensajeError.dialog_text = "Error al exportar las trazas. Verifique permisos de escritura."
+		$MensajeError.dialog_text = "Error al exportar las trazas."
 		$MensajeError.popup_centered()
 
-func registrar_traza_exportacion():
-	# Registrar esta acción como una traza en el sistema
-	var datos_usuario_actual = null
-	var ip_usuario = "Desconocida"
-	
-	# Intentar obtener el singleton Sistema si existe
-	# CORREGIDO: Verificar si el singleton Sistema existe antes de usarlo
-	if Engine.has_singleton("Sistema"):
-		var Sistema = Engine.get_singleton("Sistema")
-		datos_usuario_actual = Sistema.get_usuario_actual() if Sistema.has_method("get_usuario_actual") else null
-		ip_usuario = Sistema.get_ip_usuario() if Sistema.has_method("get_ip_usuario") else "Desconocida"
-	
-	if datos_usuario_actual:
-		var datos_traza = {
-			"usuario_id": datos_usuario_actual.get("id", 0),
-			"accion": "EXPORTACION",
-			"descripcion": "Exportación de trazas del usuario ID: " + str(usuario_id),
-			"modulo": "Visualización de Trazas",
-			"ip": ip_usuario,
-			"detalles": "Total de trazas exportadas: " + str(trazas_filtradas_actuales.size())
-		}
-		
-		# Intentar insertar en la base de datos si la tabla existe
-		var tabla_existe = Bd.select_query("""
-			SELECT name FROM sqlite_master 
-			WHERE type='table' AND name='trazas_usuario'
-		""")
-		
-		if tabla_existe and tabla_existe.size() > 0:
-			Bd.insert("trazas_usuario", datos_traza)
-
 func obtener_trazas_actuales() -> Array:
-	# Obtener las trazas que se están mostrando actualmente (filtradas)
-	return trazas_filtradas_actuales
+	# Obtener las trazas que se están mostrando actualmente
+	# (en un sistema real, esto dependería de los filtros aplicados)
+	return trazas_usuario
 
 func volver_a_administracion():
-	# Cambiar a la escena de AdministrarUsuarios
 	get_tree().change_scene_to_file("res://escenas/AdministrarUsuarios.tscn")
 
 # Función para establecer el usuario a visualizar
@@ -668,19 +521,8 @@ func set_usuario(id_usuario: int, datos: Dictionary = {}):
 	usuario_id = id_usuario
 	if not datos.is_empty():
 		datos_usuario = datos
-		# Actualizar la información del usuario inmediatamente si ya tenemos los datos
-		if is_inside_tree():
-			actualizar_info_usuario()
+		actualizar_info_usuario()
 
 # Conectar el diálogo de confirmación
 func _on_dialogo_confirmacion_confirmed():
 	exportar_trazas()
-
-# Función para limpiar filtros
-func _on_btn_limpiar_filtros_pressed():
-	# Restablecer combos a valores por defecto
-	$ContenedorPrincipal/PanelFiltros/Filtros/ComboTipoAccion.select(0)
-	$ContenedorPrincipal/PanelFiltros/Filtros/ComboPeriodo.select(1)
-	
-	# Mostrar todas las trazas
-	mostrar_trazas(trazas_usuario.duplicate())
