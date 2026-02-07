@@ -112,76 +112,78 @@ func realizar_backup_real(ruta_destino: String) -> bool:
 	archivo_backup.store_line("-- Sistema: " + info_sistema)
 	archivo_backup.store_line("")
 	
-	# 2. Backups de tablas principales
-	var tablas_principales = [
-		"usuarios", "quejas_reclamaciones", "clientes", "incidencias", 
-		"no_conformidades", "trazas", "trazas_nc", "documentos_nc", "backups"
-	]
+	# 2. Obtener todas las tablas (excepto tablas del sistema)
+	var todas_las_tablas_result = bd_instance.select_query(
+		"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+	)
 	
+	var tablas_principales = []
+	for tabla_info in todas_las_tablas_result:
+		tablas_principales.append(tabla_info["name"])
+	
+	print("📋 Tablas a respaldar: ", tablas_principales)
 	var total_registros = 0
 	
 	for tabla in tablas_principales:
-		# Verificar si la tabla existe
-		if bd_instance.has_method("table_exists") and bd_instance.table_exists(tabla):
-			update_status("Respaldando tabla: " + tabla)
+		update_status("Respaldando tabla: " + tabla)
+		
+		# Obtener estructura de la tabla
+		archivo_backup.store_line("-- === ESTRUCTURA DE TABLA: " + tabla + " ===")
+		
+		if bd_instance.has_method("get_table_structure"):
+			var estructura = bd_instance.get_table_structure(tabla)
+			archivo_backup.store_line("CREATE TABLE IF NOT EXISTS " + tabla + " (")
 			
-			# Obtener estructura de la tabla
-			archivo_backup.store_line("-- === ESTRUCTURA DE TABLA: " + tabla + " ===")
+			var columnas = []
+			for col in estructura:
+				var col_def = col.name + " " + col.type
+				if col.pk > 0:
+					col_def += " PRIMARY KEY"
+				if col.notnull > 0:
+					col_def += " NOT NULL"
+				if col.dflt_value != null:
+					col_def += " DEFAULT " + str(col.dflt_value)
+				columnas.append(col_def)
 			
-			if bd_instance.has_method("get_table_structure"):
-				var estructura = bd_instance.get_table_structure(tabla)
-				archivo_backup.store_line("CREATE TABLE IF NOT EXISTS " + tabla + " (")
+			archivo_backup.store_line("  " + ",\n  ".join(columnas))
+			archivo_backup.store_line(");")
+			archivo_backup.store_line("")
+		
+		# Obtener datos de la tabla
+		if bd_instance.has_method("select_query"):
+			var sql = "SELECT * FROM " + tabla
+			var datos = bd_instance.select_query(sql)
+			
+			if datos and datos.size() > 0:
+				archivo_backup.store_line("-- Datos de tabla: " + tabla + " (" + str(datos.size()) + " registros)")
 				
-				var columnas = []
-				for col in estructura:
-					var col_def = col.name + " " + col.type
-					if col.pk > 0:
-						col_def += " PRIMARY KEY"
-					if col.notnull > 0:
-						col_def += " NOT NULL"
-					if col.dflt_value != null:
-						col_def += " DEFAULT " + str(col.dflt_value)
-					columnas.append(col_def)
+				# Insertar datos
+				for registro in datos:
+					var keys = []
+					var values = []
+					
+					for key in registro.keys():
+						keys.append(key)
+						var valor = registro[key]
+						
+						if valor == null:
+							values.append("NULL")
+						elif typeof(valor) == TYPE_STRING:
+							# Escapar comillas simples para SQL
+							var valor_str = str(valor).replace("'", "''")
+							values.append("'" + valor_str + "'")
+						elif typeof(valor) == TYPE_BOOL:
+							values.append("1" if valor else "0")
+						else:
+							values.append(str(valor))
+					
+					var insert_sql = "INSERT OR REPLACE INTO " + tabla + " (" + ", ".join(keys) + ") VALUES (" + ", ".join(values) + ");"
+					archivo_backup.store_line(insert_sql)
 				
-				archivo_backup.store_line("  " + ",\n  ".join(columnas))
-				archivo_backup.store_line(");")
+				total_registros += datos.size()
 				archivo_backup.store_line("")
-			
-			# Obtener datos de la tabla
-			if bd_instance.has_method("select_query"):
-				var sql = "SELECT * FROM " + tabla
-				var datos = bd_instance.select_query(sql)
-				
-				if datos and datos.size() > 0:
-					archivo_backup.store_line("-- Datos de tabla: " + tabla + " (" + str(datos.size()) + " registros)")
-					
-					# Insertar datos
-					for registro in datos:
-						var keys = []
-						var values = []
-						
-						for key in registro.keys():
-							keys.append(key)
-							var valor = registro[key]
-							
-							if valor == null:
-								values.append("NULL")
-							elif typeof(valor) == TYPE_STRING:
-								# Escapar comillas simples para SQL
-								var valor_str = str(valor).replace("'", "''")
-								values.append("'" + valor_str + "'")
-							elif typeof(valor) == TYPE_BOOL:
-								values.append("1" if valor else "0")
-							else:
-								values.append(str(valor))
-						
-						var insert_sql = "INSERT INTO " + tabla + " (" + ", ".join(keys) + ") VALUES (" + ", ".join(values) + ");"
-						archivo_backup.store_line(insert_sql)
-					
-					total_registros += datos.size()
-					archivo_backup.store_line("")
-			
-			print("Tabla " + tabla + " respaldada")
+		
+		print("Tabla " + tabla + " respaldada")
 	
 	# 3. Guardar metadatos
 	archivo_backup.store_line("-- === METADATOS ===")
@@ -293,25 +295,29 @@ func realizar_restore_real(ruta_backup: String) -> bool:
 		archivo_backup.close()
 		return false
 	
-	# Limpiar tablas existentes (con confirmación adicional)
-	update_status("Preparando base de datos...")
+	# Deshabilitar temporalmente FOREIGN KEYS
+	if bd_instance.has_method("query"):
+		if not bd_instance.query("PRAGMA foreign_keys = OFF"):
+			show_error("No se pudo deshabilitar FOREIGN KEYS")
+			archivo_backup.close()
+			return false
 	
-	# Volver al inicio del archivo
-	archivo_backup.seek(0)
-	
-	# Ejecutar el script SQL
+	# Leer el contenido del backup
 	var contenido_completo = archivo_backup.get_as_text()
 	archivo_backup.close()
 	
 	# Separar el script en líneas
 	var lineas = contenido_completo.split("\n")
 	var transaccion_actual = ""
+	var errores = []
 	
 	update_status("Ejecutando restauración...")
 	
 	# Iniciar transacción
 	if bd_instance.has_method("query"):
-		bd_instance.query("BEGIN TRANSACTION;")
+		if not bd_instance.query("BEGIN TRANSACTION"):
+			show_error("No se pudo iniciar la transacción")
+			return false
 	
 	for i in range(lineas.size()):
 		var linea = lineas[i].strip_edges()
@@ -319,6 +325,10 @@ func realizar_restore_real(ruta_backup: String) -> bool:
 		# Saltar comentarios y líneas vacías
 		if linea.begins_with("--") or linea == "":
 			continue
+		
+		# Convertir INSERT en INSERT OR REPLACE para evitar errores de duplicado
+		if linea.begins_with("INSERT INTO"):
+			linea = "INSERT OR REPLACE" + linea.substr(11)  # 11 = longitud de "INSERT INTO"
 		
 		# Agregar línea a la transacción actual
 		transaccion_actual += linea
@@ -331,21 +341,36 @@ func realizar_restore_real(ruta_backup: String) -> bool:
 				var exito = bd_instance.query(transaccion_actual)
 				
 				if not exito:
-					# Revertir transacción en caso de error
-					bd_instance.query("ROLLBACK;")
-					show_error("Error en línea " + str(i+1) + ": " + transaccion_actual)
-					return false
+					errores.append("Línea " + str(i+1) + ": " + transaccion_actual)
+					# Continuar con el siguiente comando en lugar de abortar
+					transaccion_actual = ""
+					continue
 			
 			transaccion_actual = ""
 		
-		# Actualizar progreso cada 10 líneas
+		# Actualizar progreso
 		if i % 10 == 0:
 			var progreso = float(i) / float(lineas.size()) * 100.0
-			progress_bar.value = 30 + (progreso * 0.5)  # De 30 a 80%
+			progress_bar.value = 30 + (progreso * 0.5)
 	
 	# Confirmar transacción
 	if bd_instance.has_method("query"):
-		bd_instance.query("COMMIT;")
+		if not bd_instance.query("COMMIT"):
+			show_error("Error al confirmar la transacción")
+			# Revertir en caso de error
+			bd_instance.query("ROLLBACK")
+			bd_instance.query("PRAGMA foreign_keys = ON")
+			return false
+	
+	# Rehabilitar FOREIGN KEYS
+	if bd_instance.has_method("query"):
+		bd_instance.query("PRAGMA foreign_keys = ON")
+	
+	# Mostrar errores si los hay
+	if errores.size() > 0:
+		print("⚠️ Se encontraron " + str(errores.size()) + " errores durante la restauración")
+		for error in errores:
+			print("   - " + error)
 	
 	# Registrar restore en logs
 	registrar_restore_en_bd(ruta_backup)
@@ -626,13 +651,33 @@ func registrar_backup_en_bd(ruta: String, total_registros: int, hash_backup: Str
 		print("⚠️ No se pudo registrar backup en BD (instancia no disponible)")
 		return false
 	
-	# Verificar si existe la tabla de backups
-	if bd_instance.has_method("table_exists") and not bd_instance.table_exists("backups"):
-		print("⚠️ Tabla 'backups' no existe, no se puede registrar")
+	# Verificar y crear tabla backups si no existe con la estructura correcta
+	var sql_crear_tabla = """
+		CREATE TABLE IF NOT EXISTS backups (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			nombre_archivo TEXT UNIQUE NOT NULL,
+			ruta TEXT NOT NULL,
+			tamano_bytes INTEGER,
+			fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+			usuario_id INTEGER,
+			tipo TEXT DEFAULT 'manual',
+			estado TEXT DEFAULT 'completado',
+			total_registros INTEGER DEFAULT 0,
+			hash_verificacion TEXT,
+			observaciones TEXT
+		)
+	"""
+	
+	if not bd_instance.query(sql_crear_tabla):
+		print("⚠️ No se pudo crear/verificar tabla 'backups'")
 		return false
 	
-	# Obtener usuario actual (simulado para ahora)
-	var usuario_id = 1
+	# Obtener usuario actual
+	var usuario_id = 1  # Por defecto
+	if has_node("/root/Global"):
+		var global_node = get_node("/root/Global")
+		if global_node and global_node.has_method("obtener_id_usuario"):
+			usuario_id = global_node.obtener_id_usuario()
 	
 	# Obtener tamaño del archivo
 	var tamano_bytes = 0
@@ -641,37 +686,55 @@ func registrar_backup_en_bd(ruta: String, total_registros: int, hash_backup: Str
 		tamano_bytes = archivo_info.get_length()
 		archivo_info.close()
 	
-	# Crear datos del backup
-	var datos_backup = {
-		"nombre_archivo": ruta.get_file(),
-		"ruta": ruta,
-		"tamano_bytes": tamano_bytes,
-		"usuario_id": usuario_id,
-		"tipo": "manual",
-		"estado": "completado",
-		"total_registros": total_registros,
-		"hash_verificacion": hash_backup,
-		"observaciones": "Backup manual del sistema"
-	}
+	# Insertar usando INSERT OR REPLACE para evitar conflictos de UNIQUE
+	var sql_insert = """
+		INSERT OR REPLACE INTO backups 
+		(nombre_archivo, ruta, tamano_bytes, usuario_id, tipo, estado, total_registros, hash_verificacion, observaciones)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	"""
 	
-	# Insertar en tabla de backups
-	if bd_instance.has_method("insert"):
-		var id_backup = bd_instance.insert("backups", datos_backup)
-		if id_backup > 0:
-			print("✅ Backup registrado en BD con ID: " + str(id_backup))
+	var params = [
+		ruta.get_file(),  # nombre_archivo
+		ruta,             # ruta
+		str(tamano_bytes), # tamano_bytes
+		str(usuario_id),   # usuario_id
+		"manual",         # tipo
+		"completado",     # estado
+		str(total_registros), # total_registros
+		hash_backup,      # hash_verificacion
+		"Backup manual del sistema"  # observaciones
+	]
+	
+	if bd_instance.has_method("query"):
+		if bd_instance.query(sql_insert, params):
+			print("✅ Backup registrado en BD")
 			return true
 	
 	print("⚠️ No se pudo registrar backup en BD")
 	return false
 
 # Función para registrar restore en la BD
-func registrar_restore_en_bd(_ruta_backup: String) -> bool:
-	if not bd_instance:
-		print("⚠️ No se pudo registrar restore en BD")
-		return false
+func registrar_restore_en_bd(ruta_backup: String) -> bool:
+	# Registrar en el archivo de logs
+	var timestamp = obtener_fecha_actual()
+	var log_entry = "[" + timestamp + "] [INFO] Restauración realizada desde: " + ruta_backup
 	
-	# Aquí podrías registrar el restore en una tabla específica
-	# Por ahora solo escribimos en el log
+	# Escribir en archivo de log
+	var dir = DirAccess.open("user://")
+	if dir:
+		dir.make_dir_recursive("backups/logs")
+	
+	var archivo_log = FileAccess.open("user://backups/logs/backup_logs.txt", FileAccess.READ_WRITE)
+	if archivo_log:
+		archivo_log.seek_end()
+		archivo_log.store_string(log_entry + "\n")
+		archivo_log.close()
+	else:
+		# Si no existe, crear nuevo
+		archivo_log = FileAccess.open("user://backups/logs/backup_logs.txt", FileAccess.WRITE)
+		if archivo_log:
+			archivo_log.store_string(log_entry + "\n")
+			archivo_log.close()
 	
 	print("✅ Restore registrado en logs")
 	return true

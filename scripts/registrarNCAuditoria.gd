@@ -20,6 +20,7 @@ class_name RegistrarNCAuditoriaScene
 
 # Referencias globales
 var bd: BD
+var global_node: Global
 var usuario_actual_id: int = 0
 var usuario_actual_nombre: String = ""
 var sucursal_actual: String = "Central"
@@ -35,13 +36,15 @@ var contador_nc = 0
 var auditor_autenticado = false
 
 func _ready():
+	print("=== REGISTRAR NC AUDITORÍA - INICIO ===")
+	
 	# Obtener referencia a Global (AutoLoad)
 	if not Engine.has_singleton("Global"):
 		push_error("❌ Global no está configurado como AutoLoad")
-		mostrar_error("Error de configuración del sistema")
+		mostrar_error_fatal("Error de configuración del sistema")
 		return
 	
-	var global_node = Engine.get_singleton("Global")
+	global_node = Engine.get_singleton("Global")
 	
 	# Obtener BD desde Global
 	if global_node and global_node.has_method("get_bd_reference"):
@@ -59,21 +62,24 @@ func _ready():
 				bd.call_deferred("_ready")
 	
 	if bd == null:
-		mostrar_error("Base de datos no disponible")
+		mostrar_error_fatal("Base de datos no disponible")
 		registrar_button.disabled = true
 		return
 	
 	# Configurar usuario actual desde Global
 	if global_node and global_node.has_method("esta_autenticado") and global_node.esta_autenticado():
 		usuario_actual_id = global_node.obtener_id_usuario()
-		usuario_actual_nombre = global_node.usuario_actual.get("nombre_completo", global_node.usuario_actual.get("username", "Usuario"))
-		sucursal_actual = global_node.usuario_actual.get("sucursal", "Central")
+		usuario_actual_nombre = global_node.obtener_nombre_usuario()
+		sucursal_actual = global_node.obtener_sucursal()
 		auditor_autenticado = true
 		print("✅ Usuario autenticado: ", usuario_actual_nombre)
+		print("✅ Sucursal: ", sucursal_actual)
 	else:
 		# Usuario por defecto para pruebas
 		usuario_actual_id = 1
 		usuario_actual_nombre = "Auditor Sistema"
+		sucursal_actual = "Central"
+		auditor_autenticado = true  # Permitir pruebas
 		print("⚠️ Usando usuario de prueba (ID: 1)")
 	
 	# Configurar interfaz
@@ -81,6 +87,13 @@ func _ready():
 	
 	# Obtener contador actual desde BD
 	_obtener_contador_actual()
+
+func mostrar_error_fatal(mensaje: String):
+	"""Muestra un error fatal y deshabilita la interfaz."""
+	mensaje_error.dialog_text = mensaje
+	mensaje_error.popup_centered()
+	registrar_button.disabled = true
+	btn_regresar.disabled = false  # Permitir regresar al menú
 
 func setup_ui():
 	# Configurar opciones de tipo de NC
@@ -185,6 +198,8 @@ func _on_auditoria_changed(index):
 
 func _on_regresar_pressed():
 	"""Regresa al menú principal"""
+	print("🏠 Regresando al menú principal...")
+	
 	# Registrar en auditoría si es posible
 	if bd and bd.has_method("registrar_auditoria"):
 		bd.registrar_auditoria(usuario_actual_id, "SALIR_FORMULARIO", 
@@ -207,6 +222,12 @@ func _on_registrar_pressed():
 	if descripcion_text.text.strip_edges().is_empty():
 		validacion_campos.popup_centered()
 		mostrar_error("La descripción es obligatoria")
+		return
+	
+	# Validar longitud mínima
+	if descripcion_text.text.strip_edges().length() < 10:
+		validacion_campos.popup_centered()
+		mostrar_error("La descripción debe tener al menos 10 caracteres")
 		return
 	
 	# Deshabilitar botón para evitar doble clic
@@ -278,6 +299,7 @@ func registrar_no_conformidad_bd(codigo: String, tipo: String, descripcion: Stri
 	descripcion_completa += "\nAuditoría Específica: " + auditoria
 	descripcion_completa += "\nRegistrado por: " + usuario_actual_nombre
 	descripcion_completa += "\nSucursal: " + sucursal_actual
+	descripcion_completa += "\nSeveridad: " + severidad_dropdown.get_item_text(severidad_dropdown.selected)
 	
 	# Preparar datos para la tabla no_conformidades
 	var datos_nc = {
@@ -375,6 +397,7 @@ func _limpiar_formulario():
 	"""Limpia los campos del formulario"""
 	descripcion_text.text = ""
 	severidad_dropdown.select(0)
+	# No limpiar tipo y auditoría para mantener coherencia
 
 # =========================
 # FUNCIONES DE PRUEBA Y DIAGNÓSTICO
@@ -475,3 +498,84 @@ func validar_formulario() -> Dictionary:
 		"valido": errores.size() == 0,
 		"errores": errores
 	}
+
+# =========================
+# FUNCIONES DE UTILIDAD
+# =========================
+
+func registrar_auditoria_sistema(accion: String, detalles: String):
+	"""Registra una acción en la auditoría del sistema."""
+	if bd and bd.has_method("registrar_auditoria"):
+		bd.registrar_auditoria(usuario_actual_id, accion, "RegistrarNCAuditoria", detalles)
+
+func verificar_permisos_usuario() -> bool:
+	"""Verifica si el usuario actual tiene permisos para registrar NC."""
+	if global_node and global_node.has_method("tiene_permiso"):
+		return global_node.tiene_permiso("REGISTRAR_NC")
+	return false
+
+func obtener_info_sistema() -> Dictionary:
+	"""Obtiene información del sistema para depuración."""
+	return {
+		"usuario_id": usuario_actual_id,
+		"usuario_nombre": usuario_actual_nombre,
+		"sucursal": sucursal_actual,
+		"bd_disponible": bd != null,
+		"global_disponible": global_node != null,
+		"contador_nc": contador_nc,
+		"auditor_autenticado": auditor_autenticado
+	}
+
+# =========================
+# FUNCIONES DE NAVEGACIÓN
+# =========================
+
+func ir_a_menu_principal():
+	"""Navega al menú principal."""
+	print("🔄 Navegando al menú principal...")
+	get_tree().change_scene_to_file("res://escenas/menu_principal.tscn")
+
+func recargar_formulario():
+	"""Recarga el formulario con valores por defecto."""
+	print("🔄 Recargando formulario...")
+	_limpiar_formulario()
+	_obtener_contador_actual()
+	_generar_codigo_nc()
+	mostrar_exito("Formulario recargado correctamente")
+
+# =========================
+# SEÑALES Y EVENTOS
+# =========================
+
+func _on_validacion_campos_confirmado():
+	"""Maneja la confirmación del diálogo de validación."""
+	print("✅ Usuario confirmó validación de campos")
+	descripcion_text.grab_focus()
+
+func _on_mensaje_exito_cerrado():
+	"""Maneja el cierre del diálogo de éxito."""
+	print("ℹ️ Diálogo de éxito cerrado")
+
+func _on_mensaje_error_cerrado():
+	"""Maneja el cierre del diálogo de error."""
+	print("ℹ️ Diálogo de error cerrado")
+	registrar_button.disabled = false
+	registrar_button.text = "Registrar NC"
+
+# =========================
+# FUNCIONES DE DEPURACIÓN
+# =========================
+
+func _log(mensaje: String):
+	"""Función de logging para depuración."""
+	print("[RegistrarNCAuditoria] " + mensaje)
+
+func _verificar_estado_sistema():
+	"""Verifica el estado actual del sistema."""
+	print("=== ESTADO DEL SISTEMA ===")
+	var info = obtener_info_sistema()
+	for key in info:
+		print("  " + key + ": " + str(info[key]))
+	print("=== FIN ESTADO ===")
+	
+	
